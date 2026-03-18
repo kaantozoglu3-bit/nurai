@@ -1,0 +1,37 @@
+# Backend
+backend/node_modules/
+backend/.env
+backend/*.log
+
+# Flutter
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/build/
+mobile/.packages
+mobile/pubspec.lock
+
+# Firebase
+google-services.json
+GoogleService-Info.plist
+*firebase-adminsdk*.json
+*.keystore
+*.jks
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Android build reports
+mobile/android/build/
+
+# Firebase config files (root level UUID named files)
+cfca665c-3fe1-4ffe-a9a7-b6c054ff87f3
+
+# Claude debug/plans (local only)
+.claude/debug/
