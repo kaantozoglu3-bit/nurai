@@ -23,14 +23,15 @@ class _AnalysisResultScreenState extends State<AnalysisResultScreen> {
   bool _videosLoading = true;
   String? _videoError;
 
-  String get _bodyArea =>
+  late final String _bodyArea =
       widget.analysisData['bodyArea'] as String? ?? 'lower_back';
 
-  AnalysisModel get _analysis {
+  late final AnalysisModel _analysis = () {
     final passed = widget.analysisData['analysis'];
     if (passed is AnalysisModel) return passed;
-    // Fallback: build minimal model from available data
-    final bodyAreaLabel = MockData.bodyAreaLabels[_bodyArea] ?? _bodyArea;
+    // Fallback: label analysisData'dan gelir, MockData'ya bağımlılık yok
+    final bodyAreaLabel =
+        widget.analysisData['bodyAreaLabel'] as String? ?? _bodyArea;
     return AnalysisModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       bodyArea: _bodyArea,
@@ -46,7 +47,7 @@ class _AnalysisResultScreenState extends State<AnalysisResultScreen> {
       videos: [],
       createdAt: DateTime.now(),
     );
-  }
+  }();
 
   @override
   void initState() {
@@ -61,6 +62,7 @@ class _AnalysisResultScreenState extends State<AnalysisResultScreen> {
   }
 
   Future<void> _loadVideos() async {
+    if (mounted) setState(() { _videosLoading = true; _videoError = null; });
     try {
       final videos = await ApiService.fetchYoutubeVideos(
         bodyArea: _bodyArea,
@@ -86,12 +88,6 @@ class _AnalysisResultScreenState extends State<AnalysisResultScreen> {
           onPressed: () => context.go(AppRoutes.home),
         ),
         title: const Text('Analiz Sonucu'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.share_outlined, color: AppColors.textSecondary),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppDimensions.paddingXXL),
@@ -211,21 +207,47 @@ class _AnalysisResultScreenState extends State<AnalysisResultScreen> {
             _SectionTitle(
                 title: 'Önerilen Egzersizler', icon: Icons.fitness_center),
             const SizedBox(height: 12),
-            ...analysis.exercises.map((exercise) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _ExerciseCard(
-                    exercise: exercise,
-                    onTap: exercise.videoId != null
-                        ? () => context.go(
-                              AppRoutes.videoPlayer,
-                              extra: {
-                                'videoId': exercise.videoId,
-                                'title': exercise.name,
-                              },
-                            )
-                        : null,
-                  ),
-                )),
+            if (analysis.exercises.isEmpty)
+              Container(
+                padding: const EdgeInsets.all(AppDimensions.paddingL),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceVariant,
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.info_outline, color: AppColors.textHint, size: 20),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Egzersiz önerisi oluşturulamadı. Yeni bir analiz yaparak tekrar deneyin.',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 13,
+                          color: AppColors.textHint,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              ...analysis.exercises.map((exercise) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _ExerciseCard(
+                      exercise: exercise,
+                      onTap: exercise.videoId != null
+                          ? () => context.go(
+                                AppRoutes.videoPlayer,
+                                extra: {
+                                  'videoId': exercise.videoId,
+                                  'title': exercise.name,
+                                },
+                              )
+                          : null,
+                    ),
+                  )),
             const SizedBox(height: 24),
 
             // Videos
@@ -259,13 +281,31 @@ class _AnalysisResultScreenState extends State<AnalysisResultScreen> {
               Container(
                 height: 80,
                 alignment: Alignment.center,
-                child: Text(
-                  'Videolar yüklenemedi.',
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 13,
-                    color: AppColors.textHint,
-                  ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Videolar yüklenemedi.',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 13,
+                        color: AppColors.textHint,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: _loadVideos,
+                      child: const Text(
+                        'Yeniden Dene',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 13,
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               )
             else

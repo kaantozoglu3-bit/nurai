@@ -6,7 +6,6 @@ import '../../../core/constants/app_dimensions.dart';
 import '../../../core/router/app_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/app_button.dart';
-import '../../../data/models/analysis_model.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -298,18 +297,7 @@ class _HomeTab extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
 
-            ...MockData.analyses.take(2).map((a) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _AnalysisCard(
-                    analysis: a,
-                    onTap: () => context.go(
-                      AppRoutes.analysisResult,
-                      extra: {
-                        'analysis': a,
-                      },
-                    ),
-                  ),
-                )),
+            const _EmptyAnalysisState(),
           ],
         ),
       ),
@@ -317,96 +305,75 @@ class _HomeTab extends ConsumerWidget {
   }
 }
 
-class _AnalysisCard extends StatelessWidget {
-  final AnalysisModel analysis;
-  final VoidCallback onTap;
-
-  const _AnalysisCard({required this.analysis, required this.onTap});
+class _EmptyAnalysisState extends StatelessWidget {
+  const _EmptyAnalysisState();
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.healing_outlined,
+            size: 48,
+            color: AppColors.textSecondary.withValues(alpha: 0.4),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'Henüz analiz yapılmadı',
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'İlk analizini yaparak ağrının nedenini öğren.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 40,
+            child: ElevatedButton(
+              onPressed: () => context.go(AppRoutes.bodySelector),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                ),
+                elevation: 0,
               ),
-              child: const Icon(
-                Icons.healing_outlined,
-                color: AppColors.primary,
-                size: 24,
+              child: const Text(
+                'İlk Analizini Yap',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    analysis.bodyAreaLabel,
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Icons.circle,
-                          size: 6, color: AppColors.error),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Ağrı: ${analysis.painScore}/10',
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        _formatDate(analysis.createdAt),
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.chevron_right,
-                color: AppColors.textSecondary, size: 20),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final diff = now.difference(date);
-    if (diff.inHours < 1) return '${diff.inMinutes}dk önce';
-    if (diff.inHours < 24) return '${diff.inHours}sa önce';
-    return '${diff.inDays} gün önce';
-  }
 }
+
 
 class _ProgramTab extends StatelessWidget {
   const _ProgramTab();

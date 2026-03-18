@@ -1,53 +1,121 @@
 # /review
 
-Son değişiklikleri veya belirtilen dosyaları kod kalitesi, güvenlik ve Flutter/Node.js best practice açısından incele.
+Nurai projesini 5 açıdan kapsamlı kod incelemesi yap ve puanlı rapor üret.
 
-## Adımlar
+## İnceleme Kapsamı
 
-1. **Neyin review edileceğini belirle:**
-   - Argüman verilmişse (`/review chat_screen.dart`) → sadece o dosya
-   - Argüman yoksa → `git diff HEAD~1` veya `git diff --staged` ile son değişiklikler
+Şu dosyaları ve klasörleri incele:
+- `mobile/lib/` — tüm Flutter kodu
+- `backend/src/` — tüm Node.js kodu
+- `mobile/pubspec.yaml` ve `backend/package.json`
+- `.env` dosyaları (key'ler gizli tutularak)
 
-2. **Flutter/Dart dosyaları için kontrol listesi:**
-   - [ ] `setState` gereksiz yerde kullanılıyor mu? (Riverpod tercih et)
-   - [ ] Widget'lar `const` constructor kullanıyor mu?
-   - [ ] `BuildContext` async gap'ten sonra kullanılıyor mu? (`mounted` kontrolü var mı?)
-   - [ ] Büyük widget'lar küçük parçalara bölünmüş mü?
-   - [ ] `dispose()` içinde stream/controller kapatılıyor mu?
-   - [ ] Hardcoded string var mı? (Turkish UI text, magic numbers)
-   - [ ] `try/catch` blokları spesifik exception yakalıyor mu?
+---
 
-3. **Backend/Node.js dosyaları için kontrol listesi:**
-   - [ ] Input validation (Joi veya manuel) yapılıyor mu?
-   - [ ] Auth middleware korumalı mı?
-   - [ ] SQL/NoSQL injection riski var mı?
-   - [ ] `async/await` hataları `try/catch` ile sarılı mı?
-   - [ ] Console.log'lar production'da kalmamalı (winston kullan)
-   - [ ] API key veya secret hardcoded var mı?
-   - [ ] Rate limiting uygulanıyor mu?
+## 5 İnceleme Boyutu
 
-4. **Genel kontroller:**
-   - [ ] TODO/FIXME yorumları kalmış mı?
-   - [ ] Dead code (kullanılmayan import, fonksiyon, değişken) var mı?
-   - [ ] Fonksiyon çok uzun mu? (50+ satır → bölmeyi düşün)
+### 1. 🔒 Güvenlik (Security) — /10
 
-5. **Review raporu yaz:**
+Kontrol edilecekler:
+- API key'ler `.env`'de mi, kodda hardcoded var mı?
+- Firebase token doğrulama her endpoint'te var mı?
+- Client-side quota kontrolü var mı? (güvensiz)
+- `flutter_secure_storage` şifre için kullanılıyor mu?
+- HTTPS kullanılıyor mu?
+- SQL injection riski var mı?
+- Rate limiting var mı?
+- `.gitignore`'da hassas dosyalar var mı?
 
-Format:
+---
+
+### 2. ⚡ Performans (Performance) — /10
+
+Kontrol edilecekler:
+- YouTube API gereksiz yere her seferinde çağrılıyor mu? (cache var mı?)
+- AI prompt her mesajda tam geçmişi gönderiyor mu? (token optimizasyonu)
+- Flutter'da `const` widget'lar kullanılıyor mu?
+- Gereksiz `setState` çağrıları var mı?
+- Görsel önbellekleme (`cached_network_image`) kullanılıyor mu?
+- Backend'de veritabanı sorguları optimize mi?
+- `flutter analyze` temiz mi?
+
+---
+
+### 3. 🏗️ Kod Kalitesi (Code Quality) — /10
+
+Kontrol edilecekler:
+- DRY prensibi (kod tekrarı var mı?)
+- Fonksiyonlar tek sorumluluk taşıyor mu?
+- Magic number/string var mı? (sabitler kullanılıyor mu?)
+- Hata yönetimi (try/catch) her kritik noktada var mı?
+- Dart null safety doğru kullanılıyor mu?
+- Widget'lar makul boyutta mı? (500+ satır tek widget kötü)
+- Backend route'lar mantıklı yapılanmış mı?
+
+---
+
+### 4. 🎨 Kullanıcı Deneyimi (UX) — /10
+
+Kontrol edilecekler:
+- Loading state her async işlemde gösteriliyor mu?
+- Hata mesajları kullanıcı dostu mu? ("Error 500" değil, anlaşılır Türkçe)
+- Boş durum (empty state) ekranları var mı?
+- Navigation geri tuşu doğru çalışıyor mu?
+- Keyboard açıldığında UI bozuluyor mu?
+- Analiz sonucu doğru vücut bölgesini gösteriyor mu?
+- AI chat akıcı mı? (streaming çalışıyor mu?)
+- Disclaimer (tıbbi uyarı) her analiz sonucunda var mı?
+
+---
+
+### 5. 🏛️ Mimari (Architecture) — /10
+
+Kontrol edilecekler:
+- Riverpod provider'lar doğru kullanılıyor mu?
+- GoRouter redirect mantığı sağlam mı?
+- Business logic UI'dan ayrılmış mı?
+- Mock data kaldırılmış mı, gerçek API kullanılıyor mu?
+- Backend servis katmanı (service/controller/route) ayrımı var mı?
+- Veri modelleri (UserModel, AnalysisModel) tutarlı mı?
+- Freemium quota sunucu tarafında kontrol ediliyor mu?
+
+---
+
+## Rapor Formatı
+
 ```
-## Review Raporu
+# Nurai Kod İnceleme Raporu
+Tarih: [tarih]
+İncelenen: [kaç dosya, kaç satır kod]
 
-### ✅ İyi
-- ...
+## Genel Puan: XX/50
 
-### ⚠️ Uyarı (düzeltilmeli)
-- dosya:satır — sorun açıklaması → öneri
+| Boyut | Puan | Durum |
+|-------|------|-------|
+| 🔒 Güvenlik | X/10 | 🔴/🟡/🟢 |
+| ⚡ Performans | X/10 | 🔴/🟡/🟢 |
+| 🏗️ Kod Kalitesi | X/10 | 🔴/🟡/🟢 |
+| 🎨 UX | X/10 | 🔴/🟡/🟢 |
+| 🏛️ Mimari | X/10 | 🔴/🟡/🟢 |
 
-### 🔴 Kritik (mutlaka düzelt)
-- dosya:satır — sorun açıklaması → öneri
+## 🔴 Kritik Sorunlar (Hemen Düzeltilmeli)
+1. [sorun] → [dosya:satır] → [çözüm]
+2. ...
 
-### 💡 Öneri (opsiyonel iyileştirme)
-- ...
+## 🟡 Orta Sorunlar (Yakında Düzeltilmeli)
+1. [sorun] → [dosya:satır] → [çözüm]
+2. ...
+
+## 🟢 İyi Yapılanlar
+1. ...
+
+## Sonraki Adımlar (Öncelik Sırasıyla)
+1. ...
+2. ...
+3. ...
 ```
 
-6. **Kritik sorun varsa otomatik düzelt**, uyarı/öneri için kullanıcıya sor.
+## Puan Skalası
+- 🟢 8-10: İyi
+- 🟡 5-7: Orta, iyileştirme gerekli
+- 🔴 0-4: Kritik, hemen düzeltilmeli

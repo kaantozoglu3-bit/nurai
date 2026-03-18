@@ -149,3 +149,10 @@ final authStateProvider = AsyncNotifierProvider<AuthNotifier, AuthState>(
 final currentUserProvider = Provider<UserModel?>((ref) {
   return ref.watch(authStateProvider).valueOrNull?.user;
 });
+
+/// Tracks whether the user has seen the onboarding screens.
+/// Loaded once at startup from SharedPreferences.
+final onboardingProvider = FutureProvider<bool>((ref) async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getBool('hasSeenOnboarding') ?? false;
+});

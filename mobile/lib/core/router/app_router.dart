@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../presentation/screens/splash/splash_screen.dart';
 import '../../presentation/screens/onboarding/onboarding_screen.dart';
 import '../../presentation/screens/auth/login_screen.dart';
@@ -34,16 +33,14 @@ class AppRoutes {
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
+  final hasSeenOnboarding = ref.watch(onboardingProvider).valueOrNull ?? false;
 
   return GoRouter(
     initialLocation: AppRoutes.splash,
-    redirect: (context, state) async {
+    redirect: (context, state) {
       final isLoggedIn = authState.valueOrNull?.isLoggedIn ?? false;
       final isProfileComplete = authState.valueOrNull?.isProfileComplete ?? false;
       final currentPath = state.matchedLocation;
-
-      final prefs = await SharedPreferences.getInstance();
-      final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
 
       if (currentPath == AppRoutes.splash) return null;
 

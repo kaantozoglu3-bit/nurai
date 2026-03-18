@@ -1,6 +1,7 @@
 'use strict';
 
 const OpenAI = require('openai');
+const logger = require('../config/logger');
 
 // Groq uses an OpenAI-compatible API — just swap the baseURL and key
 const client = new OpenAI({
@@ -303,7 +304,7 @@ async function streamChatResponse({ profile, bodyArea, messages, res }) {
 
     res.write('data: [DONE]\n\n');
   } catch (err) {
-    console.error('[Groq] Error:', err.message);
+    logger.error('[Groq] Streaming error', { message: err.message });
     res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
   } finally {
     res.end();

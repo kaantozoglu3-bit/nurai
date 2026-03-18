@@ -8,6 +8,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/router/app_router.dart';
 import '../../../data/models/analysis_model.dart';
+import '../../../data/services/analysis_parser_service.dart';
 import '../../../data/services/api_service.dart';
 import '../../../data/services/quota_service.dart';
 import '../../providers/auth_provider.dart';
@@ -41,8 +42,29 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   // Conversation history sent to API: [{role, content}]
   final List<Map<String, String>> _history = [];
 
+  static const int _maxUserTurns = 6;
+
+  static const Map<String, String> _bodyAreaLabels = {
+    'neck': 'Boyun',
+    'left_shoulder': 'Sol Omuz',
+    'right_shoulder': 'Sağ Omuz',
+    'upper_back': 'Üst Sırt / Göğüs',
+    'lower_back': 'Bel / Alt Sırt',
+    'hip': 'Kalça',
+    'left_knee': 'Sol Diz',
+    'right_knee': 'Sağ Diz',
+    'left_elbow': 'Sol Dirsek',
+    'right_elbow': 'Sağ Dirsek',
+    'left_wrist': 'Sol Bilek',
+    'right_wrist': 'Sağ Bilek',
+    'left_ankle': 'Sol Ayak Bileği',
+    'right_ankle': 'Sağ Ayak Bileği',
+    'core': 'Karın / Core',
+  };
+
   bool _isLoading = false;
   bool _analysisComplete = false;
+  bool _isNavigating = false;
 
   // Throttle stream setState to max once per 50ms
   Timer? _streamThrottle;
@@ -98,7 +120,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
     await QuotaService.recordUsage();
 
-    final areaLabel = MockData.bodyAreaLabels[widget.bodyArea] ?? widget.bodyArea;
+    final areaLabel = _bodyAreaLabels[widget.bodyArea] ?? widget.bodyArea;
     final openingPrompt =
         'Merhaba Nurai! $areaLabel bölgemde ağrı yaşıyorum, yardımını istiyorum.';
 
@@ -169,25 +191,34 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _history.add({'role': 'user', 'content': text});
     _scrollToBottom();
 
-    // After 6 turns (5 questions answered), mark analysis complete and navigate
-    if (_history.where((m) => m['role'] == 'user').length >= 6) {
+    // After _maxUserTurns turns, mark analysis complete and navigate
+    if (_history.where((m) => m['role'] == 'user').length >= _maxUserTurns) {
       setState(() => _analysisComplete = true);
       await _streamFromAPI();
-      await Future.delayed(const Duration(milliseconds: 1500));
-      if (mounted) {
-        final lastAiMsg = _history.lastWhere(
-          (m) => m['role'] == 'assistant',
-          orElse: () => {'content': ''},
-        )['content'] ?? '';
 
-        final exercises = _parseExercises(lastAiMsg);
-        final analysis = _buildAnalysisModel(lastAiMsg, exercises);
+      if (!mounted) return;
+      setState(() => _isNavigating = true);
+      try {
+        await Future.delayed(const Duration(milliseconds: 1200));
 
-        context.go(AppRoutes.analysisResult, extra: {
-          'analysis': analysis,
-          'bodyArea': widget.bodyArea,
-          'exercises': exercises,
-        });
+        if (mounted) {
+          final lastAiMsg = _history.lastWhere(
+            (m) => m['role'] == 'assistant',
+            orElse: () => {'content': ''},
+          )['content'] ?? '';
+
+          final exercises = AnalysisParserService.parseExercises(lastAiMsg);
+          final analysis = _buildAnalysisModel(lastAiMsg, exercises);
+
+          context.go(AppRoutes.analysisResult, extra: {
+            'analysis': analysis,
+            'bodyArea': widget.bodyArea,
+            'bodyAreaLabel': _bodyAreaLabels[widget.bodyArea] ?? widget.bodyArea,
+            'exercises': exercises,
+          });
+        }
+      } finally {
+        if (mounted) setState(() => _isNavigating = false);
       }
     } else {
       await _streamFromAPI();
@@ -206,92 +237,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
   }
 
-  /// Parses "YOUTUBE_EGZERSIZLER: egz1 | egz2 | egz3" from AI message
-  List<String> _parseExercises(String aiMessage) {
-    final regex = RegExp(r'YOUTUBE_EGZERSIZLER:\s*(.+)', caseSensitive: false);
-    final match = regex.firstMatch(aiMessage);
-    if (match == null) return [];
-    return match.group(1)!
-        .split('|')
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toList();
-  }
-
-  /// Extracts the first 2–3 sentences as summary (strips YOUTUBE_EGZERSIZLER line).
-  String _parseAiSummary(String aiMessage) {
-    final cleaned = aiMessage
-        .replaceAll(RegExp(r'YOUTUBE_EGZERSIZLER:.*', caseSensitive: false), '')
-        .replaceAll(RegExp(r'\*\*|__'), '') // strip bold markdown
-        .trim();
-    final sentences = cleaned.split(RegExp(r'(?<=[.!?])\s+'));
-    return sentences.take(3).join(' ').trim();
-  }
-
-  /// Extracts bullet-pointed lines as possible causes.
-  List<String> _parsePossibleCauses(String aiMessage) {
-    final lines = aiMessage.split('\n');
-    final causes = <String>[];
-    for (final line in lines) {
-      final trimmed = line.trim();
-      if (trimmed.startsWith('•') ||
-          trimmed.startsWith('-') ||
-          trimmed.startsWith('*') ||
-          RegExp(r'^\d+[.)]\s').hasMatch(trimmed)) {
-        final cause = trimmed
-            .replaceAll(RegExp(r'^[•\-*\d.)]+\s*'), '')
-            .replaceAll(RegExp(r'\*\*|__'), '')
-            .trim();
-        if (cause.isNotEmpty && causes.length < 5) causes.add(cause);
-      }
-    }
-    return causes;
-  }
-
-  /// Reads pain score from the conversation (user's second message with quick reply).
-  int _parsePainScore() {
-    for (final msg in _history) {
-      if (msg['role'] != 'user') continue;
-      final c = msg['content'] ?? '';
-      if (c.contains('1-3') || c.toLowerCase().contains('hafif')) return 2;
-      if (c.contains('4-6') || c.toLowerCase().contains('orta')) return 5;
-      if (c.contains('7-9') || c.toLowerCase().contains('şiddetli')) return 8;
-      if (c.contains('10') || c.toLowerCase().contains('dayanılmaz')) return 10;
-    }
-    return 5;
-  }
-
   /// Builds a real AnalysisModel from the completed conversation.
   AnalysisModel _buildAnalysisModel(String lastAiMsg, List<String> exerciseNames) {
-    final bodyAreaLabel =
-        MockData.bodyAreaLabels[widget.bodyArea] ?? widget.bodyArea;
-    final causes = _parsePossibleCauses(lastAiMsg);
-    final summary = _parseAiSummary(lastAiMsg);
-    final painScore = _parsePainScore();
-
-    return AnalysisModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+    final bodyAreaLabel = _bodyAreaLabels[widget.bodyArea] ?? widget.bodyArea;
+    return AnalysisParserService.buildAnalysisModel(
+      lastAiMsg: lastAiMsg,
+      exerciseNames: exerciseNames,
       bodyArea: widget.bodyArea,
       bodyAreaLabel: bodyAreaLabel,
-      painScore: painScore,
-      userComplaint: _history
-          .where((m) => m['role'] == 'user')
-          .map((m) => m['content'] ?? '')
-          .join(' | '),
-      aiSummary: summary.isNotEmpty ? summary : '$bodyAreaLabel bölgesinde ağrı analizi tamamlandı.',
-      possibleCauses: causes.isNotEmpty
-          ? causes
-          : ['Kas gerilmesi', 'Postür bozukluğu', 'Aşırı kullanım'],
-      exercises: exerciseNames
-          .map((name) => ExerciseModel(
-                name: name,
-                description: '',
-                difficulty: 'Orta',
-                duration: '3 set x 10 tekrar',
-              ))
-          .toList(),
-      videos: [],
-      createdAt: DateTime.now(),
+      history: _history,
     );
   }
 
@@ -307,7 +261,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget build(BuildContext context) {
     final replies = _stepIndex < _quickReplies.length ? _quickReplies[_stepIndex] : <String>[];
 
-    return Scaffold(
+    return PopScope(
+      canPop: !_isNavigating,
+      child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.surface,
@@ -354,122 +310,150 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ],
         ),
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(AppDimensions.paddingL),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) =>
-                  _ChatBubble(message: _messages[index]),
-            ),
-          ),
+          Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.all(AppDimensions.paddingL),
+                  itemCount: _messages.length,
+                  itemBuilder: (context, index) =>
+                      _ChatBubble(message: _messages[index]),
+                ),
+              ),
 
-          // Quick replies
-          if (replies.isNotEmpty && !_isLoading)
-            Container(
-              height: 44,
-              padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingL),
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: replies.length,
-                separatorBuilder: (_, sep) => const SizedBox(width: 8),
-                itemBuilder: (context, i) => GestureDetector(
-                  onTap: () => _sendMessage(replies[i]),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(
-                          AppDimensions.radiusFull),
-                      border: Border.all(color: AppColors.primary, width: 1),
-                    ),
-                    child: Text(
-                      replies[i],
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 13,
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w500,
+              // Quick replies
+              if (replies.isNotEmpty && !_isLoading)
+                Container(
+                  height: 44,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppDimensions.paddingL),
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: replies.length,
+                    separatorBuilder: (_, sep) => const SizedBox(width: 8),
+                    itemBuilder: (context, i) => GestureDetector(
+                      onTap: () => _sendMessage(replies[i]),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusFull),
+                          border: Border.all(color: AppColors.primary, width: 1),
+                        ),
+                        child: Text(
+                          replies[i],
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 13,
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ),
-          const SizedBox(height: 8),
+              const SizedBox(height: 8),
 
-          // Input bar
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingL,
-              vertical: AppDimensions.paddingM,
-            ),
-            color: AppColors.surface,
-            child: SafeArea(
-              top: false,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _inputController,
-                      decoration: InputDecoration(
-                        hintText: 'Mesajınızı yazın...',
-                        hintStyle: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 14,
-                          color: AppColors.textHint,
-                        ),
-                        filled: true,
-                        fillColor: AppColors.surfaceVariant,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                              AppDimensions.radiusFull),
-                          borderSide: BorderSide.none,
+              // Input bar
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingL,
+                  vertical: AppDimensions.paddingM,
+                ),
+                color: AppColors.surface,
+                child: SafeArea(
+                  top: false,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _inputController,
+                          decoration: InputDecoration(
+                            hintText: 'Mesajınızı yazın...',
+                            hintStyle: const TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 14,
+                              color: AppColors.textHint,
+                            ),
+                            filled: true,
+                            fillColor: AppColors.surfaceVariant,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusFull),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 14,
+                            color: AppColors.textPrimary,
+                          ),
+                          onSubmitted: _sendMessage,
                         ),
                       ),
-                      style: const TextStyle(
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: _isLoading ? null : () => _sendMessage(_inputController.text),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: _isLoading
+                                ? AppColors.border
+                                : AppColors.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            _isLoading
+                                ? Icons.hourglass_empty
+                                : Icons.send_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          // Analiz hazırlanıyor overlay
+          if (_isNavigating)
+            Container(
+              color: Colors.black.withValues(alpha: 0.45),
+              child: const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(color: AppColors.primary),
+                    SizedBox(height: 16),
+                    Text(
+                      'Analiz hazırlanıyor...',
+                      style: TextStyle(
                         fontFamily: 'Inter',
-                        fontSize: 14,
-                        color: AppColors.textPrimary,
-                      ),
-                      onSubmitted: _sendMessage,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () => _sendMessage(_inputController.text),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: _isLoading
-                            ? AppColors.border
-                            : AppColors.primary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        _isLoading
-                            ? Icons.hourglass_empty
-                            : Icons.send_rounded,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                         color: Colors.white,
-                        size: 20,
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
         ],
+      ),
       ),
     );
   }

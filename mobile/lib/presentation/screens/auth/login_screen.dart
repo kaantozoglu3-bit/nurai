@@ -49,10 +49,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (kIsWeb) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('saved_email');
-      await prefs.remove('saved_password');
       await prefs.remove('remember_me');
     } else {
-      await _secureStorage!.deleteAll();
+      await _secureStorage?.delete(key: 'saved_email');
+      await _secureStorage?.delete(key: 'remember_me');
     }
   }
 
@@ -66,11 +66,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final rememberMe = await _storageRead('remember_me');
     if (rememberMe == 'true') {
       final savedEmail = await _storageRead('saved_email');
-      final savedPassword = await _storageRead('saved_password');
       if (savedEmail != null && mounted) {
         setState(() {
           _emailController.text = savedEmail;
-          _passwordController.text = savedPassword ?? '';
           _rememberMe = true;
         });
       }
@@ -84,10 +82,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           password: _passwordController.text,
         );
 
-    // Beni Hatırla
+    // Beni Hatırla — sadece email sakla, şifre asla saklanmaz
     if (_rememberMe) {
       await _storageWrite('saved_email', _emailController.text.trim());
-      await _storageWrite('saved_password', _passwordController.text);
       await _storageWrite('remember_me', 'true');
     } else {
       await _storageClear();

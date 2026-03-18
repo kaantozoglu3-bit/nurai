@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 
 class ApiService {
   // Web'de localhost, fiziksel cihazda yerel ağ IP'si kullan
@@ -12,11 +12,22 @@ class ApiService {
     return 'http://192.168.1.143:3000';
   }
 
+  // YouTube sorguları için istemci tarafı önbellek (1 saatlik TTL)
+  static final Map<String, _CacheEntry<List<Map<String, dynamic>>>> _youtubeCache = {};
+  static const Duration _youtubeCacheTtl = Duration(hours: 1);
+
   static Dio get _dio => Dio(BaseOptions(
     baseUrl: baseUrl,
     connectTimeout: const Duration(seconds: 10),
     receiveTimeout: const Duration(seconds: 60),
     responseType: ResponseType.stream,
+  ));
+
+  static Dio get _jsonDio => Dio(BaseOptions(
+    baseUrl: baseUrl,
+    connectTimeout: const Duration(seconds: 10),
+    receiveTimeout: const Duration(seconds: 60),
+    responseType: ResponseType.json,
   ));
 
   /// Streams GPT-4o response chunks from the backend SSE endpoint.
@@ -27,12 +38,17 @@ class ApiService {
   ///
   /// Yields individual text delta strings as they arrive.
   /// Fetches YouTube exercise videos for the given body area.
-  /// Returns a list of video maps with: videoId, title, channelTitle, thumbnailUrl, duration
+  /// Results are cached client-side for 1 hour to avoid redundant API calls.
   static Future<List<Map<String, dynamic>>> fetchYoutubeVideos({
     required String bodyArea,
     List<String>? exercises,
     String? customQuery,
   }) async {
+    final cacheKey = [bodyArea, exercises?.join('|') ?? '', customQuery ?? ''].join(':');
+
+    final cached = _youtubeCache[cacheKey];
+    if (cached != null && !cached.isExpired) return cached.data;
+
     final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
     if (idToken == null) throw Exception('Kullanıcı oturumu bulunamadı.');
 
@@ -43,17 +59,17 @@ class ApiService {
       queryParams['q'] = customQuery;
     }
 
-    final response = await _dio.get<Map<String, dynamic>>(
+    final response = await _jsonDio.get<Map<String, dynamic>>(
       '/api/v1/youtube/search',
       queryParameters: queryParams,
-      options: Options(
-        headers: {'Authorization': 'Bearer $idToken'},
-        responseType: ResponseType.json,
-      ),
+      options: Options(headers: {'Authorization': 'Bearer $idToken'}),
     );
 
-    final videos = response.data?['videos'] as List<dynamic>? ?? [];
-    return videos.cast<Map<String, dynamic>>();
+    final videos = (response.data?['videos'] as List<dynamic>? ?? [])
+        .cast<Map<String, dynamic>>();
+
+    _youtubeCache[cacheKey] = _CacheEntry(videos, _youtubeCacheTtl);
+    return videos;
   }
 
   /// Saves user profile to the backend (Firestore).
@@ -61,18 +77,10 @@ class ApiService {
     final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
     if (idToken == null) throw Exception('Kullanıcı oturumu bulunamadı.');
 
-    await Dio(BaseOptions(
-      baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 15),
-      responseType: ResponseType.json,
-    )).post(
+    await _jsonDio.post(
       '/api/v1/users/profile',
       data: profile,
-      options: Options(
-        headers: {'Authorization': 'Bearer $idToken'},
-        responseType: ResponseType.json,
-      ),
+      options: Options(headers: {'Authorization': 'Bearer $idToken'}),
     );
   }
 
@@ -85,20 +93,10 @@ class ApiService {
     final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
     if (idToken == null) throw Exception('Kullanıcı oturumu bulunamadı.');
 
-    final dio = Dio(BaseOptions(
-      baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 60),
-      responseType: ResponseType.json,
-    ));
-
-    final response = await dio.post<Map<String, dynamic>>(
+    final response = await _jsonDio.post<Map<String, dynamic>>(
       '/api/v1/analysis/chat-sync',
       data: {'profile': profile, 'bodyArea': bodyArea, 'messages': messages},
-      options: Options(
-        headers: {'Authorization': 'Bearer $idToken'},
-        responseType: ResponseType.json,
-      ),
+      options: Options(headers: {'Authorization': 'Bearer $idToken'}),
     );
 
     return response.data?['content'] as String? ?? '';
@@ -169,7 +167,9 @@ class ApiService {
             if (json['error'] != null) {
               controller.addError(Exception(json['error']));
             }
-          } catch (_) {}
+          } catch (e) {
+            debugPrint('[ApiService] SSE satırı ayrıştırılamadı: $e | veri: $data');
+          }
         }
       }
       controller.close();
@@ -180,4 +180,13 @@ class ApiService {
 
     yield* controller.stream;
   }
+}
+
+class _CacheEntry<T> {
+  final T data;
+  final DateTime expiresAt;
+
+  _CacheEntry(this.data, Duration ttl) : expiresAt = DateTime.now().add(ttl);
+
+  bool get isExpired => DateTime.now().isAfter(expiresAt);
 }

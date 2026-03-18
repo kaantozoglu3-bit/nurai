@@ -7,58 +7,58 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Write|Edit|str_replace_based_edit_tool",
+        "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"[hook] Dosya yazılıyor, format kontrol ediliyor...\""
+            "command": "echo \"[hook] Dosya yazılıyor...\""
           }
         ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Write|Edit|str_replace_based_edit_tool",
+        "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c \"FILE=$(echo '$CLAUDE_TOOL_RESULT' | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d.get(\\\"path\\\",\\\"\\\"))' 2>/dev/null || echo ''); if [[ \"$FILE\" == *.dart ]]; then echo '[hook] Dart dosyası değişti: '$FILE; cd C:/Users/KULLANICI/Desktop/fizyoterapi/mobile && dart format $FILE 2>&1 | tail -3; fi\""
+            "command": "bash C:/Users/KULLANICI/Desktop/fizyoterapi/.claude/hooks/dart_format.sh"
           }
         ]
       },
       {
-        "matcher": "Write|Edit|str_replace_based_edit_tool",
+        "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c \"FILE=$(echo '$CLAUDE_TOOL_INPUT' | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d.get(\\\"path\\\",\\\"\\\"))' 2>/dev/null || echo ''); if [[ \"$FILE\" == *.dart ]]; then echo '[hook] Flutter analyze çalışıyor...'; cd C:/Users/KULLANICI/Desktop/fizyoterapi/mobile && flutter analyze --no-pub 2>&1 | grep -E '(error|warning|hint)' | head -10; fi\""
+            "command": "bash C:/Users/KULLANICI/Desktop/fizyoterapi/.claude/hooks/flutter_analyze.sh"
           }
         ]
       },
       {
-        "matcher": "Write|Edit|str_replace_based_edit_tool",
+        "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c \"FILE=$(echo '$CLAUDE_TOOL_INPUT' | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d.get(\\\"path\\\",\\\"\\\"))' 2>/dev/null || echo ''); if [[ \"$FILE\" == *pubspec.yaml* ]]; then echo '[hook] pubspec.yaml değişti, flutter pub get çalışıyor...'; cd C:/Users/KULLANICI/Desktop/fizyoterapi/mobile && flutter pub get 2>&1 | tail -5; fi\""
+            "command": "bash C:/Users/KULLANICI/Desktop/fizyoterapi/.claude/hooks/pub_get.sh"
           }
         ]
       },
       {
-        "matcher": "Write|Edit|str_replace_based_edit_tool",
+        "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c \"FILE=$(echo '$CLAUDE_TOOL_INPUT' | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d.get(\\\"path\\\",\\\"\\\"))' 2>/dev/null || echo ''); if [[ \"$FILE\" == *server.js* ]] || [[ \"$FILE\" == *routes* ]] || [[ \"$FILE\" == *middleware* ]]; then echo '[hook] Backend dosyası değişti, yeniden başlatılıyor...'; pkill -f 'node server.js' 2>/dev/null; sleep 1; cd C:/Users/KULLANICI/Desktop/fizyoterapi/backend && nohup node server.js > /tmp/backend.log 2>&1 & echo '[hook] Backend yeniden başlatıldı (PID: '$!')'; fi\""
+            "command": "bash C:/Users/KULLANICI/Desktop/fizyoterapi/.claude/hooks/backend_restart.sh"
           }
         ]
       },
       {
-        "matcher": "Write|Edit|str_replace_based_edit_tool",
+        "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c \"FILE=$(echo '$CLAUDE_TOOL_INPUT' | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d.get(\\\"path\\\",\\\"\\\"))' 2>/dev/null || echo ''); if [[ \"$FILE\" == *chat_screen* ]] || [[ \"$FILE\" == *chat.routes* ]] || [[ \"$FILE\" == *groq* ]] || [[ \"$FILE\" == *openai.service* ]]; then echo '[hook] AI chat dosyası değişti, test ediliyor...'; sleep 2; RESPONSE=$(curl -s -X POST http://localhost:3000/api/v1/chat/test -H 'Content-Type: application/json' -d '{\\\"message\\\": \\\"test\\\", \\\"bodyArea\\\": \\\"lower_back\\\", \\\"conversationHistory\\\": []}' 2>/dev/null); if [ -z \"$RESPONSE\" ]; then echo '[hook] ✗ AI chat endpoint erişilemiyor — backend çalışmıyor olabilir'; elif echo \"$RESPONSE\" | grep -q 'error'; then echo '[hook] ✗ AI chat hatası:'; echo $RESPONSE | python3 -m json.tool 2>/dev/null | grep 'error' | head -3; elif echo \"$RESPONSE\" | grep -q 'content\\|message\\|reply'; then echo '[hook] ✓ AI chat çalışıyor'; else echo '[hook] ⚠️ AI chat beklenmedik yanıt:'; echo $RESPONSE | head -c 200; fi; fi\""
+            "command": "bash C:/Users/KULLANICI/Desktop/fizyoterapi/.claude/hooks/chat_check.sh"
           }
         ]
       }
@@ -69,7 +69,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c \"echo '[hook] Claude durdu. Özet kontrol:'; echo '--- Backend:'; curl -s http://localhost:3000/health 2>/dev/null && echo ' ✓ Çalışıyor' || echo ' ✗ Çalışmıyor'; echo '--- Flutter analyze:'; cd C:/Users/KULLANICI/Desktop/fizyoterapi/mobile && flutter analyze --no-pub 2>&1 | tail -2\""
+            "command": "bash C:/Users/KULLANICI/Desktop/fizyoterapi/.claude/hooks/notify.sh"
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'Compaction tamamlandı. CLAUDE.md dosyasını yeniden oku ve kuralları uygula.'"
           }
         ]
       }
