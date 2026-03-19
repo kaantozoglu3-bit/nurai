@@ -15,9 +15,15 @@ const TEMPERATURE = 0.3; // Low for structured JSON output
 // ─── Input sanitisation ───────────────────────────────────────────────────────
 
 const VALID_FITNESS_LEVELS = ['beginner', 'intermediate', 'advanced'];
+const VALID_BODY_AREAS = new Set([
+  'neck', 'left_shoulder', 'right_shoulder', 'upper_back', 'lower_back',
+  'hip', 'left_knee', 'right_knee', 'left_elbow', 'right_elbow',
+  'left_wrist', 'right_wrist', 'left_ankle', 'right_ankle', 'core', 'general',
+]);
 
 function _sanitizeArea(val) {
-  return String(val ?? '').slice(0, 60).replace(/[<>"'`]/g, '').trim();
+  const cleaned = String(val ?? '').slice(0, 60).replace(/[<>"'`]/g, '').trim();
+  return VALID_BODY_AREAS.has(cleaned) ? cleaned : null;
 }
 
 // ─── Prompt ───────────────────────────────────────────────────────────────────

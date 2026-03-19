@@ -33,6 +33,7 @@ class _MessagingScreenState extends ConsumerState<MessagingScreen> {
   Future<void> _send() async {
     final text = _inputCtrl.text.trim();
     if (text.isEmpty || _isSending) return;
+    if (_myUid.isEmpty) return; // Guard: user not authenticated
 
     setState(() => _isSending = true);
     _inputCtrl.clear();

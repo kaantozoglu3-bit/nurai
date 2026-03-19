@@ -18,6 +18,7 @@ import '../../presentation/screens/marketplace/marketplace_screen.dart';
 import '../../presentation/screens/marketplace/pt_registration_screen.dart';
 import '../../presentation/screens/marketplace/pt_detail_screen.dart';
 import '../../presentation/screens/marketplace/messaging_screen.dart';
+import '../../presentation/screens/quick_exercise/quick_exercise_screen.dart';
 import '../../data/models/physiotherapist_model.dart';
 import '../../data/models/message_model.dart';
 import '../../presentation/providers/auth_provider.dart';
@@ -40,6 +41,7 @@ class AppRoutes {
   static const String ptRegistration = '/pt-registration';
   static const String ptDetail = '/pt-detail';
   static const String messaging = '/messaging';
+  static const String quickExercise = '/quick-exercise';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -48,6 +50,15 @@ final routerProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     initialLocation: AppRoutes.splash,
+    errorBuilder: (context, state) => Scaffold(
+      appBar: AppBar(title: const Text('Sayfa bulunamadı')),
+      body: const Center(
+        child: Text(
+          'Bu sayfa mevcut değil.',
+          style: TextStyle(fontFamily: 'Inter', fontSize: 16),
+        ),
+      ),
+    ),
     redirect: (context, state) {
       final isLoggedIn = authState.valueOrNull?.isLoggedIn ?? false;
       final isProfileComplete = authState.valueOrNull?.isProfileComplete ?? false;
@@ -153,6 +164,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           final pt = state.extra as PhysiotherapistModel;
           return PtDetailScreen(pt: pt);
         },
+      ),
+      GoRoute(
+        path: AppRoutes.quickExercise,
+        builder: (context, state) => const QuickExerciseScreen(),
       ),
       GoRoute(
         path: AppRoutes.messaging,

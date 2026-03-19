@@ -8,6 +8,7 @@ import '../../providers/auth_provider.dart';
 import '../library/library_screen.dart';
 import '../progress/progress_screen.dart';
 import '../program/program_screen.dart';
+import '../../providers/quick_exercise_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -196,6 +197,10 @@ class _HomeTab extends ConsumerWidget {
             ),
             const SizedBox(height: 20),
 
+            // Hızlı Egzersiz card
+            _QuickExerciseCard(),
+            const SizedBox(height: 16),
+
             // Quota card
             if (!isPremium)
               Container(
@@ -306,6 +311,85 @@ class _HomeTab extends ConsumerWidget {
             const SizedBox(height: 12),
 
             const _EmptyAnalysisState(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Quick Exercise Card ──────────────────────────────────────────────────────
+
+class _QuickExerciseCard extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(quickExerciseProvider);
+    final areaLabel = getTodayAreaLabel();
+    final isDone = state.isDoneToday;
+
+    return GestureDetector(
+      onTap: isDone ? null : () => context.push(AppRoutes.quickExercise),
+      child: Container(
+        padding: const EdgeInsets.all(AppDimensions.paddingL),
+        decoration: BoxDecoration(
+          color: isDone
+              ? AppColors.success.withValues(alpha: 0.08)
+              : AppColors.secondary.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+          border: Border.all(
+            color: isDone
+                ? AppColors.success.withValues(alpha: 0.3)
+                : AppColors.secondary.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: isDone
+                    ? AppColors.success.withValues(alpha: 0.15)
+                    : AppColors.secondary.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                isDone ? Icons.check_circle : Icons.fitness_center,
+                color: isDone ? AppColors.success : AppColors.secondary,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isDone ? 'Bugünkü Egzersiz Tamamlandı!' : 'Bugünün Hızlı Egzersizi',
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: isDone ? AppColors.success : AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    isDone
+                        ? 'Yarın $areaLabel egzersizleri seni bekliyor'
+                        : '$areaLabel · 3 egzersiz · ~5 dakika',
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (!isDone)
+              const Icon(Icons.chevron_right,
+                  color: AppColors.secondary, size: 20),
           ],
         ),
       ),

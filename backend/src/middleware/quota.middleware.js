@@ -2,33 +2,64 @@
 
 const admin = require('../config/firebase');
 const logger = require('../config/logger');
+const FirestorePaths = require('../config/firestore_paths');
 
-const DAILY_LIMIT = 3;
+const DAILY_LIMIT = 1;
 
 /**
- * Server-side daily quota check.
- * Firestore path: dailyUsage/{uid}/{YYYY-MM-DD}  →  { count: N }
- * Free users: max 3 analyses per day.
- * Returns 429 if limit exceeded, otherwise increments counter and calls next().
+ * Server-side daily quota check — session ID based.
+ *
+ * Firestore path: dailyUsage/{uid}/days/{YYYY-MM-DD}
+ *   → { count: N, sessions: ['uuid1', 'uuid2', ...] }
+ *
+ * Logic:
+ *   - Client sends a `sessionId` (UUID v4) generated once per analysis session.
+ *   - Same sessionId on subsequent messages in the same conversation → pass through.
+ *   - New sessionId → check count against DAILY_LIMIT, block if exceeded.
+ *
+ * This replaces the insecure `messages.length > 1` bypass that allowed
+ * any client to skip quota by sending a pre-filled conversation history.
  */
 async function quotaMiddleware(req, res, next) {
   const uid = req.user?.uid;
   if (!uid) return res.status(401).json({ error: 'Kimlik doğrulaması gerekli.' });
 
+  const sessionId = req.body?.sessionId;
+
+  // sessionId zorunlu — UUID v4 formatı zorunlu
+  const UUID_V4_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!sessionId || typeof sessionId !== 'string' || !UUID_V4_RE.test(sessionId)) {
+    return res.status(400).json({ error: 'Geçerli bir oturum kimliği (sessionId) gereklidir.' });
+  }
+
   const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-  const docRef = admin.firestore().collection('dailyUsage').doc(uid).collection('days').doc(today);
+  const docRef = admin.firestore().doc(FirestorePaths.dailyUsage(uid, today));
 
   try {
     const result = await admin.firestore().runTransaction(async (tx) => {
       const snap = await tx.get(docRef);
-      const current = snap.exists ? (snap.data().count ?? 0) : 0;
+      const data = snap.exists ? snap.data() : { count: 0, sessions: [] };
+      const sessions = Array.isArray(data.sessions) ? data.sessions : [];
 
-      if (current >= DAILY_LIMIT) {
-        return { blocked: true, count: current };
+      // Aynı oturum devam ediyor — quota saymadan geçir
+      if (sessions.includes(sessionId)) {
+        return { blocked: false, existing: true, count: data.count ?? 0 };
       }
 
-      tx.set(docRef, { count: current + 1, updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
-      return { blocked: false, count: current + 1 };
+      // Yeni oturum — limit kontrolü
+      const count = data.count ?? 0;
+      if (count >= DAILY_LIMIT) {
+        return { blocked: true, count };
+      }
+
+      // Yeni oturum, limit altında — kaydet
+      tx.set(docRef, {
+        count: count + 1,
+        sessions: [...sessions, sessionId],
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+
+      return { blocked: false, existing: false, count: count + 1 };
     });
 
     if (result.blocked) {
@@ -43,8 +74,9 @@ async function quotaMiddleware(req, res, next) {
     next();
   } catch (err) {
     logger.error('[Quota] Firestore hatası', { message: err.message });
-    // Quota check başarısız olursa isteği engelleme, geçir
-    next();
+    return res.status(503).json({
+      error: 'Servis geçici olarak kullanılamıyor. Lütfen tekrar deneyin.',
+    });
   }
 }
 

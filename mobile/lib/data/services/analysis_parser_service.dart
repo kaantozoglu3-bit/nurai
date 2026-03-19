@@ -1,12 +1,17 @@
+import 'package:flutter/foundation.dart' show debugPrint;
 import '../models/analysis_model.dart';
 
 /// Parses raw AI message text into structured data.
 class AnalysisParserService {
+  static const int _maxCauses = 5;
   /// Parses "YOUTUBE_EGZERSIZLER: egz1 | egz2 | egz3" from AI message.
   static List<String> parseExercises(String aiMessage) {
     final regex = RegExp(r'YOUTUBE_EGZERSIZLER:\s*(.+)', caseSensitive: false);
     final match = regex.firstMatch(aiMessage);
-    if (match == null) return [];
+    if (match == null) {
+      debugPrint('[AnalysisParser] YOUTUBE_EGZERSIZLER etiketi bulunamadı — YouTube videosu gösterilmeyecek');
+      return [];
+    }
     return match
         .group(1)!
         .split('|')
@@ -39,7 +44,7 @@ class AnalysisParserService {
             .replaceAll(RegExp(r'^[•\-*\d.)]+\s*'), '')
             .replaceAll(RegExp(r'\*\*|__'), '')
             .trim();
-        if (cause.isNotEmpty && causes.length < 5) causes.add(cause);
+        if (cause.isNotEmpty && causes.length < _maxCauses) causes.add(cause);
       }
     }
     return causes;

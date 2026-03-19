@@ -1,11 +1,29 @@
 'use strict';
 
+const logger = require('../config/logger');
+
 // YouTube Data API v3 — no SDK needed, just fetch
 const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
 
 // In-memory cache: key → { data, expiresAt }
 const _cache = new Map();
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+
+// Circuit breaker: block calls for 1 hour after quota exhaustion
+let _circuitOpenUntil = 0;
+const CIRCUIT_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
+
+function _isCircuitOpen() {
+  return Date.now() < _circuitOpenUntil;
+}
+
+function _tripCircuit() {
+  _circuitOpenUntil = Date.now() + CIRCUIT_COOLDOWN_MS;
+  logger.error('[YouTube] Kota hatası — devre 1 saat kapatılıyor');
+}
+const YOUTUBE_MAX_RESULTS = 6;
+const YOUTUBE_EXERCISE_MAX_RESULTS = 2;
+const YOUTUBE_SPORTS_CATEGORY_ID = '17';
 
 // Body area → Turkish search query mapping
 const AREA_QUERIES = {
@@ -36,7 +54,7 @@ const AREA_QUERIES = {
  */
 async function searchVideos(bodyArea, query) {
   const searchQuery = query ?? AREA_QUERIES[bodyArea] ?? `${bodyArea} egzersiz fizyoterapi`;
-  const cacheKey = searchQuery;
+  const cacheKey = `${bodyArea}:${searchQuery}`;
 
   // Return cached result if fresh
   const cached = _cache.get(cacheKey);
@@ -44,12 +62,18 @@ async function searchVideos(bodyArea, query) {
     return cached.data;
   }
 
+  // Circuit breaker: quota exhausted recently
+  if (_isCircuitOpen()) {
+    logger.warn('[YouTube] Devre açık — cache dönülüyor veya boş liste');
+    return [];
+  }
+
   const params = new URLSearchParams({
     part: 'snippet',
     q: searchQuery,
     type: 'video',
-    videoCategoryId: '17', // Sports
-    maxResults: '6',
+    videoCategoryId: YOUTUBE_SPORTS_CATEGORY_ID,
+    maxResults: String(YOUTUBE_MAX_RESULTS),
     relevanceLanguage: 'tr',
     regionCode: 'TR',
     safeSearch: 'strict',
@@ -60,6 +84,8 @@ async function searchVideos(bodyArea, query) {
   const searchRes = await fetch(searchUrl);
   if (!searchRes.ok) {
     const err = await searchRes.text();
+    // 403 = quota exceeded → trip circuit breaker
+    if (searchRes.status === 403) _tripCircuit();
     throw new Error(`YouTube search failed: ${searchRes.status} ${err}`);
   }
   const searchData = await searchRes.json();
@@ -142,7 +168,7 @@ async function searchVideosByExercises(exerciseNames) {
         part: 'snippet',
         q: query,
         type: 'video',
-        maxResults: '2',
+        maxResults: String(YOUTUBE_EXERCISE_MAX_RESULTS),
         relevanceLanguage: 'tr',
         regionCode: 'TR',
         safeSearch: 'strict',
@@ -191,8 +217,8 @@ async function searchVideosByExercises(exerciseNames) {
       results.push(...videos.slice(0, 2));
 
       if (results.length >= 6) break;
-    } catch (_) {
-      // skip failed exercise search, continue with next
+    } catch (e) {
+      logger.warn('[YouTube] Egzersiz araması başarısız', { exercise: name, error: e.message });
     }
   }
 

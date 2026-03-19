@@ -5,16 +5,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 
 class ApiService {
-  // Web'de localhost, fiziksel cihazda yerel ağ IP'si kullan
-  static String get baseUrl {
-    if (kIsWeb) return 'http://localhost:3000';
-    // Android emülatör için: http://10.0.2.2:3000
-    return 'http://192.168.1.143:3000';
-  }
+  static const String _productionUrl = 'https://nuraibackend-production.up.railway.app';
+
+  static String get baseUrl => _productionUrl;
 
   // YouTube sorguları için istemci tarafı önbellek (1 saatlik TTL)
   static final Map<String, _CacheEntry<List<Map<String, dynamic>>>> _youtubeCache = {};
-  static const Duration _youtubeCacheTtl = Duration(hours: 1);
+  static const Duration _youtubeCacheTtl = Duration(hours: 24);
 
   static Dio get _dio => Dio(BaseOptions(
     baseUrl: baseUrl,
@@ -89,13 +86,14 @@ class ApiService {
     required Map<String, dynamic> profile,
     required String bodyArea,
     required List<Map<String, String>> messages,
+    required String sessionId,
   }) async {
     final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
     if (idToken == null) throw Exception('Kullanıcı oturumu bulunamadı.');
 
     final response = await _jsonDio.post<Map<String, dynamic>>(
       '/api/v1/analysis/chat-sync',
-      data: {'profile': profile, 'bodyArea': bodyArea, 'messages': messages},
+      data: {'profile': profile, 'bodyArea': bodyArea, 'messages': messages, 'sessionId': sessionId},
       options: Options(headers: {'Authorization': 'Bearer $idToken'}),
     );
 
@@ -107,6 +105,7 @@ class ApiService {
     required Map<String, dynamic> profile,
     required String bodyArea,
     required List<Map<String, String>> messages,
+    required String sessionId,
   }) async* {
     // Web: streaming desteklenmiyor, sync endpoint kullan
     if (kIsWeb) {
@@ -114,6 +113,7 @@ class ApiService {
         profile: profile,
         bodyArea: bodyArea,
         messages: messages,
+        sessionId: sessionId,
       );
       // Simüle streaming: kelime kelime yield et
       final words = content.split(' ');
@@ -136,46 +136,50 @@ class ApiService {
         'profile': profile,
         'bodyArea': bodyArea,
         'messages': messages,
+        'sessionId': sessionId,
       },
       options: Options(
         headers: {'Authorization': 'Bearer $idToken'},
         responseType: ResponseType.stream,
       ),
     ).then((response) async {
-      final stream = response.data!.stream;
-      final buffer = StringBuffer();
+      try {
+        final stream = response.data!.stream;
+        final buffer = StringBuffer();
 
-      await for (final bytes in stream) {
-        buffer.write(utf8.decode(bytes));
-        final raw = buffer.toString();
-        final lines = raw.split('\n');
+        await for (final bytes in stream) {
+          buffer.write(utf8.decode(bytes));
+          final raw = buffer.toString();
+          final lines = raw.split('\n');
 
-        buffer.clear();
-        buffer.write(lines.last);
+          buffer.clear();
+          buffer.write(lines.last);
 
-        for (int i = 0; i < lines.length - 1; i++) {
-          final line = lines[i].trim();
-          if (!line.startsWith('data: ')) continue;
-          final data = line.substring(6);
-          if (data == '[DONE]') break;
+          for (int i = 0; i < lines.length - 1; i++) {
+            final line = lines[i].trim();
+            if (!line.startsWith('data: ')) continue;
+            final data = line.substring(6);
+            if (data == '[DONE]') break;
 
-          try {
-            final json = jsonDecode(data) as Map<String, dynamic>;
-            if (json['content'] != null) {
-              controller.add(json['content'] as String);
+            try {
+              final json = jsonDecode(data) as Map<String, dynamic>;
+              if (json['content'] != null) {
+                controller.add(json['content'] as String);
+              }
+              if (json['error'] != null) {
+                controller.addError(Exception(json['error']));
+              }
+            } catch (e) {
+              debugPrint('[ApiService] SSE satırı ayrıştırılamadı: $e | veri: $data');
             }
-            if (json['error'] != null) {
-              controller.addError(Exception(json['error']));
-            }
-          } catch (e) {
-            debugPrint('[ApiService] SSE satırı ayrıştırılamadı: $e | veri: $data');
           }
         }
+      } finally {
+        if (!controller.isClosed) controller.close();
       }
-      controller.close();
     }).catchError((Object e) {
       controller.addError(e);
-      controller.close();
+      if (!controller.isClosed) controller.close();
     });
 
     yield* controller.stream;
