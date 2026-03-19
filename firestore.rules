@@ -1,0 +1,35 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── User profiles ───────────────────────────────────────────────────────
+    // user_profiles/{uid} — sadece kendi kullanıcısı okuyabilir/yazabilir
+    match /user_profiles/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ─── Analysis history ─────────────────────────────────────────────────────
+    // users/{uid}/analyses/{docId}
+    match /users/{uid}/analyses/{docId} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ─── Daily quota usage ────────────────────────────────────────────────────
+    // dailyUsage/{uid}/days/{date}
+    match /dailyUsage/{uid}/days/{date} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ─── Pain logs ────────────────────────────────────────────────────────────
+    // users/{uid}/painLogs/{date}
+    match /users/{uid}/painLogs/{date} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ─── Varsayılan: her şeyi reddet ──────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -13,6 +13,7 @@ dependencies:
   # Firebase
   firebase_core: ^3.13.1
   firebase_auth: ^5.5.2
+  cloud_firestore: ^5.6.6
   google_sign_in: ^6.2.1
 
   # State Management
@@ -41,15 +42,61 @@ dependencies:
   intl: ^0.19.0
   equatable: ^2.0.5
 
+  # Share & Links
+  share_plus: ^10.1.4
+  url_launcher: ^6.3.1
+
+  # Notifications
+  flutter_local_notifications: ^17.2.4
+  timezone: ^0.9.4
+
+  # Charts
+  fl_chart: ^0.68.0
+
+  # Analytics
+  firebase_analytics: ^11.4.6
+
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.3
+  flutter_native_splash: ^2.4.4
 
 flutter:
   uses-material-design: true
   assets:
     - assets/images/
     - assets/svg/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: 'assets/images/app_icon.png'
+  adaptive_icon_background: '#2563EB'
+  adaptive_icon_foreground: 'assets/images/app_icon.png'
+  web:
+    generate: true
+    image_path: 'assets/images/app_icon.png'
+    background_color: '#2563EB'
+    theme_color: '#2563EB'
+  windows:
+    generate: true
+    image_path: 'assets/images/app_icon.png'
+    icon_size: 48
+  macos:
+    generate: true
+    image_path: 'assets/images/app_icon.png'
+
+flutter_native_splash:
+  color: '#2563EB'
+  color_dark: '#1D4ED8'
+  image: assets/images/app_icon.png
+  android: true
+  ios: true
+  web: false
+  android_12:
+    color: '#2563EB'
+    image: assets/images/app_icon.png

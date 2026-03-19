@@ -6,6 +6,8 @@ import '../../../core/constants/app_dimensions.dart';
 import '../../../core/router/app_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/app_button.dart';
+import '../library/library_screen.dart';
+import '../progress/progress_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -30,7 +32,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           _HomeTab(firstName: firstName, user: user),
           const _ProgramTab(),
-          const _ProgressTab(),
+          const ProgressScreen(),
+          const LibraryScreen(),
           const _ProfileTab(),
         ],
       ),
@@ -52,6 +55,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             icon: Icon(Icons.bar_chart_outlined),
             activeIcon: Icon(Icons.bar_chart),
             label: 'İlerleme',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.menu_book_outlined),
+            activeIcon: Icon(Icons.menu_book),
+            label: 'Kütüphane',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
@@ -223,8 +231,8 @@ class _HomeTab extends ConsumerWidget {
                         children: [
                           Text(
                             remaining > 0
-                                ? 'Bugün $remaining analiz hakkın var'
-                                : 'Günlük analiz hakkın doldu',
+                                ? 'Bugün 1 analiz hakkın var'
+                                : 'Günlük 1 analiz hakkın doldu',
                             style: const TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 14,
@@ -236,7 +244,7 @@ class _HomeTab extends ConsumerWidget {
                           ClipRRect(
                             borderRadius: BorderRadius.circular(4),
                             child: LinearProgressIndicator(
-                              value: remaining / 3,
+                              value: remaining > 0 ? 1.0 : 0.0,
                               backgroundColor: AppColors.border,
                               valueColor: AlwaysStoppedAnimation<Color>(
                                 remaining > 0
@@ -429,58 +437,6 @@ class _ProgramTab extends StatelessWidget {
   }
 }
 
-class _ProgressTab extends StatelessWidget {
-  const _ProgressTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('İlerleme Takibi'),
-        backgroundColor: AppColors.surface,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingXXL),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.bar_chart,
-                  size: 64, color: AppColors.primary.withValues(alpha: 0.4)),
-              const SizedBox(height: 16),
-              const Text(
-                'Premium Özellik',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'İlerleme grafikleri ve ağrı günlüğü için Premium\'a geç.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: 24),
-              AppButton(
-                label: 'Premium\'a Geç',
-                onPressed: () => context.go(AppRoutes.paywall),
-                fullWidth: false,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class _ProfileTab extends ConsumerWidget {
   const _ProfileTab();
