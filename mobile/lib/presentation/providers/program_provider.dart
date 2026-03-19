@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/weekly_program_model.dart';
 import '../../data/services/history_service.dart';
 import '../../data/services/pain_log_service.dart';
+import '../../data/services/profile_service.dart';
 import '../../data/services/program_service.dart';
 import 'auth_provider.dart';
 
@@ -125,8 +126,9 @@ final programProvider =
 
 // ─── Fitness level helper ─────────────────────────────────────────────────────
 
-final fitnessLevelProvider = Provider.autoDispose<String>((ref) {
+/// Reads fitnessLevel from encrypted profile storage.
+/// Defaults to 'beginner' if not set.
+final fitnessLevelProvider = FutureProvider.autoDispose<String>((ref) async {
   ref.watch(currentUserProvider);
-  // fitnessLevel is stored in user profile — default to 'beginner'
-  return 'beginner';
+  return ProfileService.loadFitnessLevel();
 });

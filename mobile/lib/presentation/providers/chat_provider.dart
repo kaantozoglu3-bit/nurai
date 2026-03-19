@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart' show debugPrint;
@@ -10,6 +9,7 @@ import '../../data/models/analysis_model.dart';
 import '../../data/services/analysis_parser_service.dart';
 import '../../data/services/api_service.dart';
 import '../../data/services/history_service.dart';
+import '../../data/services/profile_service.dart';
 import '../../data/services/quota_service.dart';
 import 'history_provider.dart';
 
@@ -118,10 +118,27 @@ String generateSessionId() {
       '-${hex.substring(20)}';
 }
 
+// ─── SessionId helpers ────────────────────────────────────────────────────────
+
+String _sessionKey(String bodyArea) {
+  final now = DateTime.now();
+  return 'session_${bodyArea}_${now.year}-${now.month}-${now.day}';
+}
+
+Future<String> _loadOrCreateSessionId(String bodyArea) async {
+  final prefs = await SharedPreferences.getInstance();
+  final key = _sessionKey(bodyArea);
+  final existing = prefs.getString(key);
+  if (existing != null) return existing;
+  final fresh = generateSessionId();
+  await prefs.setString(key, fresh);
+  return fresh;
+}
+
 // ─── ChatNotifier ─────────────────────────────────────────────────────────────
 
 class ChatNotifier extends AutoDisposeFamilyNotifier<ChatState, String> {
-  final String _sessionId = generateSessionId();
+  String _sessionId = '';
   final List<Map<String, String>> _history = [];
   final List<ChatMessage> _messages = [];
   Map<String, dynamic> _savedProfile = {};
@@ -140,16 +157,13 @@ class ChatNotifier extends AutoDisposeFamilyNotifier<ChatState, String> {
   // ── Initialisation ──────────────────────────────────────────────────────────
 
   Future<void> _initialize() async {
+    _sessionId = await _loadOrCreateSessionId(_bodyArea);
     await _loadProfile();
     await _startConversation();
   }
 
   Future<void> _loadProfile() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString('userProfile');
-    if (raw != null) {
-      _savedProfile = jsonDecode(raw) as Map<String, dynamic>;
-    }
+    _savedProfile = await ProfileService.loadProfile();
   }
 
   Map<String, dynamic> _buildProfile() {

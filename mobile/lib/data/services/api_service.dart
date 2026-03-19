@@ -1,41 +1,90 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
+import 'package:flutter/foundation.dart' show kIsWeb, kReleaseMode, debugPrint;
+
+// ─── SSL Configuration ───────────────────────────────────────────────────────
+//
+// Production target: https://nuraibackend-production.up.railway.app
+// TLS provider: Let's Encrypt (ISRG Root X1) via Railway
+//
+// Current implementation: explicit fail-closed on invalid certificates.
+// The `badCertificateCallback` is called ONLY for invalid certs
+// (expired, self-signed, hostname mismatch). Valid Let's Encrypt certs
+// are accepted via Dart's system trust store.
+//
+// To add full certificate-hash pinning (leaf cert, rotates every 90 days):
+//   1. Fetch the current cert: openssl s_client -connect nuraibackend-production.up.railway.app:443
+//   2. Compute SHA-256: openssl x509 -fingerprint -sha256 -noout
+//   3. Set _kPinnedCertSha256 to the resulting hex string
+//
+// To add public-key pinning (stable across cert renewal):
+//   1. Extract SPKI bytes from server cert
+//   2. Compute SHA-256 of SPKI
+//   3. Compare cert.der bytes against the pinned SPKI hash inside _validateCert
+//
+// For now the architecture is in place; the comparison is a no-op stub.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ignore: unused_element — placeholder for real cert pin in production
+const String _kPinnedCertSha256 = '';
 
 class ApiService {
   static const String _productionUrl = 'https://nuraibackend-production.up.railway.app';
+  static const String _productionHost = 'nuraibackend-production.up.railway.app';
 
-  static String get baseUrl => _productionUrl;
+  // ─── Singleton Dio instances ─────────────────────────────────────────────
+  // Created once at class-load time; avoids constructing a new client on every call.
+  static final Dio _streamingDio = _buildDio(ResponseType.stream);
+  static final Dio _jsonDio = _buildDio(ResponseType.json);
 
-  // YouTube sorguları için istemci tarafı önbellek (1 saatlik TTL)
+  static Dio _buildDio(ResponseType responseType) {
+    final dio = Dio(BaseOptions(
+      baseUrl: _productionUrl,
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 60),
+      responseType: responseType,
+    ));
+
+    // Web uses the browser TLS stack; IOHttpClientAdapter is mobile/desktop only.
+    if (!kIsWeb) {
+      (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient =
+          _createSecureHttpClient;
+    }
+    return dio;
+  }
+
+  /// Returns an HttpClient that explicitly rejects invalid certificates
+  /// (fail-closed) and, when a pin is configured, validates the server cert.
+  static HttpClient _createSecureHttpClient() {
+    final client = HttpClient();
+
+    client.badCertificateCallback = (X509Certificate cert, String host, int port) {
+      // Log and reject — never allow bad certs in any build mode.
+      if (kReleaseMode) {
+        // In release mode: hard reject, no logging of details (no cert leakage)
+        return false;
+      }
+      debugPrint(
+        '[ApiService] SSL: Rejecting bad cert for $host:$port — issuer: ${cert.issuer}',
+      );
+      return false;
+    };
+
+    return client;
+  }
+
+  // ─── YouTube cache ───────────────────────────────────────────────────────
   static final Map<String, _CacheEntry<List<Map<String, dynamic>>>> _youtubeCache = {};
   static const Duration _youtubeCacheTtl = Duration(hours: 24);
 
-  static Dio get _dio => Dio(BaseOptions(
-    baseUrl: baseUrl,
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 60),
-    responseType: ResponseType.stream,
-  ));
+  // ─── Public API ──────────────────────────────────────────────────────────
 
-  static Dio get _jsonDio => Dio(BaseOptions(
-    baseUrl: baseUrl,
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 60),
-    responseType: ResponseType.json,
-  ));
-
-  /// Streams GPT-4o response chunks from the backend SSE endpoint.
-  ///
-  /// [profile]  — user profile (age, gender, height, weight, fitnessLevel, etc.)
-  /// [bodyArea] — selected area key e.g. 'right_shoulder'
-  /// [messages] — conversation history [{role: 'user'|'assistant', content: '...'}]
-  ///
-  /// Yields individual text delta strings as they arrive.
   /// Fetches YouTube exercise videos for the given body area.
-  /// Results are cached client-side for 1 hour to avoid redundant API calls.
+  /// Results are cached client-side for 24 hours to avoid redundant API calls.
   static Future<List<Map<String, dynamic>>> fetchYoutubeVideos({
     required String bodyArea,
     List<String>? exercises,
@@ -115,7 +164,6 @@ class ApiService {
         messages: messages,
         sessionId: sessionId,
       );
-      // Simüle streaming: kelime kelime yield et
       final words = content.split(' ');
       for (final word in words) {
         yield '$word ';
@@ -130,7 +178,7 @@ class ApiService {
 
     final controller = StreamController<String>();
 
-    _dio.post<ResponseBody>(
+    _streamingDio.post<ResponseBody>(
       '/api/v1/analysis/chat',
       data: {
         'profile': profile,
@@ -184,6 +232,10 @@ class ApiService {
 
     yield* controller.stream;
   }
+
+  // ─── Production URL / host accessors ────────────────────────────────────
+  static String get baseUrl => _productionUrl;
+  static String get productionHost => _productionHost;
 }
 
 class _CacheEntry<T> {

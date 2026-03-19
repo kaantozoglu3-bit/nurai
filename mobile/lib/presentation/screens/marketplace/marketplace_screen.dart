@@ -178,16 +178,42 @@ class _PtListTab extends ConsumerWidget {
                   )
                 : ListView.separated(
                     padding: const EdgeInsets.all(AppDimensions.paddingL),
-                    itemCount: state.filtered.length,
+                    itemCount: state.filtered.length +
+                        (state.hasMore ? 1 : 0),
                     separatorBuilder: (context, index) =>
                         const SizedBox(height: 12),
-                    itemBuilder: (context, index) => _PtCard(
-                      pt: state.filtered[index],
-                      onTap: () => context.push(
-                        AppRoutes.ptDetail,
-                        extra: state.filtered[index],
-                      ),
-                    ),
+                    itemBuilder: (context, index) {
+                      if (index == state.filtered.length) {
+                        // Load-more footer
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Center(
+                            child: state.isLoadingMore
+                                ? const CircularProgressIndicator(
+                                    color: AppColors.primary)
+                                : TextButton(
+                                    onPressed: () => ref
+                                        .read(ptListProvider.notifier)
+                                        .loadMore(),
+                                    child: const Text(
+                                      'Daha Fazla Göster',
+                                      style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                  ),
+                          ),
+                        );
+                      }
+                      return _PtCard(
+                        pt: state.filtered[index],
+                        onTap: () => context.push(
+                          AppRoutes.ptDetail,
+                          extra: state.filtered[index],
+                        ),
+                      );
+                    },
                   ),
           ),
         ],

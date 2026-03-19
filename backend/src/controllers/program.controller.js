@@ -25,8 +25,11 @@ async function generateProgramHandler(req, res) {
   if (typeof avgPainScore !== 'number' || avgPainScore < 1 || avgPainScore > 10) {
     return res.status(400).json({ error: 'avgPainScore must be a number between 1 and 10.' });
   }
-  if (!fitnessLevel || typeof fitnessLevel !== 'string') {
-    return res.status(400).json({ error: 'fitnessLevel string required.' });
+  const VALID_FITNESS_LEVELS = ['beginner', 'intermediate', 'advanced'];
+  if (!fitnessLevel || !VALID_FITNESS_LEVELS.includes(fitnessLevel)) {
+    return res.status(400).json({
+      error: `fitnessLevel must be one of: ${VALID_FITNESS_LEVELS.join(', ')}.`,
+    });
   }
 
   logger.info('[ProgramController] Generate request', { uid, targetAreas, avgPainScore });

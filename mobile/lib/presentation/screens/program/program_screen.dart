@@ -247,6 +247,8 @@ class _EmptyProgramView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final fitnessLevel =
+        ref.watch(fitnessLevelProvider).value ?? 'beginner';
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -313,7 +315,7 @@ class _EmptyProgramView extends ConsumerWidget {
               const SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: () =>
-                    ref.read(programProvider.notifier).generate('beginner'),
+                    ref.read(programProvider.notifier).generate(fitnessLevel),
                 icon: const Icon(Icons.auto_awesome, color: Colors.white),
                 label: const Text(
                   'Program Oluştur',
@@ -360,6 +362,8 @@ class _ProgramView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final fitnessLevel =
+        ref.watch(fitnessLevelProvider).value ?? 'beginner';
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -369,7 +373,7 @@ class _ProgramView extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.refresh, color: AppColors.textSecondary),
             tooltip: 'Yeniden oluştur',
-            onPressed: () => _showRegenerateDialog(context, ref),
+            onPressed: () => _showRegenerateDialog(context, ref, fitnessLevel),
           ),
         ],
         bottom: TabBar(
@@ -413,7 +417,8 @@ class _ProgramView extends ConsumerWidget {
     );
   }
 
-  void _showRegenerateDialog(BuildContext context, WidgetRef ref) {
+  void _showRegenerateDialog(
+      BuildContext context, WidgetRef ref, String fitnessLevel) {
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -431,7 +436,7 @@ class _ProgramView extends ConsumerWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              ref.read(programProvider.notifier).generate('beginner');
+              ref.read(programProvider.notifier).generate(fitnessLevel);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,

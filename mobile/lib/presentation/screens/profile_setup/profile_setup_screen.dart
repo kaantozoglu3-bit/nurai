@@ -1,12 +1,11 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/router/app_router.dart';
 import '../../../data/services/api_service.dart';
+import '../../../data/services/profile_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/app_button.dart';
 import 'steps/step1_basic_info.dart';
@@ -57,24 +56,8 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   }
 
   Future<void> _saveProfile() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    // JSON blob (chat_screen.dart için)
-    await prefs.setString('userProfile', jsonEncode(_profileData));
-
-    // Individual keys
-    await prefs.setInt('age', (_profileData['age'] as num?)?.toInt() ?? 0);
-    await prefs.setString('gender', _profileData['gender']?.toString() ?? '');
-    await prefs.setInt('height_cm', (_profileData['height'] as num?)?.toInt() ?? 0);
-    await prefs.setInt('weight_kg', (_profileData['weight'] as num?)?.toInt() ?? 0);
-    await prefs.setString('fitness_level', _profileData['fitnessLevel']?.toString() ?? '');
-    await prefs.setStringList(
-      'past_injuries',
-      List<String>.from(_profileData['injuries'] as List? ?? []),
-    );
-    await prefs.setString('other_injury', _profileData['otherInjury']?.toString() ?? '');
-    await prefs.setString('goal', _profileData['goal']?.toString() ?? '');
-    await prefs.setBool('isProfileComplete', true);
+    // Encrypt and persist to secure storage.
+    await ProfileService.saveProfile(_profileData);
 
     // Backend'e gönder (hata olursa yerel kayıt geçerli)
     try {

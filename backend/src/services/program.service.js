@@ -97,12 +97,23 @@ async function generateProgram(targetAreas, avgPainScore, fitnessLevel) {
     fitnessLevel,
   });
 
-  const response = await client.chat.completions.create({
-    model: MODEL,
-    messages: [{ role: 'user', content: prompt }],
-    max_tokens: MAX_TOKENS,
-    temperature: TEMPERATURE,
-  });
+  const abort = new AbortController();
+  const timeoutHandle = setTimeout(() => abort.abort(), 90_000);
+
+  let response;
+  try {
+    response = await client.chat.completions.create(
+      {
+        model: MODEL,
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: MAX_TOKENS,
+        temperature: TEMPERATURE,
+      },
+      { signal: abort.signal },
+    );
+  } finally {
+    clearTimeout(timeoutHandle);
+  }
 
   const content = response.choices[0]?.message?.content ?? '';
 
