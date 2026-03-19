@@ -5,9 +5,9 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/router/app_router.dart';
 import '../../providers/auth_provider.dart';
-import '../../widgets/app_button.dart';
 import '../library/library_screen.dart';
 import '../progress/progress_screen.dart';
+import '../program/program_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -31,7 +31,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         index: _selectedIndex,
         children: [
           _HomeTab(firstName: firstName, user: user),
-          const _ProgramTab(),
+          const ProgramScreen(),
           const ProgressScreen(),
           const LibraryScreen(),
           const _ProfileTab(),
@@ -383,59 +383,6 @@ class _EmptyAnalysisState extends StatelessWidget {
 }
 
 
-class _ProgramTab extends StatelessWidget {
-  const _ProgramTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Egzersiz Programım'),
-        backgroundColor: AppColors.surface,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingXXL),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.lock_outline,
-                  size: 64, color: AppColors.primary.withValues(alpha: 0.4)),
-              const SizedBox(height: 16),
-              const Text(
-                'Premium Özellik',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Kişiselleştirilmiş haftalık egzersiz programı oluşturmak için Premium\'a geç.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: 24),
-              AppButton(
-                label: 'Premium\'a Geç',
-                onPressed: () => context.go(AppRoutes.paywall),
-                fullWidth: false,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 
 class _ProfileTab extends ConsumerWidget {

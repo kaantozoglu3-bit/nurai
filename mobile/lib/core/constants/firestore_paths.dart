@@ -20,4 +20,7 @@ class FirestorePaths {
 
   /// users/{uid}/painLogs (collection)
   static String painLogs(String uid) => 'users/$uid/painLogs';
+
+  /// users/{uid}/program/current (single document)
+  static String program(String uid) => 'users/$uid/program/current';
 }

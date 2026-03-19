@@ -8,11 +8,16 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 
+const logger = require('./config/logger');
 const analysisRoutes = require('./routes/analysis.routes');
 const youtubeRoutes = require('./routes/youtube.routes');
 const userRoutes = require('./routes/user.routes');
+const programRoutes = require('./routes/program.routes');
 
 const app = express();
+
+// Trust Railway's reverse proxy so rate-limit sees real client IPs
+app.set('trust proxy', 1);
 
 // ─── Security ─────────────────────────────────────────────────────────────────
 app.use(helmet());
@@ -21,7 +26,10 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? '').split(',').map(s => s
 app.use(cors({
   origin: (origin, cb) => {
     // Allow requests with no origin (mobile apps, Postman)
-    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    // Allow any localhost port for Flutter web development
+    if (!origin || allowedOrigins.includes(origin) || /^http:\/\/localhost(:\d+)?$/.test(origin)) {
+      return cb(null, true);
+    }
     cb(new Error(`CORS: origin ${origin} not allowed`));
   },
   credentials: true,
@@ -52,13 +60,14 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }));
 app.use('/api/v1/analysis', analysisRoutes);
 app.use('/api/v1/youtube', youtubeRoutes);
 app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/program', programRoutes);
 
 // ─── 404 ──────────────────────────────────────────────────────────────────────
 app.use((req, res) => res.status(404).json({ error: 'Not found.' }));
 
 // ─── Error handler ────────────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
-  console.error(err);
+  logger.error('[App] Unhandled error', { message: err.message, stack: err.stack });
   res.status(500).json({ error: 'Internal server error.' });
 });
 
