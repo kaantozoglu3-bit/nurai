@@ -446,6 +446,12 @@ class _ProfileTab extends ConsumerWidget {
             onTap: () => context.go(AppRoutes.history),
           ),
           _ProfileTile(
+            icon: Icons.medical_services_outlined,
+            title: 'Fizyoterapist Bul',
+            subtitle: 'Uzman fizyoterapistlerle bağlan',
+            onTap: () => context.go(AppRoutes.marketplace),
+          ),
+          _ProfileTile(
             icon: Icons.star_outline,
             title: 'Premium\'a Geç',
             subtitle: 'Sınırsız analiz ve özellikler',

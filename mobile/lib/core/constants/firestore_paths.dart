@@ -23,4 +23,21 @@ class FirestorePaths {
 
   /// users/{uid}/program/current (single document)
   static String program(String uid) => 'users/$uid/program/current';
+
+  // ─── Marketplace ────────────────────────────────────────────────────────────
+
+  /// physiotherapists/{uid}
+  static String physiotherapist(String uid) => 'physiotherapists/$uid';
+
+  /// physiotherapists (collection)
+  static String physiotherapists = 'physiotherapists';
+
+  /// conversations/{convId}
+  static String conversation(String convId) => 'conversations/$convId';
+
+  /// conversations (collection)
+  static String conversations = 'conversations';
+
+  /// conversations/{convId}/messages
+  static String messages(String convId) => 'conversations/$convId/messages';
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../presentation/screens/splash/splash_screen.dart';
@@ -13,6 +14,12 @@ import '../../presentation/screens/video_player/video_player_screen.dart';
 import '../../presentation/screens/history/history_screen.dart';
 import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/paywall/paywall_screen.dart';
+import '../../presentation/screens/marketplace/marketplace_screen.dart';
+import '../../presentation/screens/marketplace/pt_registration_screen.dart';
+import '../../presentation/screens/marketplace/pt_detail_screen.dart';
+import '../../presentation/screens/marketplace/messaging_screen.dart';
+import '../../data/models/physiotherapist_model.dart';
+import '../../data/models/message_model.dart';
 import '../../presentation/providers/auth_provider.dart';
 
 class AppRoutes {
@@ -29,6 +36,10 @@ class AppRoutes {
   static const String history = '/history';
   static const String profile = '/profile';
   static const String paywall = '/paywall';
+  static const String marketplace = '/marketplace';
+  static const String ptRegistration = '/pt-registration';
+  static const String ptDetail = '/pt-detail';
+  static const String messaging = '/messaging';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -127,6 +138,44 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.paywall,
         builder: (context, state) => const PaywallScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.marketplace,
+        builder: (context, state) => const MarketplaceScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.ptRegistration,
+        builder: (context, state) => const PtRegistrationScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.ptDetail,
+        builder: (context, state) {
+          final pt = state.extra as PhysiotherapistModel;
+          return PtDetailScreen(pt: pt);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.messaging,
+        builder: (context, state) {
+          final extra = state.extra;
+          if (extra is Map<String, dynamic>) {
+            return MessagingScreen(
+              convId: extra['convId'] as String? ?? '',
+              ptName: extra['ptName'] as String? ?? '',
+              ptId: extra['ptId'] as String? ?? '',
+            );
+          }
+          if (extra is ConversationModel) {
+            return MessagingScreen(
+              convId: extra.id,
+              ptName: extra.ptName,
+              ptId: extra.ptId,
+            );
+          }
+          return const Scaffold(
+            body: Center(child: Text('Geçersiz konuşma')),
+          );
+        },
       ),
     ],
   );
