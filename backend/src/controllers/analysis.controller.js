@@ -42,9 +42,9 @@ async function chat(req, res) {
   if (error) {
     return res.status(400).json({ error: error.details[0].message });
   }
-  const { profile, bodyArea, messages } = value;
+  const { profile, bodyArea, messages, sessionId } = value;
   try {
-    await streamChatResponse({ profile: profile ?? {}, bodyArea, messages, res });
+    await streamChatResponse({ profile: profile ?? {}, bodyArea, messages, sessionId, res });
   } catch (err) {
     logger.error('[chat] Streaming error', { message: err.message });
     if (!res.headersSent) {
@@ -63,9 +63,9 @@ async function chatSync(req, res) {
   if (error) {
     return res.status(400).json({ error: error.details[0].message });
   }
-  const { profile, bodyArea, messages } = value;
+  const { profile, bodyArea, messages, sessionId } = value;
   try {
-    const content = await getChatResponse({ profile: profile ?? {}, bodyArea, messages });
+    const content = await getChatResponse({ profile: profile ?? {}, bodyArea, messages, sessionId });
     res.json({ content });
   } catch (err) {
     logger.error('[chatSync] error:', { message: err.message });

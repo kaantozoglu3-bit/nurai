@@ -122,7 +122,7 @@ function buildSystemPrompt(profile, bodyArea) {
     .replace('{fitnessLevel}', _sanitize(profile.fitnessLevel))
     .replace('{pastInjuries}', injuries)
     .replace('{goal}', _sanitize(profile.goal))
-    .replace('{bodyArea}', BODY_AREA_LABELS[bodyArea] ?? bodyArea);
+    .replaceAll('{bodyArea}', BODY_AREA_LABELS[bodyArea] ?? bodyArea);
 }
 
 // ─── Streaming Chat ───────────────────────────────────────────────────────────

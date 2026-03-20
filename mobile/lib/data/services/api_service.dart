@@ -6,7 +6,7 @@ import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart' show kIsWeb, kReleaseMode, debugPrint, kDebugMode;
+import 'package:flutter/foundation.dart' show kIsWeb, debugPrint, kDebugMode;
 
 // ─── SSL / Certificate Pinning ───────────────────────────────────────────────
 //
@@ -83,8 +83,9 @@ class ApiService {
       // but it's still our key); all other scenarios are rejected fail-closed.
       if (_kPinnedCertSha256.isNotEmpty) {
         final pinMatch = _verifyCertPin(cert);
-        if (kReleaseMode) return pinMatch;
-        debugPrint('[ApiService] SSL: cert pin ${pinMatch ? "MATCHED" : "FAILED"} for $host:$port');
+        if (kDebugMode) {
+          debugPrint('[ApiService] SSL: cert pin ${pinMatch ? "MATCHED" : "FAILED"} for $host:$port');
+        }
         return pinMatch;
       }
       // No pin configured — reject (fail-closed).
