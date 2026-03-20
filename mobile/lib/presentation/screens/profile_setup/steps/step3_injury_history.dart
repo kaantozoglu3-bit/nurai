@@ -5,7 +5,7 @@ import '../../../widgets/app_text_field.dart';
 
 class Step3InjuryHistory extends StatelessWidget {
   final Map<String, dynamic> data;
-  final void Function(String key, dynamic value) onChanged;
+  final void Function(String key, Object? value) onChanged;
 
   const Step3InjuryHistory({
     super.key,

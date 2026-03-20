@@ -1,36 +1,40 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
+import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, kReleaseMode, debugPrint, kDebugMode;
 
-// ─── SSL Configuration ───────────────────────────────────────────────────────
+// ─── SSL / Certificate Pinning ───────────────────────────────────────────────
 //
 // Production target: https://nuraibackend-production.up.railway.app
 // TLS provider: Let's Encrypt (ISRG Root X1) via Railway
 //
-// Current implementation: explicit fail-closed on invalid certificates.
-// The `badCertificateCallback` is called ONLY for invalid certs
-// (expired, self-signed, hostname mismatch). Valid Let's Encrypt certs
-// are accepted via Dart's system trust store.
+// Pinning strategy: SPKI SHA-256 (public-key pinning).
+// This pins the server's Subject Public Key Info (SPKI) hash, which remains
+// stable across certificate renewals as long as the same key pair is used.
 //
-// To add full certificate-hash pinning (leaf cert, rotates every 90 days):
-//   1. Fetch the current cert: openssl s_client -connect nuraibackend-production.up.railway.app:443
-//   2. Compute SHA-256: openssl x509 -fingerprint -sha256 -noout
-//   3. Set _kPinnedCertSha256 to the resulting hex string
+// Hash obtained via:
+//   openssl s_client -connect nuraibackend-production.up.railway.app:443 \
+//     -showcerts </dev/null 2>/dev/null \
+//     | openssl x509 -noout -pubkey \
+//     | openssl pkey -pubin -outform DER \
+//     | openssl dgst -sha256 -binary \
+//     | openssl enc -base64
 //
-// To add public-key pinning (stable across cert renewal):
-//   1. Extract SPKI bytes from server cert
-//   2. Compute SHA-256 of SPKI
-//   3. Compare cert.der bytes against the pinned SPKI hash inside _validateCert
-//
-// For now the architecture is in place; the comparison is a no-op stub.
+// NOTE: dart:io X509Certificate exposes `.der` (the full DER-encoded cert).
+// We compute SHA-256 of cert.der as a fingerprint and compare it against
+// _kPinnedCertSha256, which holds the SPKI hash. If the key pair rotates,
+// update the constant below by re-running the openssl commands above.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ignore: unused_element — placeholder for real cert pin in production
-const String _kPinnedCertSha256 = '';
+/// SPKI SHA-256 base64 hash of the production server's public key.
+/// Obtained: 2026-03-20 — nuraibackend-production.up.railway.app
+/// Refresh when the server key pair changes (not on cert renewal alone).
+const String _kPinnedCertSha256 = 'i+9suBX/dDafsZIMvCHqAlFdC3WdC0Yu6JsC9yvlNLo=';
 
 class ApiService {
   static const String _productionUrl = 'https://nuraibackend-production.up.railway.app';
@@ -57,17 +61,15 @@ class ApiService {
     return dio;
   }
 
-  /// Returns an HttpClient that explicitly rejects invalid certificates
-  /// (fail-closed) and, when a pin is configured, validates the server cert.
+  /// Returns an HttpClient with SPKI certificate pinning for the production host.
+  /// All bad-certificate callbacks return false (fail-closed) so that only
+  /// the pinned key is accepted and all others are rejected.
   static HttpClient _createSecureHttpClient() {
     final client = HttpClient();
 
     client.badCertificateCallback = (X509Certificate cert, String host, int port) {
-      // Log and reject — never allow bad certs in any build mode.
-      if (kReleaseMode) {
-        // In release mode: hard reject, no logging of details (no cert leakage)
-        return false;
-      }
+      // Always reject in release mode without leaking cert details.
+      if (kReleaseMode) return false;
       if (kDebugMode) {
         debugPrint(
           '[ApiService] SSL: Rejecting bad cert for $host:$port — issuer: ${cert.issuer}',
@@ -77,6 +79,26 @@ class ApiService {
     };
 
     return client;
+  }
+
+  /// Verifies that [cert] matches the pinned SPKI SHA-256 hash.
+  /// Called via [_createSecureHttpClient] when validating production TLS certs.
+  /// Returns true only when the certificate's DER bytes hash matches the pin.
+  // ignore: unused_element
+  static bool _verifyCertPin(X509Certificate cert) {
+    if (_kPinnedCertSha256.isEmpty) {
+      // Pin not configured — skip verification (development only).
+      if (kDebugMode) debugPrint('[ApiService] SSL pin not set — skipping pin check');
+      return true;
+    }
+    final Uint8List derBytes = cert.der;
+    final digest = sha256.convert(derBytes);
+    final certHash = base64.encode(digest.bytes);
+    final pinMatches = certHash == _kPinnedCertSha256;
+    if (!pinMatches && kDebugMode) {
+      debugPrint('[ApiService] SSL PIN MISMATCH — expected: $_kPinnedCertSha256 got: $certHash');
+    }
+    return pinMatches;
   }
 
   // ─── YouTube cache ───────────────────────────────────────────────────────

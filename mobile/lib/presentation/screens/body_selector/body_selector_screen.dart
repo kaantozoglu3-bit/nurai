@@ -157,7 +157,7 @@ class _BodySelectorScreenState extends State<BodySelectorScreen> {
                       // accept List<String> and update ChatNotifier accordingly.
                       final area = _selectedAreas.first;
                       AnalyticsService.instance.logBodyAreaSelected(area);
-                      context.go(AppRoutes.chat, extra: area);
+                      context.go('/chat/$area');
                     },
             ),
           ),

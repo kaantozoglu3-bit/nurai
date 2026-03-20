@@ -31,7 +31,7 @@ class AppRoutes {
   static const String profileSetup = '/profile-setup';
   static const String home = '/home';
   static const String bodySelector = '/body-selector';
-  static const String chat = '/chat';
+  static const String chat = '/chat/:bodyArea';
   static const String analysisResult = '/analysis-result';
   static const String videoPlayer = '/video-player';
   static const String history = '/history';
@@ -120,7 +120,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.chat,
         builder: (context, state) {
-          final bodyArea = state.extra as String? ?? 'lower_back';
+          final bodyArea = state.pathParameters['bodyArea'] ?? 'lower_back';
           return ChatScreen(bodyArea: bodyArea);
         },
       ),
