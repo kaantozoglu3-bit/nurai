@@ -5,10 +5,12 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/router/app_router.dart';
+import '../../../data/models/message_model.dart';
 import '../../../data/models/physiotherapist_model.dart';
 import '../../../data/services/marketplace_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/marketplace_provider.dart';
+import '../../providers/navigation_provider.dart';
 
 class PtDetailScreen extends ConsumerStatefulWidget {
   final PhysiotherapistModel pt;
@@ -37,11 +39,17 @@ class _PtDetailScreenState extends ConsumerState<PtDetailScreen> {
       ref.invalidate(myConversationsProvider);
 
       if (mounted) {
-        context.push(AppRoutes.messaging, extra: {
-          'convId': convId,
-          'ptName': widget.pt.name,
-          'ptId': widget.pt.uid,
-        });
+        // Store conversation data in provider before navigating to avoid
+        // state.extra breakage on deep links.
+        ref.read(messagingDataProvider.notifier).state = ConversationModel(
+          id: convId,
+          ptId: widget.pt.uid,
+          userId: '',
+          ptName: widget.pt.name,
+          userName: '',
+          lastMessageAt: DateTime.now(),
+        );
+        context.push(AppRoutes.messaging);
       }
     } catch (e) {
       if (mounted) {

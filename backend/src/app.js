@@ -22,14 +22,25 @@ app.set('trust proxy', 1);
 // ─── Security ─────────────────────────────────────────────────────────────────
 app.use(helmet());
 
-const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? '').split(',').map(s => s.trim());
+const _configuredOrigins = (process.env.ALLOWED_ORIGINS ?? '').split(',').map(s => s.trim()).filter(Boolean);
+const allowedOrigins = process.env.NODE_ENV === 'production'
+  ? _configuredOrigins.length > 0
+    ? _configuredOrigins
+    : [process.env.ALLOWED_ORIGIN || 'https://nurai.app']
+  : [
+      ..._configuredOrigins,
+      /^http:\/\/localhost(:\d+)?$/,
+      process.env.ALLOWED_ORIGIN,
+    ].filter(Boolean);
+
 app.use(cors({
   origin: (origin, cb) => {
     // Allow requests with no origin (mobile apps, Postman)
-    // Allow any localhost port for Flutter web development
-    if (!origin || allowedOrigins.includes(origin) || /^http:\/\/localhost(:\d+)?$/.test(origin)) {
-      return cb(null, true);
-    }
+    if (!origin) return cb(null, true);
+    const allowed = allowedOrigins.some((o) =>
+      o instanceof RegExp ? o.test(origin) : o === origin
+    );
+    if (allowed) return cb(null, true);
     cb(new Error(`CORS: origin ${origin} not allowed`));
   },
   credentials: true,

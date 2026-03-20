@@ -6,6 +6,7 @@ import '../../../core/constants/app_dimensions.dart';
 import '../../../core/router/app_router.dart';
 import '../../../data/models/physiotherapist_model.dart';
 import '../../providers/marketplace_provider.dart';
+import '../../providers/navigation_provider.dart';
 
 class MarketplaceScreen extends ConsumerStatefulWidget {
   const MarketplaceScreen({super.key});
@@ -208,10 +209,11 @@ class _PtListTab extends ConsumerWidget {
                       }
                       return _PtCard(
                         pt: state.filtered[index],
-                        onTap: () => context.push(
-                          AppRoutes.ptDetail,
-                          extra: state.filtered[index],
-                        ),
+                        onTap: () {
+                          ref.read(ptDetailDataProvider.notifier).state =
+                              state.filtered[index];
+                          context.push(AppRoutes.ptDetail);
+                        },
                       );
                     },
                   ),
@@ -427,10 +429,10 @@ class _ConversationsTab extends ConsumerWidget {
                   ),
                   trailing: const Icon(Icons.chevron_right,
                       color: AppColors.textHint, size: 18),
-                  onTap: () => context.push(
-                    AppRoutes.messaging,
-                    extra: conv,
-                  ),
+                  onTap: () {
+                    ref.read(messagingDataProvider.notifier).state = conv;
+                    context.push(AppRoutes.messaging);
+                  },
                 );
               },
             ),

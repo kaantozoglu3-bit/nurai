@@ -4,7 +4,8 @@ const admin = require('../config/firebase');
 const logger = require('../config/logger');
 const FirestorePaths = require('../config/firestore_paths');
 
-const DAILY_LIMIT = 1;
+const FREE_DAILY_LIMIT = parseInt(process.env.FREE_DAILY_LIMIT, 10) || 3;
+const PREMIUM_DAILY_LIMIT = parseInt(process.env.PREMIUM_DAILY_LIMIT, 10) || 999;
 
 /**
  * Server-side daily quota check — session ID based.
@@ -16,6 +17,7 @@ const DAILY_LIMIT = 1;
  *   - Client sends a `sessionId` (UUID v4) generated once per analysis session.
  *   - Same sessionId on subsequent messages in the same conversation → pass through.
  *   - New sessionId → check count against DAILY_LIMIT, block if exceeded.
+ *   - Premium users (users/{uid}.premium === true) use PREMIUM_DAILY_LIMIT.
  *
  * This replaces the insecure `messages.length > 1` bypass that allowed
  * any client to skip quota by sending a pre-filled conversation history.
@@ -36,6 +38,11 @@ async function quotaMiddleware(req, res, next) {
   const docRef = admin.firestore().doc(FirestorePaths.dailyUsage(uid, today));
 
   try {
+    // Check premium status from Firestore users collection
+    const userDoc = await admin.firestore().collection('users').doc(uid).get();
+    const isPremium = userDoc.exists && userDoc.data()?.premium === true;
+    const DAILY_LIMIT = isPremium ? PREMIUM_DAILY_LIMIT : FREE_DAILY_LIMIT;
+
     const result = await admin.firestore().runTransaction(async (tx) => {
       const snap = await tx.get(docRef);
       const data = snap.exists ? snap.data() : { count: 0, sessions: [] };
@@ -49,7 +56,7 @@ async function quotaMiddleware(req, res, next) {
       // Yeni oturum — limit kontrolü
       const count = data.count ?? 0;
       if (count >= DAILY_LIMIT) {
-        return { blocked: true, count };
+        return { blocked: true, count, isPremium };
       }
 
       // Yeni oturum, limit altında — kaydet
@@ -59,13 +66,15 @@ async function quotaMiddleware(req, res, next) {
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       }, { merge: true });
 
-      return { blocked: false, existing: false, count: count + 1 };
+      return { blocked: false, existing: false, count: count + 1, isPremium };
     });
 
     if (result.blocked) {
       return res.status(429).json({
         error: 'Günlük analiz limitine ulaştınız.',
-        detail: `Ücretsiz kullanıcılar günde ${DAILY_LIMIT} analiz yapabilir.`,
+        detail: isPremium
+          ? `Premium kullanıcılar günde ${PREMIUM_DAILY_LIMIT} analiz yapabilir.`
+          : `Ücretsiz kullanıcılar günde ${FREE_DAILY_LIMIT} analiz yapabilir.`,
         remaining: 0,
       });
     }

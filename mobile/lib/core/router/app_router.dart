@@ -22,8 +22,9 @@ import '../../presentation/screens/quick_exercise/quick_exercise_screen.dart';
 import '../../data/models/physiotherapist_model.dart';
 import '../../data/models/message_model.dart';
 import '../../presentation/providers/auth_provider.dart';
+import '../../presentation/providers/navigation_provider.dart';
 // navigation_provider.dart is set by callers before pushing analysisResult /
-// videoPlayer routes; the screens read from it directly.
+// videoPlayer / ptDetail / messaging routes; the screens read from it directly.
 
 class AppRoutes {
   static const String splash = '/';
@@ -168,11 +169,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.ptDetail,
         builder: (context, state) {
-          // state.extra carries a PhysiotherapistModel passed by the caller.
-          // When the route is reached via deep link (null extra), the user is
-          // redirected to home rather than crashing with a cast error.
-          final pt = state.extra;
-          if (pt is! PhysiotherapistModel) {
+          // Data is stored in ptDetailDataProvider by the caller before
+          // navigating. Fallback to state.extra for backwards compatibility.
+          final pt = ref.read(ptDetailDataProvider) ??
+              (state.extra is PhysiotherapistModel
+                  ? state.extra as PhysiotherapistModel
+                  : null);
+          if (pt == null) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (context.mounted) context.go(AppRoutes.home);
             });
@@ -190,6 +193,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.messaging,
         builder: (context, state) {
+          // Data is stored in messagingDataProvider by the caller before
+          // navigating. Fallback to state.extra for backwards compatibility.
+          final conv = ref.read(messagingDataProvider);
+          if (conv != null) {
+            return MessagingScreen(
+              convId: conv.id,
+              ptName: conv.ptName,
+              ptId: conv.ptId,
+            );
+          }
           final extra = state.extra;
           if (extra is Map<String, dynamic>) {
             return MessagingScreen(
