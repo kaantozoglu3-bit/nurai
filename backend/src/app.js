@@ -9,6 +9,7 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 
 const logger = require('./config/logger');
+const appCheckMiddleware = require('./middleware/appcheck.middleware');
 const analysisRoutes = require('./routes/analysis.routes');
 const youtubeRoutes = require('./routes/youtube.routes');
 const userRoutes = require('./routes/user.routes');
@@ -66,6 +67,9 @@ if (process.env.NODE_ENV !== 'test') {
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
+// ─── App Check ───────────────────────────────────────────────────────────────
+app.use('/api', appCheckMiddleware);
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use('/api/v1/analysis', analysisRoutes);

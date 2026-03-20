@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, debugPrint, kDebugMode;
 // ssl_pinning_plugin: pending — requires iOS/Android native setup.
@@ -40,6 +41,11 @@ import 'package:flutter/foundation.dart' show kIsWeb, debugPrint, kDebugMode;
 /// Obtained: 2026-03-20 — nuraibackend-production.up.railway.app
 /// Refresh when the server key pair changes (not on cert renewal alone).
 const String _kPinnedCertSha256 = 'i+9suBX/dDafsZIMvCHqAlFdC3WdC0Yu6JsC9yvlNLo=';
+
+/// Backup SPKI SHA-256 pin for key rotation resilience.
+/// Set to the next certificate's hash before rotating the server key pair.
+/// Leave empty until a rotation is planned.
+const String _kBackupCertSha256 = '';
 
 class ApiService {
   static const String _productionUrl = 'https://nuraibackend-production.up.railway.app';
@@ -122,7 +128,8 @@ class ApiService {
     final Uint8List derBytes = cert.der;
     final digest = sha256.convert(derBytes);
     final certHash = base64.encode(digest.bytes);
-    final pinMatches = certHash == _kPinnedCertSha256;
+    final pinMatches = certHash == _kPinnedCertSha256 ||
+        (_kBackupCertSha256.isNotEmpty && certHash == _kBackupCertSha256);
     if (!pinMatches && kDebugMode) {
       debugPrint('[ApiService] SSL PIN MISMATCH — expected: $_kPinnedCertSha256 got: $certHash');
     }
@@ -187,6 +194,29 @@ class ApiService {
     return true;
   }
 
+  // ─── App Check ─────────────────────────────────────────────────────────
+  /// Retrieves the current Firebase App Check token, or null if unavailable.
+  static Future<String?> _getAppCheckToken() async {
+    try {
+      return await FirebaseAppCheck.instance.getToken();
+    } catch (e) {
+      if (kDebugMode) debugPrint('[ApiService] App Check token error: $e');
+      return null;
+    }
+  }
+
+  /// Builds request headers with auth and App Check tokens.
+  static Future<Map<String, String>> _buildHeaders(String idToken) async {
+    final headers = <String, String>{
+      'Authorization': 'Bearer $idToken',
+    };
+    final appCheckToken = await _getAppCheckToken();
+    if (appCheckToken != null) {
+      headers['X-Firebase-AppCheck'] = appCheckToken;
+    }
+    return headers;
+  }
+
   // ─── YouTube cache ───────────────────────────────────────────────────────
   static final Map<String, _CacheEntry<List<Map<String, dynamic>>>> _youtubeCache = {};
   static const Duration _youtubeCacheTtl = Duration(hours: 6);
@@ -215,10 +245,11 @@ class ApiService {
       queryParams['q'] = customQuery;
     }
 
+    final headers = await _buildHeaders(idToken);
     final response = await _jsonDio.get<Map<String, dynamic>>(
       '/api/v1/youtube/search',
       queryParameters: queryParams,
-      options: Options(headers: {'Authorization': 'Bearer $idToken'}),
+      options: Options(headers: headers),
     );
 
     final videos = (response.data?['videos'] as List<dynamic>? ?? [])
@@ -233,10 +264,11 @@ class ApiService {
     final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
     if (idToken == null) throw Exception('Kullanıcı oturumu bulunamadı.');
 
+    final headers = await _buildHeaders(idToken);
     await _jsonDio.post(
       '/api/v1/users/profile',
       data: profile,
-      options: Options(headers: {'Authorization': 'Bearer $idToken'}),
+      options: Options(headers: headers),
     );
   }
 
@@ -250,10 +282,11 @@ class ApiService {
     final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
     if (idToken == null) throw Exception('Kullanıcı oturumu bulunamadı.');
 
+    final headers = await _buildHeaders(idToken);
     final response = await _jsonDio.post<Map<String, dynamic>>(
       '/api/v1/analysis/chat-sync',
       data: {'profile': profile, 'bodyArea': bodyArea, 'messages': messages, 'sessionId': sessionId},
-      options: Options(headers: {'Authorization': 'Bearer $idToken'}),
+      options: Options(headers: headers),
     );
 
     return response.data?['content'] as String? ?? '';
@@ -286,6 +319,7 @@ class ApiService {
     final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
     if (idToken == null) throw Exception('Kullanıcı oturumu bulunamadı.');
 
+    final headers = await _buildHeaders(idToken);
     final controller = StreamController<String>();
 
     _streamingDio.post<ResponseBody>(
@@ -297,7 +331,7 @@ class ApiService {
         'sessionId': sessionId,
       },
       options: Options(
-        headers: {'Authorization': 'Bearer $idToken'},
+        headers: headers,
         responseType: ResponseType.stream,
       ),
     ).then((response) async {
