@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/router/app_router.dart';
+import '../../../data/models/user_model.dart';
 import '../../providers/auth_provider.dart';
 import '../library/library_screen.dart';
 import '../progress/progress_screen.dart';
@@ -77,7 +78,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
 class _HomeTab extends ConsumerWidget {
   final String firstName;
-  final dynamic user;
+  final UserModel? user;
 
   const _HomeTab({required this.firstName, this.user});
 

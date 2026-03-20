@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -67,7 +67,7 @@ class ProfileService {
     try {
       return jsonDecode(raw) as Map<String, dynamic>;
     } catch (e) {
-      debugPrint('[ProfileService] Profile decode error: $e');
+      if (kDebugMode) debugPrint('[ProfileService] Profile decode error: $e');
       return {};
     }
   }
@@ -110,9 +110,9 @@ class ProfileService {
       for (final key in _kLegacyKeys) {
         await prefs.remove(key);
       }
-      debugPrint('[ProfileService] Migration from SharedPreferences complete.');
+      if (kDebugMode) debugPrint('[ProfileService] Migration from SharedPreferences complete.');
     } catch (e) {
-      debugPrint('[ProfileService] Migration failed: $e');
+      if (kDebugMode) debugPrint('[ProfileService] Migration failed: $e');
     }
   }
 }

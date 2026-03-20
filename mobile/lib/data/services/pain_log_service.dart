@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import '../../core/constants/firestore_paths.dart';
 import '../models/pain_log_model.dart';
 
@@ -39,7 +39,7 @@ class PainLogService {
       if (!snap.exists || snap.data() == null) return null;
       return PainLogModel.fromMap(snap.id, snap.data()!);
     } catch (e) {
-      debugPrint('[PainLogService] getToday hatası: $e');
+      if (kDebugMode) debugPrint('[PainLogService] getToday hatası: $e');
       return null;
     }
   }
@@ -67,7 +67,7 @@ class PainLogService {
           .map((d) => PainLogModel.fromMap(d.id, d.data()))
           .toList();
     } catch (e) {
-      debugPrint('[PainLogService] getLast14Days hatası: $e');
+      if (kDebugMode) debugPrint('[PainLogService] getLast14Days hatası: $e');
       return [];
     }
   }

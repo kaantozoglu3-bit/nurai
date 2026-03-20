@@ -10,6 +10,8 @@ const client = new OpenAI({
 });
 
 const MODEL = 'llama-3.3-70b-versatile';
+const MAX_TOKENS = 900;
+const MODEL_TEMPERATURE = 0.85;
 
 // ─── System Prompt ───────────────────────────────────────────────────────────
 
@@ -234,6 +236,19 @@ Kronik instabilite:
 - BOSU top egzersizleri
 - Gastrocnemius/soleus germe
 
+### KARIN / CORE
+Akut (ilk ağrı / gerilme):
+- McGill curl-up (boyun ve bel dostu karın egzersizi)
+- Pelvik tilt (transversus abdominis aktivasyonu)
+- Diyafragmatik nefes egzersizi
+
+Kronik (stabilite güçlendirme):
+- Dead bug egzersizi
+- Bird dog
+- Plank (ön ve yan)
+- Hollow body hold
+- McGill Big 3 (curl-up, bird dog, yan plank)
+
 6. IMPORTANT RESTRICTIONS:
 - Never diagnose specific medical conditions by name
 - Never recommend specific medications
@@ -260,15 +275,25 @@ const BODY_AREA_LABELS = {
   core: 'Core / Abdomen',
 };
 
+/** Strip HTML-like characters and limit length to prevent prompt injection. */
+function _sanitize(val) {
+  if (val == null) return 'Unknown';
+  return String(val).slice(0, 100).replace(/[<>]/g, '');
+}
+
 function buildSystemPrompt(profile, bodyArea) {
+  const injuries = Array.isArray(profile.pastInjuries)
+    ? profile.pastInjuries.map(_sanitize).join(', ')
+    : 'None';
+
   return SYSTEM_PROMPT_TEMPLATE
-    .replace('{age}', profile.age ?? 'Unknown')
-    .replace('{gender}', profile.gender ?? 'Unknown')
-    .replace('{height}', profile.height ?? 'Unknown')
-    .replace('{weight}', profile.weight ?? 'Unknown')
-    .replace('{fitnessLevel}', profile.fitnessLevel ?? 'Unknown')
-    .replace('{pastInjuries}', profile.pastInjuries?.join(', ') ?? 'None')
-    .replace('{goal}', profile.goal ?? 'Unknown')
+    .replace('{age}', _sanitize(profile.age))
+    .replace('{gender}', _sanitize(profile.gender))
+    .replace('{height}', _sanitize(profile.height))
+    .replace('{weight}', _sanitize(profile.weight))
+    .replace('{fitnessLevel}', _sanitize(profile.fitnessLevel))
+    .replace('{pastInjuries}', injuries)
+    .replace('{goal}', _sanitize(profile.goal))
     .replace('{bodyArea}', BODY_AREA_LABELS[bodyArea] ?? bodyArea);
 }
 
@@ -284,15 +309,16 @@ async function streamChatResponse({ profile, bodyArea, messages, res }) {
   res.flushHeaders();
 
   try {
+    const recentMessages = messages.slice(-10);
     const stream = await client.chat.completions.create({
       model: MODEL,
       stream: true,
       messages: [
         { role: 'system', content: systemPrompt },
-        ...messages,
+        ...recentMessages,
       ],
-      max_tokens: 900,
-      temperature: 0.85,
+      max_tokens: MAX_TOKENS,
+      temperature: MODEL_TEMPERATURE,
     });
 
     for await (const chunk of stream) {
@@ -316,15 +342,16 @@ async function streamChatResponse({ profile, bodyArea, messages, res }) {
 async function getChatResponse({ profile, bodyArea, messages }) {
   const systemPrompt = buildSystemPrompt(profile, bodyArea);
 
+  const recentMessages = messages.slice(-10);
   const completion = await client.chat.completions.create({
     model: MODEL,
     stream: false,
     messages: [
       { role: 'system', content: systemPrompt },
-      ...messages,
+      ...recentMessages,
     ],
-    max_tokens: 900,
-    temperature: 0.85,
+    max_tokens: MAX_TOKENS,
+    temperature: MODEL_TEMPERATURE,
   });
 
   return completion.choices[0]?.message?.content ?? '';

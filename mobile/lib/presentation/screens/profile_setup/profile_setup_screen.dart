@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -72,7 +73,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
         'goal': _profileData['goal'],
       });
     } catch (e) {
-      debugPrint('[ProfileSetup] Backend kayıt hatası (yerel kayıt geçerli): $e');
+      if (kDebugMode) debugPrint('[ProfileSetup] Backend kayıt hatası (yerel kayıt geçerli): $e');
     }
 
     await ref.read(authStateProvider.notifier).completeProfile();

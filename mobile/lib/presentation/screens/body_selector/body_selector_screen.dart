@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/router/app_router.dart';
+import '../../../data/services/analytics_service.dart';
 import '../../widgets/app_button.dart';
 class BodySelectorScreen extends StatefulWidget {
   const BodySelectorScreen({super.key});
@@ -37,7 +38,10 @@ class _BodySelectorScreenState extends State<BodySelectorScreen> {
       if (_selectedAreas.contains(key)) {
         _selectedAreas.remove(key);
       } else {
-        _selectedAreas.add(key);
+        // Single-selection only — routing passes one bodyArea string.
+        _selectedAreas
+          ..clear()
+          ..add(key);
       }
     });
   }
@@ -73,7 +77,7 @@ class _BodySelectorScreenState extends State<BodySelectorScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Ağrıyan bölgeleri seç (birden fazla seçebilirsin):',
+                    'Ağrıyan bölgeyi seç:',
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 14,
@@ -144,13 +148,17 @@ class _BodySelectorScreenState extends State<BodySelectorScreen> {
             child: AppButton(
               label: _selectedAreas.isEmpty
                   ? 'Bölge Seç'
-                  : 'Devam Et (${_selectedAreas.length} bölge)',
+                  : 'Devam Et',
               onPressed: _selectedAreas.isEmpty
                   ? null
-                  : () => context.go(
-                        AppRoutes.chat,
-                        extra: _selectedAreas.first,
-                      ),
+                  : () {
+                      // TODO(multi-area): bodyArea routing uses a single String.
+                      // To support multiple areas, refactor AppRoutes.chat to
+                      // accept List<String> and update ChatNotifier accordingly.
+                      final area = _selectedAreas.first;
+                      AnalyticsService.instance.logBodyAreaSelected(area);
+                      context.go(AppRoutes.chat, extra: area);
+                    },
             ),
           ),
         ],

@@ -7,6 +7,8 @@ import '../../../core/router/app_router.dart';
 import '../../../data/exercise_library_data.dart';
 import '../../../data/models/exercise_library_model.dart';
 import '../../providers/auth_provider.dart';
+import 'widgets/exercise_card.dart';
+import 'widgets/filter_chip_widget.dart';
 
 /// Free users see 3 exercises per area; filter locked.
 /// Premium users see all exercises + Akut/Kronik filter.
@@ -306,14 +308,14 @@ class _ExerciseListState extends State<_ExerciseList> {
           ),
           child: Row(
             children: [
-              _FilterChip(
+              FilterChipWidget(
                 label: 'Akut',
                 selected: _phase == 'Akut',
                 locked: false,
                 onTap: () => setState(() => _phase = 'Akut'),
               ),
               const SizedBox(width: 10),
-              _FilterChip(
+              FilterChipWidget(
                 label: 'Kronik',
                 selected: _phase == 'Kronik',
                 locked: !widget.isPremium,
@@ -357,7 +359,7 @@ class _ExerciseListState extends State<_ExerciseList> {
                     if (i < visibleCount) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: AppDimensions.paddingM),
-                        child: _ExerciseCard(exercise: filtered[i]),
+                        child: ExerciseCard(exercise: filtered[i]),
                       );
                     }
                     // Locked banner
@@ -373,58 +375,7 @@ class _ExerciseListState extends State<_ExerciseList> {
   }
 }
 
-// ── Filter chip ────────────────────────────────────────────────────────────────
-
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final bool locked;
-  final VoidCallback onTap;
-
-  const _FilterChip({
-    required this.label,
-    required this.selected,
-    required this.locked,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.primary : AppColors.surfaceVariant,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusFull),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (locked) ...[
-              const Icon(Icons.lock, size: 12, color: AppColors.textHint),
-              const SizedBox(width: 4),
-            ],
-            Text(
-              label,
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: locked
-                    ? AppColors.textHint
-                    : selected
-                        ? Colors.white
-                        : AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+// _FilterChip extracted to widgets/filter_chip_widget.dart
 
 // ── Locked Banner ──────────────────────────────────────────────────────────────
 
@@ -493,126 +444,4 @@ class _LockedBanner extends StatelessWidget {
   }
 }
 
-// ── Egzersiz Kartı ─────────────────────────────────────────────────────────────
-
-class _ExerciseCard extends StatelessWidget {
-  final ExerciseLibraryItem exercise;
-
-  const _ExerciseCard({required this.exercise});
-
-  Color get _difficultyColor {
-    switch (exercise.difficulty) {
-      case 'Kolay':
-        return AppColors.success;
-      case 'Zor':
-        return AppColors.error;
-      default:
-        return AppColors.warning;
-    }
-  }
-
-  IconData get _difficultyIcon {
-    switch (exercise.difficulty) {
-      case 'Kolay':
-        return Icons.sentiment_satisfied_alt;
-      case 'Zor':
-        return Icons.local_fire_department;
-      default:
-        return Icons.trending_up;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: _difficultyColor.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(_difficultyIcon, color: _difficultyColor, size: 26),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        exercise.name,
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: _difficultyColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        exercise.difficulty,
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: _difficultyColor,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  exercise.description,
-                  style: const TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(Icons.repeat_rounded,
-                        size: 14, color: AppColors.primary),
-                    const SizedBox(width: 4),
-                    Text(
-                      exercise.sets,
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+// _ExerciseCard extracted to widgets/exercise_card.dart

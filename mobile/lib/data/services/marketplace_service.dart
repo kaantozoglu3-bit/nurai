@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import '../../core/constants/firestore_paths.dart';
 import '../models/physiotherapist_model.dart';
 import '../models/message_model.dart';
@@ -40,7 +40,7 @@ class MarketplaceService {
       if (!snap.exists || snap.data() == null) return null;
       return PhysiotherapistModel.fromMap(snap.id, snap.data()!);
     } catch (e) {
-      debugPrint('[Marketplace] getMyPtProfile error: $e');
+      if (kDebugMode) debugPrint('[Marketplace] getMyPtProfile error: $e');
       return null;
     }
   }
@@ -105,7 +105,7 @@ class MarketplaceService {
         hasMore: snap.docs.length == _kPageSize,
       );
     } catch (e) {
-      debugPrint('[Marketplace] getApprovedPts error: $e');
+      if (kDebugMode) debugPrint('[Marketplace] getApprovedPts error: $e');
       return const PtPage(pts: [], lastDocument: null, hasMore: false);
     }
   }
@@ -203,7 +203,7 @@ class MarketplaceService {
         ..sort((a, b) => b.lastMessageAt.compareTo(a.lastMessageAt));
       return list;
     } catch (e) {
-      debugPrint('[Marketplace] getMyConversations error: $e');
+      if (kDebugMode) debugPrint('[Marketplace] getMyConversations error: $e');
       return [];
     }
   }

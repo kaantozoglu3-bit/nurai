@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart' show kIsWeb, kReleaseMode, debugPrint;
+import 'package:flutter/foundation.dart' show kIsWeb, kReleaseMode, debugPrint, kDebugMode;
 
 // ─── SSL Configuration ───────────────────────────────────────────────────────
 //
@@ -68,9 +68,11 @@ class ApiService {
         // In release mode: hard reject, no logging of details (no cert leakage)
         return false;
       }
-      debugPrint(
-        '[ApiService] SSL: Rejecting bad cert for $host:$port — issuer: ${cert.issuer}',
-      );
+      if (kDebugMode) {
+        debugPrint(
+          '[ApiService] SSL: Rejecting bad cert for $host:$port — issuer: ${cert.issuer}',
+        );
+      }
       return false;
     };
 
@@ -218,7 +220,7 @@ class ApiService {
                 controller.addError(Exception(json['error']));
               }
             } catch (e) {
-              debugPrint('[ApiService] SSE satırı ayrıştırılamadı: $e | veri: $data');
+              if (kDebugMode) debugPrint('[ApiService] SSE satırı ayrıştırılamadı: $e | veri: $data');
             }
           }
         }

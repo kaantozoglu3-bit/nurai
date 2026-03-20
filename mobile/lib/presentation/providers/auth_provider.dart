@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/constants/firestore_paths.dart';
 import '../../data/models/user_model.dart';
 import '../../data/services/quota_service.dart';
 
@@ -18,14 +21,46 @@ class AuthState {
 
 class AuthNotifier extends AsyncNotifier<AuthState> {
   FirebaseAuth get _auth => FirebaseAuth.instance;
+  FirebaseFirestore get _db => FirebaseFirestore.instance;
+
+  /// Firestore'dan profil var mı kontrol eder.
+  /// SharedPreferences'ı hızlı önbellek olarak kullanır:
+  ///   - true ise Firestore'a gitme (zaten tamamlanmış)
+  ///   - false ise Firestore'dan gerçek durumu çek ve önbelleği güncelle
+  Future<bool> _checkProfileComplete(String uid) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Önbellek true → direkt döndür (Firestore round-trip'ten kaçın)
+    if (prefs.getBool('isProfileComplete') == true) return true;
+
+    // Önbellek false veya yok → Firestore'a sor
+    try {
+      final doc = await _db.doc(FirestorePaths.userProfile(uid)).get();
+      if (!doc.exists) return false;
+
+      final data = doc.data();
+      // Profil tamamlanmış sayılması için en az bir temel alan dolu olmalı
+      final isComplete = data != null &&
+          (data['fitness_level'] != null || data['goal'] != null);
+
+      if (isComplete) {
+        // Önbelleği güncelle — bir sonraki açılışta hızlı okuma
+        await prefs.setBool('isProfileComplete', true);
+      }
+      return isComplete;
+    } catch (e) {
+      // Firestore erişim hatası — varsayılan false, wizard göster
+      if (kDebugMode) debugPrint('[AuthProvider] Firestore profil kontrolü başarısız: $e');
+      return false;
+    }
+  }
 
   @override
   Future<AuthState> build() async {
     final firebaseUser = _auth.currentUser;
     if (firebaseUser == null) return const AuthState();
 
-    final prefs = await SharedPreferences.getInstance();
-    final isProfileComplete = prefs.getBool('isProfileComplete') ?? false;
+    final isProfileComplete = await _checkProfileComplete(firebaseUser.uid);
     final remaining = await QuotaService.getRemainingUses();
 
     return AuthState(
@@ -34,10 +69,12 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
       user: UserModel(
         id: firebaseUser.uid,
         email: firebaseUser.email ?? '',
-        displayName: firebaseUser.displayName ?? firebaseUser.email?.split('@').first ?? '',
+        displayName: firebaseUser.displayName ??
+            firebaseUser.email?.split('@').first ??
+            '',
         isLoggedIn: true,
         isProfileComplete: isProfileComplete,
-        dailyAnalysisCount: 3 - remaining,
+        dailyAnalysisCount: QuotaService.dailyLimit - remaining,
         lastAnalysisDate: DateTime.now(),
       ),
     );
@@ -51,8 +88,8 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
         password: password,
       );
       final firebaseUser = credential.user!;
-      final prefs = await SharedPreferences.getInstance();
-      final isProfileComplete = prefs.getBool('isProfileComplete') ?? false;
+      final isProfileComplete =
+          await _checkProfileComplete(firebaseUser.uid);
       final remaining = await QuotaService.getRemainingUses();
 
       state = AsyncValue.data(AuthState(
@@ -61,10 +98,11 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
         user: UserModel(
           id: firebaseUser.uid,
           email: firebaseUser.email ?? '',
-          displayName: firebaseUser.displayName ?? email.split('@').first,
+          displayName:
+              firebaseUser.displayName ?? email.split('@').first,
           isLoggedIn: true,
           isProfileComplete: isProfileComplete,
-          dailyAnalysisCount: 3 - remaining,
+          dailyAnalysisCount: QuotaService.dailyLimit - remaining,
           lastAnalysisDate: DateTime.now(),
         ),
       ));
@@ -116,6 +154,7 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
   }
 
   Future<void> logout() async {
+    await QuotaService.clearForCurrentUser();
     await _auth.signOut();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isProfileComplete', false);

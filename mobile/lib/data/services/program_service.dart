@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import '../../core/constants/firestore_paths.dart';
 import '../models/weekly_program_model.dart';
 import 'api_service.dart';
@@ -27,7 +27,7 @@ class ProgramService {
       if (!snap.exists || snap.data() == null) return null;
       return WeeklyProgramModel.fromMap(snap.data()!);
     } catch (e) {
-      debugPrint('[ProgramService] loadProgram error: $e');
+      if (kDebugMode) debugPrint('[ProgramService] loadProgram error: $e');
       return null;
     }
   }

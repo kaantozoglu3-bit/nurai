@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/router/app_router.dart';
+import '../../../data/services/analytics_service.dart';
 import '../../widgets/app_button.dart';
 
 class PaywallScreen extends StatefulWidget {
@@ -13,15 +14,21 @@ class PaywallScreen extends StatefulWidget {
 }
 
 class _PaywallScreenState extends State<PaywallScreen> {
+  @override
+  void initState() {
+    super.initState();
+    AnalyticsService.instance.logPaywallViewed('screen');
+    AnalyticsService.instance.logScreenView('paywall');
+  }
   bool _isYearly = true;
 
   static const _features = [
     {'icon': Icons.all_inclusive, 'text': 'Sınırsız günlük analiz'},
+    {'icon': Icons.menu_book, 'text': 'Tam egzersiz kütüphanesi (tüm bölgeler + filtreler)'},
     {'icon': Icons.calendar_today, 'text': 'Kişiselleştirilmiş haftalık program'},
     {'icon': Icons.bar_chart, 'text': 'İlerleme takibi ve ağrı günlüğü'},
     {'icon': Icons.history, 'text': 'Tüm geçmiş analizler'},
     {'icon': Icons.notifications_active, 'text': 'Egzersiz hatırlatıcıları'},
-    {'icon': Icons.people, 'text': 'Fizyoterapist bağlantısı'},
     {'icon': Icons.block, 'text': 'Reklamsız deneyim'},
   ];
 
@@ -195,7 +202,17 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   AppButton(
                     label: 'Satın Almayı Geri Yükle',
                     variant: AppButtonVariant.ghost,
-                    onPressed: () {},
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Abonelik geri yükleme yakında eklenecek. '
+                            'Destek için: destek@nurai.app',
+                          ),
+                          backgroundColor: AppColors.secondary,
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 16),
 

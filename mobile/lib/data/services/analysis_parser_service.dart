@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import '../models/analysis_model.dart';
 
 /// Parses raw AI message text into structured data.
@@ -9,7 +9,7 @@ class AnalysisParserService {
     final regex = RegExp(r'YOUTUBE_EGZERSIZLER:\s*(.+)', caseSensitive: false);
     final match = regex.firstMatch(aiMessage);
     if (match == null) {
-      debugPrint('[AnalysisParser] YOUTUBE_EGZERSIZLER etiketi bulunamadı — YouTube videosu gösterilmeyecek');
+      if (kDebugMode) debugPrint('[AnalysisParser] YOUTUBE_EGZERSIZLER etiketi bulunamadı — YouTube videosu gösterilmeyecek');
       return [];
     }
     return match

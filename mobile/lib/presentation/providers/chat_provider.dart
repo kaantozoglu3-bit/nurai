@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -185,7 +185,6 @@ class ChatNotifier extends AutoDisposeFamilyNotifier<ChatState, String> {
       state = state.copyWith(quotaExceeded: true, isLoading: false);
       return;
     }
-    await QuotaService.recordUsage();
 
     final areaLabel = kBodyAreaLabels[_bodyArea] ?? _bodyArea;
     final openingPrompt =
@@ -193,6 +192,11 @@ class ChatNotifier extends AutoDisposeFamilyNotifier<ChatState, String> {
 
     _history.add({'role': 'user', 'content': openingPrompt});
     await _streamFromAPI();
+
+    // Record usage only after the server responded successfully (not on error).
+    if (!state.hasConnectionError) {
+      await QuotaService.recordUsage();
+    }
   }
 
   // ── Streaming ───────────────────────────────────────────────────────────────
@@ -226,7 +230,7 @@ class ChatNotifier extends AutoDisposeFamilyNotifier<ChatState, String> {
       _history.add({'role': 'assistant', 'content': aiMsg.content});
     } catch (e) {
       aiMsg.content = 'Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.';
-      debugPrint('[ChatNotifier] streamFromAPI hatası: $e');
+      if (kDebugMode) debugPrint('[ChatNotifier] streamFromAPI hatası: $e');
       state = state.copyWith(hasConnectionError: true);
     } finally {
       aiMsg.isStreaming = false;
