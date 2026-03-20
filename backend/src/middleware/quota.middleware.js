@@ -72,7 +72,7 @@ async function quotaMiddleware(req, res, next) {
     if (result.blocked) {
       return res.status(429).json({
         error: 'Günlük analiz limitine ulaştınız.',
-        detail: isPremium
+        detail: result.isPremium
           ? `Premium kullanıcılar günde ${PREMIUM_DAILY_LIMIT} analiz yapabilir.`
           : `Ücretsiz kullanıcılar günde ${FREE_DAILY_LIMIT} analiz yapabilir.`,
         remaining: 0,

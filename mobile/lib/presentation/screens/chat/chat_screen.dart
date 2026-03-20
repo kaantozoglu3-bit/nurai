@@ -222,7 +222,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     child: Row(
                       children: [
                         Expanded(
-                          child: TextField(
+                          child: Semantics(
+                            label: 'Mesaj giriş alanı',
+                            textField: true,
+                            child: TextField(
                             controller: _inputController,
                             decoration: InputDecoration(
                               hintText: 'Mesajınızı yazın...',
@@ -248,9 +251,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             ),
                             onSubmitted: (_) => _submit(),
                           ),
+                          ),
                         ),
                         const SizedBox(width: 8),
-                        GestureDetector(
+                        Semantics(
+                          label: 'Mesaj gönder',
+                          button: true,
+                          child: GestureDetector(
                           onTap: state.isLoading ? null : _submit,
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
@@ -270,6 +277,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               size: 20,
                             ),
                           ),
+                        ),
                         ),
                       ],
                     ),

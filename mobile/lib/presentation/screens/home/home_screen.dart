@@ -223,26 +223,30 @@ class _AnalysisCta extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton(
-              onPressed: () => context.go(AppRoutes.bodySelector),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.radiusS),
+          Semantics(
+            label: 'Ağrı analizi başlat',
+            button: true,
+            child: SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton(
+                onPressed: () => context.go(AppRoutes.bodySelector),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.radiusS),
+                  ),
+                  elevation: 0,
                 ),
-                elevation: 0,
-              ),
-              child: const Text(
-                'Başla',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
+                child: const Text(
+                  'Başla',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
                 ),
               ),
             ),
@@ -262,7 +266,10 @@ class _QuickExerciseCard extends ConsumerWidget {
     final areaLabel = getTodayAreaLabel();
     final isDone = state.isDoneToday;
 
-    return GestureDetector(
+    return Semantics(
+      label: isDone ? 'Bugünkü egzersiz tamamlandı' : 'Günlük hızlı egzersizi başlat',
+      button: !isDone,
+      child: GestureDetector(
       onTap: isDone ? null : () => context.push(AppRoutes.quickExercise),
       child: Container(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -330,6 +337,7 @@ class _QuickExerciseCard extends ConsumerWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }

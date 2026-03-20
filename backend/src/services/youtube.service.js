@@ -81,7 +81,7 @@ async function searchVideos(bodyArea, query) {
   });
 
   const searchUrl = `${YOUTUBE_API_BASE}/search?${params}`;
-  const searchRes = await fetch(searchUrl);
+  const searchRes = await fetch(searchUrl, { signal: AbortSignal.timeout(10000) });
   if (!searchRes.ok) {
     const err = await searchRes.text();
     // 403 = quota exceeded → trip circuit breaker
@@ -99,7 +99,7 @@ async function searchVideos(bodyArea, query) {
     id: videoIds,
     key: process.env.YOUTUBE_API_KEY,
   });
-  const detailRes = await fetch(`${YOUTUBE_API_BASE}/videos?${detailParams}`);
+  const detailRes = await fetch(`${YOUTUBE_API_BASE}/videos?${detailParams}`, { signal: AbortSignal.timeout(10000) });
   const detailData = detailRes.ok ? await detailRes.json() : { items: [] };
 
   const detailMap = {};
@@ -175,7 +175,7 @@ async function searchVideosByExercises(exerciseNames) {
         key: process.env.YOUTUBE_API_KEY,
       });
 
-      const searchRes = await fetch(`${YOUTUBE_API_BASE}/search?${params}`);
+      const searchRes = await fetch(`${YOUTUBE_API_BASE}/search?${params}`, { signal: AbortSignal.timeout(10000) });
       if (!searchRes.ok) continue;
       const searchData = await searchRes.json();
       if (!searchData.items?.length) continue;
@@ -186,7 +186,7 @@ async function searchVideosByExercises(exerciseNames) {
         id: videoIds,
         key: process.env.YOUTUBE_API_KEY,
       });
-      const detailRes = await fetch(`${YOUTUBE_API_BASE}/videos?${detailParams}`);
+      const detailRes = await fetch(`${YOUTUBE_API_BASE}/videos?${detailParams}`, { signal: AbortSignal.timeout(10000) });
       const detailData = detailRes.ok ? await detailRes.json() : { items: [] };
 
       const detailMap = {};

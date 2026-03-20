@@ -152,7 +152,7 @@ class _BodySelectorScreenState extends State<BodySelectorScreen> {
               onPressed: _selectedAreas.isEmpty
                   ? null
                   : () {
-                      // TODO(multi-area): bodyArea routing uses a single String.
+                      // FUTURE(multi-area): bodyArea routing uses a single String.
                       // To support multiple areas, refactor AppRoutes.chat to
                       // accept List<String> and update ChatNotifier accordingly.
                       final area = _selectedAreas.first;

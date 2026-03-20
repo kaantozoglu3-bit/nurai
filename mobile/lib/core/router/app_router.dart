@@ -19,8 +19,6 @@ import '../../presentation/screens/marketplace/pt_registration_screen.dart';
 import '../../presentation/screens/marketplace/pt_detail_screen.dart';
 import '../../presentation/screens/marketplace/messaging_screen.dart';
 import '../../presentation/screens/quick_exercise/quick_exercise_screen.dart';
-import '../../data/models/physiotherapist_model.dart';
-import '../../data/models/message_model.dart';
 import '../../presentation/providers/auth_provider.dart';
 import '../../presentation/providers/navigation_provider.dart';
 // navigation_provider.dart is set by callers before pushing analysisResult /
@@ -170,11 +168,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.ptDetail,
         builder: (context, state) {
           // Data is stored in ptDetailDataProvider by the caller before
-          // navigating. Fallback to state.extra for backwards compatibility.
-          final pt = ref.read(ptDetailDataProvider) ??
-              (state.extra is PhysiotherapistModel
-                  ? state.extra as PhysiotherapistModel
-                  : null);
+          // navigating. No state.extra fallback — deep link safe.
+          final pt = ref.read(ptDetailDataProvider);
           if (pt == null) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (context.mounted) context.go(AppRoutes.home);
@@ -194,7 +189,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.messaging,
         builder: (context, state) {
           // Data is stored in messagingDataProvider by the caller before
-          // navigating. Fallback to state.extra for backwards compatibility.
+          // navigating. No state.extra fallback — deep link safe.
           final conv = ref.read(messagingDataProvider);
           if (conv != null) {
             return MessagingScreen(
@@ -203,23 +198,12 @@ final routerProvider = Provider<GoRouter>((ref) {
               ptId: conv.ptId,
             );
           }
-          final extra = state.extra;
-          if (extra is Map<String, dynamic>) {
-            return MessagingScreen(
-              convId: extra['convId'] as String? ?? '',
-              ptName: extra['ptName'] as String? ?? '',
-              ptId: extra['ptId'] as String? ?? '',
-            );
-          }
-          if (extra is ConversationModel) {
-            return MessagingScreen(
-              convId: extra.id,
-              ptName: extra.ptName,
-              ptId: extra.ptId,
-            );
-          }
+          // No conversation data available — redirect to home
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted) context.go(AppRoutes.home);
+          });
           return const Scaffold(
-            body: Center(child: Text('Geçersiz konuşma')),
+            body: Center(child: CircularProgressIndicator()),
           );
         },
       ),
