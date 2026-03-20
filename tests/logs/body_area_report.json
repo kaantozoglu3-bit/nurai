@@ -1,0 +1,80 @@
+{
+  "neck": {
+    "youtube": true,
+    "status": 401,
+    "analysis": "error",
+    "analysisStatus": 500
+  },
+  "left_shoulder": {
+    "youtube": true,
+    "status": 401,
+    "analysis": "error",
+    "analysisStatus": 500
+  },
+  "right_shoulder": {
+    "youtube": true,
+    "status": 401,
+    "analysis": "error",
+    "analysisStatus": 500
+  },
+  "upper_back": {
+    "youtube": true,
+    "status": 401,
+    "analysis": "error",
+    "analysisStatus": 500
+  },
+  "lower_back": {
+    "youtube": true,
+    "status": 401,
+    "analysis": "error",
+    "analysisStatus": 500
+  },
+  "hip": {
+    "youtube": true,
+    "status": 401,
+    "analysis": "error",
+    "analysisStatus": 500
+  },
+  "left_knee": {
+    "youtube": true,
+    "status": 401,
+    "analysis": "error",
+    "analysisStatus": 500
+  },
+  "right_knee": {
+    "youtube": true,
+    "status": 401,
+    "analysis": "error",
+    "analysisStatus": 500
+  },
+  "left_elbow": {
+    "youtube": true,
+    "status": 401,
+    "analysis": "error",
+    "analysisStatus": 500
+  },
+  "right_elbow": {
+    "youtube": true,
+    "status": 401
+  },
+  "left_wrist": {
+    "youtube": true,
+    "status": 401
+  },
+  "right_wrist": {
+    "youtube": true,
+    "status": 401
+  },
+  "left_ankle": {
+    "youtube": true,
+    "status": 401
+  },
+  "right_ankle": {
+    "youtube": true,
+    "status": 401
+  },
+  "core": {
+    "youtube": true,
+    "status": 401
+  }
+}

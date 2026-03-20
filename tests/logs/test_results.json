@@ -1,0 +1,1203 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\playwright.config.js",
+    "rootDir": "C:/Users/KULLANICI/Desktop/fizyoterapi/tests",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/KULLANICI/Desktop/fizyoterapi/tests/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/KULLANICI/Desktop/fizyoterapi/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 90000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "logs/test_results.json"
+        }
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "logs/report",
+          "open": "never"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.2",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "body_area.spec.js",
+      "file": "body_area.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "B1 — YouTube endpoint: 15 bölgenin tümü",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2167,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "✅ YouTube Boyun: 401\n"
+                    },
+                    {
+                      "text": "✅ YouTube Sol Omuz: 401\n"
+                    },
+                    {
+                      "text": "✅ YouTube Sağ Omuz: 401\n"
+                    },
+                    {
+                      "text": "✅ YouTube Üst Sırt: 401\n"
+                    },
+                    {
+                      "text": "✅ YouTube Bel / Alt Sırt: 401\n"
+                    },
+                    {
+                      "text": "✅ YouTube Kalça: 401\n"
+                    },
+                    {
+                      "text": "✅ YouTube Sol Diz: 401\n"
+                    },
+                    {
+                      "text": "✅ YouTube Sağ Diz: 401\n"
+                    },
+                    {
+                      "text": "✅ YouTube Sol Dirsek: 401\n"
+                    },
+                    {
+                      "text": "✅ YouTube Sağ Dirsek: 401\n"
+                    },
+                    {
+                      "text": "✅ YouTube Sol Bilek: 401\n"
+                    },
+                    {
+                      "text": "✅ YouTube Sağ Bilek: 401\n"
+                    },
+                    {
+                      "text": "✅ YouTube Sol Ayak Bileği: 401\n"
+                    },
+                    {
+                      "text": "✅ YouTube Sağ Ayak Bileği: 401\n"
+                    },
+                    {
+                      "text": "✅ YouTube Karın / Core: 401\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-03-19T07:12:29.507Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "70d38174c597a178d6a4-85a36c75c72eda108240",
+          "file": "body_area.spec.js",
+          "line": 84,
+          "column": 1
+        },
+        {
+          "title": "B2 — Analysis: 15 bölge egzersiz önerisi",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2625,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "❌ Boyun: 500\n"
+                    },
+                    {
+                      "text": "❌ Sol Omuz: 500\n"
+                    },
+                    {
+                      "text": "❌ Sağ Omuz: 500\n"
+                    },
+                    {
+                      "text": "❌ Üst Sırt: 500\n"
+                    },
+                    {
+                      "text": "❌ Bel / Alt Sırt: 500\n"
+                    },
+                    {
+                      "text": "❌ Kalça: 500\n"
+                    },
+                    {
+                      "text": "❌ Sol Diz: 500\n"
+                    },
+                    {
+                      "text": "❌ Sağ Diz: 500\n"
+                    },
+                    {
+                      "text": "❌ Sol Dirsek: 500\n"
+                    },
+                    {
+                      "text": "⚠️  Sağ Dirsek: Rate limit (429)\n"
+                    },
+                    {
+                      "text": "⚠️  Sol Bilek: Rate limit (429)\n"
+                    },
+                    {
+                      "text": "⚠️  Sağ Bilek: Rate limit (429)\n"
+                    },
+                    {
+                      "text": "⚠️  Sol Ayak Bileği: Rate limit (429)\n"
+                    },
+                    {
+                      "text": "⚠️  Sağ Ayak Bileği: Rate limit (429)\n"
+                    },
+                    {
+                      "text": "⚠️  Karın / Core: Rate limit (429)\n"
+                    },
+                    {
+                      "text": "\n📊 Özet: 0 ✅  9 ❌  0 ⚠️ (auth)\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-03-19T07:12:31.696Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "70d38174c597a178d6a4-79e2608b809873b0692b",
+          "file": "body_area.spec.js",
+          "line": 104,
+          "column": 1
+        },
+        {
+          "title": "B3 — Exercise library: tüm bölgeler dolu",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "✅ Kütüphane: Boyun\n"
+                    },
+                    {
+                      "text": "✅ Kütüphane: Sol Omuz\n"
+                    },
+                    {
+                      "text": "✅ Kütüphane: Sağ Omuz\n"
+                    },
+                    {
+                      "text": "✅ Kütüphane: Üst Sırt\n"
+                    },
+                    {
+                      "text": "✅ Kütüphane: Bel / Alt Sırt\n"
+                    },
+                    {
+                      "text": "✅ Kütüphane: Kalça\n"
+                    },
+                    {
+                      "text": "✅ Kütüphane: Sol Diz\n"
+                    },
+                    {
+                      "text": "✅ Kütüphane: Sağ Diz\n"
+                    },
+                    {
+                      "text": "✅ Kütüphane: Sol Dirsek\n"
+                    },
+                    {
+                      "text": "✅ Kütüphane: Sağ Dirsek\n"
+                    },
+                    {
+                      "text": "✅ Kütüphane: Sol Bilek\n"
+                    },
+                    {
+                      "text": "✅ Kütüphane: Sağ Bilek\n"
+                    },
+                    {
+                      "text": "✅ Kütüphane: Sol Ayak Bileği\n"
+                    },
+                    {
+                      "text": "✅ Kütüphane: Sağ Ayak Bileği\n"
+                    },
+                    {
+                      "text": "✅ Kütüphane: Karın / Core\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-03-19T07:12:34.334Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "70d38174c597a178d6a4-eb85a4c55b828e68ec6c",
+          "file": "body_area.spec.js",
+          "line": 183,
+          "column": 1
+        },
+        {
+          "title": "B4 — AI prompt: tüm bölgeler egzersiz kütüphanesinde",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "✅ AI prompt: Boyun\n"
+                    },
+                    {
+                      "text": "✅ AI prompt: Bel / Alt Sırt\n"
+                    },
+                    {
+                      "text": "✅ AI prompt: Sol Omuz\n"
+                    },
+                    {
+                      "text": "✅ AI prompt: Sağ Omuz\n"
+                    },
+                    {
+                      "text": "✅ AI prompt: Üst Sırt\n"
+                    },
+                    {
+                      "text": "✅ AI prompt: Kalça\n"
+                    },
+                    {
+                      "text": "✅ AI prompt: Sol Diz\n"
+                    },
+                    {
+                      "text": "✅ AI prompt: Sağ Diz\n"
+                    },
+                    {
+                      "text": "✅ AI prompt: Sol Dirsek\n"
+                    },
+                    {
+                      "text": "✅ AI prompt: Sağ Dirsek\n"
+                    },
+                    {
+                      "text": "✅ AI prompt: Sol Bilek\n"
+                    },
+                    {
+                      "text": "✅ AI prompt: Sağ Bilek\n"
+                    },
+                    {
+                      "text": "✅ AI prompt: Sol Ayak Bileği\n"
+                    },
+                    {
+                      "text": "✅ AI prompt: Sağ Ayak Bileği\n"
+                    },
+                    {
+                      "text": "✅ AI prompt: Karın / Core\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-03-19T07:12:34.358Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "70d38174c597a178d6a4-c8282ace35922b6614eb",
+          "file": "body_area.spec.js",
+          "line": 212,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "nurai.spec.js",
+      "file": "nurai.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "1 — Backend sağlık kontrolü",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 106,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "✅ Backend çevrimiçi\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-03-19T07:12:34.384Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9fc714eae243e06e3913-5d3573b4578fd0402376",
+          "file": "nurai.spec.js",
+          "line": 70,
+          "column": 1
+        },
+        {
+          "title": "2 — YouTube endpoint erişilebilir",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 86,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "✅ YouTube endpoint ayakta, status: \u001b[33m429\u001b[39m\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-03-19T07:12:34.503Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9fc714eae243e06e3913-c4916179cb4639e35d90",
+          "file": "nurai.spec.js",
+          "line": 78,
+          "column": 1
+        },
+        {
+          "title": "3 — Analysis endpoint erişilebilir",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 96,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "✅ Analysis endpoint ayakta, status: \u001b[33m429\u001b[39m\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-03-19T07:12:34.602Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9fc714eae243e06e3913-4bde62913bbf705583ab",
+          "file": "nurai.spec.js",
+          "line": 84,
+          "column": 1
+        },
+        {
+          "title": "4 — Users endpoint erişilebilir",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 89,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "✅ Users endpoint ayakta, status: \u001b[33m429\u001b[39m\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-03-19T07:12:34.710Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9fc714eae243e06e3913-cc53a8926ffaab35f343",
+          "file": "nurai.spec.js",
+          "line": 92,
+          "column": 1
+        },
+        {
+          "title": "5 — flutter analyze temiz",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8774,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "✅ flutter analyze: 0 hata\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-03-19T07:12:34.812Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9fc714eae243e06e3913-2efea8385438dace88ca",
+          "file": "nurai.spec.js",
+          "line": 98,
+          "column": 1
+        },
+        {
+          "title": "6 — Flutter web yükleniyor (CanvasKit)",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2831,
+                  "error": {
+                    "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n",
+                    "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n\n    at C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:113:14",
+                    "location": {
+                      "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                      "column": 14,
+                      "line": 113
+                    },
+                    "snippet": "\u001b[0m \u001b[90m 111 |\u001b[39m\n \u001b[90m 112 |\u001b[39m test(\u001b[32m'6 — Flutter web yükleniyor (CanvasKit)'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 113 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[33mBASE_URL\u001b[39m\u001b[33m,\u001b[39m { waitUntil\u001b[33m:\u001b[39m \u001b[32m'domcontentloaded'\u001b[39m\u001b[33m,\u001b[39m timeout\u001b[33m:\u001b[39m \u001b[35m20000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 114 |\u001b[39m\n \u001b[90m 115 |\u001b[39m   \u001b[90m// flt-glass-pane: Flutter'ın ana render container'ı\u001b[39m\n \u001b[90m 116 |\u001b[39m   \u001b[36mconst\u001b[39m flutterLoaded \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForFunction(\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                        "column": 14,
+                        "line": 113
+                      },
+                      "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n\n\n  111 |\n  112 | test('6 — Flutter web yükleniyor (CanvasKit)', async ({ page }) => {\n> 113 |   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 20000 });\n      |              ^\n  114 |\n  115 |   // flt-glass-pane: Flutter'ın ana render container'ı\n  116 |   const flutterLoaded = await page.waitForFunction(\n    at C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:113:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-03-19T07:12:43.600Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-6-—-Flutter-web-yükleniyor-CanvasKit-\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-6-—-Flutter-web-yükleniyor-CanvasKit-\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-6-—-Flutter-web-yükleniyor-CanvasKit-\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-6-—-Flutter-web-yükleniyor-CanvasKit-\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                    "column": 14,
+                    "line": 113
+                  }
+                },
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2938,
+                  "error": {
+                    "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n",
+                    "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n\n    at C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:113:14",
+                    "location": {
+                      "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                      "column": 14,
+                      "line": 113
+                    },
+                    "snippet": "\u001b[0m \u001b[90m 111 |\u001b[39m\n \u001b[90m 112 |\u001b[39m test(\u001b[32m'6 — Flutter web yükleniyor (CanvasKit)'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 113 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[33mBASE_URL\u001b[39m\u001b[33m,\u001b[39m { waitUntil\u001b[33m:\u001b[39m \u001b[32m'domcontentloaded'\u001b[39m\u001b[33m,\u001b[39m timeout\u001b[33m:\u001b[39m \u001b[35m20000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 114 |\u001b[39m\n \u001b[90m 115 |\u001b[39m   \u001b[90m// flt-glass-pane: Flutter'ın ana render container'ı\u001b[39m\n \u001b[90m 116 |\u001b[39m   \u001b[36mconst\u001b[39m flutterLoaded \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForFunction(\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                        "column": 14,
+                        "line": 113
+                      },
+                      "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n\n\n  111 |\n  112 | test('6 — Flutter web yükleniyor (CanvasKit)', async ({ page }) => {\n> 113 |   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 20000 });\n      |              ^\n  114 |\n  115 |   // flt-glass-pane: Flutter'ın ana render container'ı\n  116 |   const flutterLoaded = await page.waitForFunction(\n    at C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:113:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 1,
+                  "startTime": "2026-03-19T07:12:48.077Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-6-—-Flutter-web-yükleniyor-CanvasKit--retry1\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-6-—-Flutter-web-yükleniyor-CanvasKit--retry1\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-6-—-Flutter-web-yükleniyor-CanvasKit--retry1\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-6-—-Flutter-web-yükleniyor-CanvasKit--retry1\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                    "column": 14,
+                    "line": 113
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "9fc714eae243e06e3913-72de93936b0221d852a7",
+          "file": "nurai.spec.js",
+          "line": 112,
+          "column": 1
+        },
+        {
+          "title": "7 — Splash → login yönlendirmesi",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 3000,
+                  "error": {
+                    "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n",
+                    "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n\n    at waitForFlutter (C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:30:14)\n    at C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:126:9",
+                    "location": {
+                      "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                      "column": 14,
+                      "line": 30
+                    },
+                    "snippet": "\u001b[0m \u001b[90m 28 |\u001b[39m\n \u001b[90m 29 |\u001b[39m \u001b[36masync\u001b[39m \u001b[36mfunction\u001b[39m waitForFlutter(page\u001b[33m,\u001b[39m timeout \u001b[33m=\u001b[39m \u001b[35m20000\u001b[39m) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 30 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[33mBASE_URL\u001b[39m\u001b[33m,\u001b[39m { waitUntil\u001b[33m:\u001b[39m \u001b[32m'domcontentloaded'\u001b[39m\u001b[33m,\u001b[39m timeout\u001b[33m:\u001b[39m \u001b[35m20000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 31 |\u001b[39m   \u001b[90m// flutter_bootstrap.js uygulamayı başlatana kadar bekle\u001b[39m\n \u001b[90m 32 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForFunction(\n \u001b[90m 33 |\u001b[39m     () \u001b[33m=>\u001b[39m document\u001b[33m.\u001b[39mquerySelector(\u001b[32m'flt-glass-pane'\u001b[39m) \u001b[33m!==\u001b[39m \u001b[36mnull\u001b[39m\u001b[33m,\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                        "column": 14,
+                        "line": 30
+                      },
+                      "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n\n\n  28 |\n  29 | async function waitForFlutter(page, timeout = 20000) {\n> 30 |   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 20000 });\n     |              ^\n  31 |   // flutter_bootstrap.js uygulamayı başlatana kadar bekle\n  32 |   await page.waitForFunction(\n  33 |     () => document.querySelector('flt-glass-pane') !== null,\n    at waitForFlutter (C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:30:14)\n    at C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:126:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-03-19T07:12:52.685Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-7-—-Splash-→-login-yönlendirmesi\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-7-—-Splash-→-login-yönlendirmesi\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-7-—-Splash-→-login-yönlendirmesi\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-7-—-Splash-→-login-yönlendirmesi\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                    "column": 14,
+                    "line": 30
+                  }
+                },
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2980,
+                  "error": {
+                    "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n",
+                    "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n\n    at waitForFlutter (C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:30:14)\n    at C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:126:9",
+                    "location": {
+                      "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                      "column": 14,
+                      "line": 30
+                    },
+                    "snippet": "\u001b[0m \u001b[90m 28 |\u001b[39m\n \u001b[90m 29 |\u001b[39m \u001b[36masync\u001b[39m \u001b[36mfunction\u001b[39m waitForFlutter(page\u001b[33m,\u001b[39m timeout \u001b[33m=\u001b[39m \u001b[35m20000\u001b[39m) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 30 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[33mBASE_URL\u001b[39m\u001b[33m,\u001b[39m { waitUntil\u001b[33m:\u001b[39m \u001b[32m'domcontentloaded'\u001b[39m\u001b[33m,\u001b[39m timeout\u001b[33m:\u001b[39m \u001b[35m20000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 31 |\u001b[39m   \u001b[90m// flutter_bootstrap.js uygulamayı başlatana kadar bekle\u001b[39m\n \u001b[90m 32 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForFunction(\n \u001b[90m 33 |\u001b[39m     () \u001b[33m=>\u001b[39m document\u001b[33m.\u001b[39mquerySelector(\u001b[32m'flt-glass-pane'\u001b[39m) \u001b[33m!==\u001b[39m \u001b[36mnull\u001b[39m\u001b[33m,\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                        "column": 14,
+                        "line": 30
+                      },
+                      "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n\n\n  28 |\n  29 | async function waitForFlutter(page, timeout = 20000) {\n> 30 |   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 20000 });\n     |              ^\n  31 |   // flutter_bootstrap.js uygulamayı başlatana kadar bekle\n  32 |   await page.waitForFunction(\n  33 |     () => document.querySelector('flt-glass-pane') !== null,\n    at waitForFlutter (C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:30:14)\n    at C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:126:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 1,
+                  "startTime": "2026-03-19T07:12:57.743Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-7-—-Splash-→-login-yönlendirmesi-retry1\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-7-—-Splash-→-login-yönlendirmesi-retry1\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-7-—-Splash-→-login-yönlendirmesi-retry1\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-7-—-Splash-→-login-yönlendirmesi-retry1\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                    "column": 14,
+                    "line": 30
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "9fc714eae243e06e3913-12f1b043004fe6343aa8",
+          "file": "nurai.spec.js",
+          "line": 125,
+          "column": 1
+        },
+        {
+          "title": "8 — Giriş akışı (semantic layer)",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2913,
+                  "error": {
+                    "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n",
+                    "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n\n    at waitForFlutter (C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:30:14)\n    at C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:137:9",
+                    "location": {
+                      "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                      "column": 14,
+                      "line": 30
+                    },
+                    "snippet": "\u001b[0m \u001b[90m 28 |\u001b[39m\n \u001b[90m 29 |\u001b[39m \u001b[36masync\u001b[39m \u001b[36mfunction\u001b[39m waitForFlutter(page\u001b[33m,\u001b[39m timeout \u001b[33m=\u001b[39m \u001b[35m20000\u001b[39m) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 30 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[33mBASE_URL\u001b[39m\u001b[33m,\u001b[39m { waitUntil\u001b[33m:\u001b[39m \u001b[32m'domcontentloaded'\u001b[39m\u001b[33m,\u001b[39m timeout\u001b[33m:\u001b[39m \u001b[35m20000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 31 |\u001b[39m   \u001b[90m// flutter_bootstrap.js uygulamayı başlatana kadar bekle\u001b[39m\n \u001b[90m 32 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForFunction(\n \u001b[90m 33 |\u001b[39m     () \u001b[33m=>\u001b[39m document\u001b[33m.\u001b[39mquerySelector(\u001b[32m'flt-glass-pane'\u001b[39m) \u001b[33m!==\u001b[39m \u001b[36mnull\u001b[39m\u001b[33m,\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                        "column": 14,
+                        "line": 30
+                      },
+                      "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n\n\n  28 |\n  29 | async function waitForFlutter(page, timeout = 20000) {\n> 30 |   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 20000 });\n     |              ^\n  31 |   // flutter_bootstrap.js uygulamayı başlatana kadar bekle\n  32 |   await page.waitForFunction(\n  33 |     () => document.querySelector('flt-glass-pane') !== null,\n    at waitForFlutter (C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:30:14)\n    at C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:137:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-03-19T07:13:02.345Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-8-—-Giriş-akışı-semantic-layer-\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-8-—-Giriş-akışı-semantic-layer-\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-8-—-Giriş-akışı-semantic-layer-\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-8-—-Giriş-akışı-semantic-layer-\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                    "column": 14,
+                    "line": 30
+                  }
+                },
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2928,
+                  "error": {
+                    "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n",
+                    "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n\n    at waitForFlutter (C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:30:14)\n    at C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:137:9",
+                    "location": {
+                      "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                      "column": 14,
+                      "line": 30
+                    },
+                    "snippet": "\u001b[0m \u001b[90m 28 |\u001b[39m\n \u001b[90m 29 |\u001b[39m \u001b[36masync\u001b[39m \u001b[36mfunction\u001b[39m waitForFlutter(page\u001b[33m,\u001b[39m timeout \u001b[33m=\u001b[39m \u001b[35m20000\u001b[39m) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 30 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[33mBASE_URL\u001b[39m\u001b[33m,\u001b[39m { waitUntil\u001b[33m:\u001b[39m \u001b[32m'domcontentloaded'\u001b[39m\u001b[33m,\u001b[39m timeout\u001b[33m:\u001b[39m \u001b[35m20000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 31 |\u001b[39m   \u001b[90m// flutter_bootstrap.js uygulamayı başlatana kadar bekle\u001b[39m\n \u001b[90m 32 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForFunction(\n \u001b[90m 33 |\u001b[39m     () \u001b[33m=>\u001b[39m document\u001b[33m.\u001b[39mquerySelector(\u001b[32m'flt-glass-pane'\u001b[39m) \u001b[33m!==\u001b[39m \u001b[36mnull\u001b[39m\u001b[33m,\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                        "column": 14,
+                        "line": 30
+                      },
+                      "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n\n\n  28 |\n  29 | async function waitForFlutter(page, timeout = 20000) {\n> 30 |   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 20000 });\n     |              ^\n  31 |   // flutter_bootstrap.js uygulamayı başlatana kadar bekle\n  32 |   await page.waitForFunction(\n  33 |     () => document.querySelector('flt-glass-pane') !== null,\n    at waitForFlutter (C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:30:14)\n    at C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:137:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 1,
+                  "startTime": "2026-03-19T07:13:07.031Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-8-—-Giriş-akışı-semantic-layer--retry1\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-8-—-Giriş-akışı-semantic-layer--retry1\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-8-—-Giriş-akışı-semantic-layer--retry1\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-8-—-Giriş-akışı-semantic-layer--retry1\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                    "column": 14,
+                    "line": 30
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "9fc714eae243e06e3913-697aa389040b8def319c",
+          "file": "nurai.spec.js",
+          "line": 136,
+          "column": 1
+        },
+        {
+          "title": "9 — Ana sayfa semantic elementleri",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2997,
+                  "error": {
+                    "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n",
+                    "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n\n    at waitForFlutter (C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:30:14)\n    at login (C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:43:9)\n    at C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:165:9",
+                    "location": {
+                      "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                      "column": 14,
+                      "line": 30
+                    },
+                    "snippet": "\u001b[0m \u001b[90m 28 |\u001b[39m\n \u001b[90m 29 |\u001b[39m \u001b[36masync\u001b[39m \u001b[36mfunction\u001b[39m waitForFlutter(page\u001b[33m,\u001b[39m timeout \u001b[33m=\u001b[39m \u001b[35m20000\u001b[39m) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 30 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[33mBASE_URL\u001b[39m\u001b[33m,\u001b[39m { waitUntil\u001b[33m:\u001b[39m \u001b[32m'domcontentloaded'\u001b[39m\u001b[33m,\u001b[39m timeout\u001b[33m:\u001b[39m \u001b[35m20000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 31 |\u001b[39m   \u001b[90m// flutter_bootstrap.js uygulamayı başlatana kadar bekle\u001b[39m\n \u001b[90m 32 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForFunction(\n \u001b[90m 33 |\u001b[39m     () \u001b[33m=>\u001b[39m document\u001b[33m.\u001b[39mquerySelector(\u001b[32m'flt-glass-pane'\u001b[39m) \u001b[33m!==\u001b[39m \u001b[36mnull\u001b[39m\u001b[33m,\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                        "column": 14,
+                        "line": 30
+                      },
+                      "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n\n\n  28 |\n  29 | async function waitForFlutter(page, timeout = 20000) {\n> 30 |   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 20000 });\n     |              ^\n  31 |   // flutter_bootstrap.js uygulamayı başlatana kadar bekle\n  32 |   await page.waitForFunction(\n  33 |     () => document.querySelector('flt-glass-pane') !== null,\n    at waitForFlutter (C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:30:14)\n    at login (C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:43:9)\n    at C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:165:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-03-19T07:13:11.686Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-9-—-Ana-sayfa-semantic-elementleri\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-9-—-Ana-sayfa-semantic-elementleri\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-9-—-Ana-sayfa-semantic-elementleri\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-9-—-Ana-sayfa-semantic-elementleri\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                    "column": 14,
+                    "line": 30
+                  }
+                },
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 3084,
+                  "error": {
+                    "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n",
+                    "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n\n    at waitForFlutter (C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:30:14)\n    at login (C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:43:9)\n    at C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:165:9",
+                    "location": {
+                      "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                      "column": 14,
+                      "line": 30
+                    },
+                    "snippet": "\u001b[0m \u001b[90m 28 |\u001b[39m\n \u001b[90m 29 |\u001b[39m \u001b[36masync\u001b[39m \u001b[36mfunction\u001b[39m waitForFlutter(page\u001b[33m,\u001b[39m timeout \u001b[33m=\u001b[39m \u001b[35m20000\u001b[39m) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 30 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[33mBASE_URL\u001b[39m\u001b[33m,\u001b[39m { waitUntil\u001b[33m:\u001b[39m \u001b[32m'domcontentloaded'\u001b[39m\u001b[33m,\u001b[39m timeout\u001b[33m:\u001b[39m \u001b[35m20000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 31 |\u001b[39m   \u001b[90m// flutter_bootstrap.js uygulamayı başlatana kadar bekle\u001b[39m\n \u001b[90m 32 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForFunction(\n \u001b[90m 33 |\u001b[39m     () \u001b[33m=>\u001b[39m document\u001b[33m.\u001b[39mquerySelector(\u001b[32m'flt-glass-pane'\u001b[39m) \u001b[33m!==\u001b[39m \u001b[36mnull\u001b[39m\u001b[33m,\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                        "column": 14,
+                        "line": 30
+                      },
+                      "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:8181/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8181/\", waiting until \"domcontentloaded\"\u001b[22m\n\n\n  28 |\n  29 | async function waitForFlutter(page, timeout = 20000) {\n> 30 |   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 20000 });\n     |              ^\n  31 |   // flutter_bootstrap.js uygulamayı başlatana kadar bekle\n  32 |   await page.waitForFunction(\n  33 |     () => document.querySelector('flt-glass-pane') !== null,\n    at waitForFlutter (C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:30:14)\n    at login (C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:43:9)\n    at C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js:165:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 1,
+                  "startTime": "2026-03-19T07:13:16.407Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-9-—-Ana-sayfa-semantic-elementleri-retry1\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-9-—-Ana-sayfa-semantic-elementleri-retry1\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-9-—-Ana-sayfa-semantic-elementleri-retry1\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\test-results\\nurai-9-—-Ana-sayfa-semantic-elementleri-retry1\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\KULLANICI\\Desktop\\fizyoterapi\\tests\\nurai.spec.js",
+                    "column": 14,
+                    "line": 30
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "9fc714eae243e06e3913-0755fb230595c3e24a21",
+          "file": "nurai.spec.js",
+          "line": 164,
+          "column": 1
+        },
+        {
+          "title": "10 — Backend + Flutter entegrasyon özeti",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 367,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "✅ health\n"
+                    },
+                    {
+                      "text": "✅ youtube\n"
+                    },
+                    {
+                      "text": "✅ users\n"
+                    },
+                    {
+                      "text": "✅ analysis\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-03-19T07:13:21.818Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9fc714eae243e06e3913-8d71585ac4383f0bb954",
+          "file": "nurai.spec.js",
+          "line": 180,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-03-19T07:12:28.119Z",
+    "duration": 54122.82000000001,
+    "expected": 10,
+    "skipped": 0,
+    "unexpected": 4,
+    "flaky": 0
+  }
+}

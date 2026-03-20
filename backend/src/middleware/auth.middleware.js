@@ -1,6 +1,7 @@
 'use strict';
 
 const admin = require('../config/firebase');
+const logger = require('../config/logger');
 
 async function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -15,7 +16,7 @@ async function authMiddleware(req, res, next) {
     req.user = decoded;
     next();
   } catch (err) {
-    console.error('[Auth] Token verify failed:', err.message);
+    logger.error('[Auth] Token verify failed', { message: err.message });
     return res.status(401).json({ error: 'Invalid or expired token.' });
   }
 }

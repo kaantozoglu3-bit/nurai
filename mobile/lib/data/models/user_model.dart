@@ -26,9 +26,9 @@ class UserModel {
         lastAnalysisDate!.year == today.year &&
         lastAnalysisDate!.month == today.month &&
         lastAnalysisDate!.day == today.day) {
-      return (3 - dailyAnalysisCount).clamp(0, 3);
+      return (1 - dailyAnalysisCount).clamp(0, 1);
     }
-    return 3;
+    return 1;
   }
 
   bool get canAnalyze => isPremium || remainingAnalyses > 0;

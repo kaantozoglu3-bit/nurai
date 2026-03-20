@@ -1,10 +1,108 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../data/services/notification_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/router/app_router.dart';
 import '../../providers/auth_provider.dart';
+
+const String _privacyUrl = 'https://nurai.app/privacy';
+const String _termsUrl = 'https://nurai.app/terms';
+const String _feedbackEmail = 'destek@nurai.app';
+
+Future<void> _launchUrl(String url) async {
+  final uri = Uri.parse(url);
+  if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+    return;
+  }
+}
+
+Future<void> _showNotificationDialog(BuildContext context) async {
+  final svc = NotificationService.instance;
+  final settings = await svc.getReminderSettings();
+  if (!context.mounted) return;
+
+  TimeOfDay selected = TimeOfDay(hour: settings.hour, minute: settings.minute);
+  bool enabled = settings.enabled;
+
+  await showDialog<void>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setState) => AlertDialog(
+        title: const Text(
+          'Egzersiz Hatırlatıcısı',
+          style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w700),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SwitchListTile(
+              title: const Text('Günlük Hatırlatıcı',
+                  style: TextStyle(fontFamily: 'Inter', fontSize: 14)),
+              value: enabled,
+              onChanged: (v) => setState(() => enabled = v),
+              activeThumbColor: AppColors.primary,
+              contentPadding: EdgeInsets.zero,
+            ),
+            if (enabled) ...[
+              const SizedBox(height: 8),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Saat',
+                    style: TextStyle(fontFamily: 'Inter', fontSize: 14)),
+                trailing: Text(
+                  '${selected.hour.toString().padLeft(2, '0')}:${selected.minute.toString().padLeft(2, '0')}',
+                  style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary),
+                ),
+                onTap: () async {
+                  final t = await showTimePicker(
+                    context: ctx,
+                    initialTime: selected,
+                  );
+                  if (t != null) setState(() => selected = t);
+                },
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Vazgeç'),
+          ),
+          TextButton(
+            onPressed: () async {
+              if (enabled) {
+                final granted = await svc.requestPermission();
+                if (granted) {
+                  await svc.scheduleDaily(selected.hour, selected.minute);
+                }
+              } else {
+                await svc.cancel();
+              }
+              if (ctx.mounted) Navigator.of(ctx).pop();
+            },
+            child: const Text('Kaydet'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Future<void> _launchEmail(String email) async {
+  final uri = Uri(scheme: 'mailto', path: email, queryParameters: {
+    'subject': 'Nurai Uygulama Geri Bildirimi',
+  });
+  if (!await launchUrl(uri)) {
+    return;
+  }
+}
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -146,7 +244,7 @@ class ProfileScreen extends ConsumerWidget {
           _SettingsTile(
             icon: Icons.notifications_outlined,
             title: 'Bildirimler',
-            onTap: () {},
+            onTap: () => _showNotificationDialog(context),
           ),
           _SettingsTile(
             icon: Icons.language_outlined,
@@ -165,17 +263,17 @@ class ProfileScreen extends ConsumerWidget {
           _SettingsTile(
             icon: Icons.feedback_outlined,
             title: 'Geri Bildirim',
-            onTap: () {},
+            onTap: () => _launchEmail(_feedbackEmail),
           ),
           _SettingsTile(
             icon: Icons.privacy_tip_outlined,
             title: 'Gizlilik Politikası',
-            onTap: () {},
+            onTap: () => _launchUrl(_privacyUrl),
           ),
           _SettingsTile(
             icon: Icons.description_outlined,
             title: 'Kullanım Şartları',
-            onTap: () {},
+            onTap: () => _launchUrl(_termsUrl),
           ),
 
           const SizedBox(height: 8),

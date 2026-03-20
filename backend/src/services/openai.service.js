@@ -10,7 +10,7 @@ const client = new OpenAI({
 });
 
 const MODEL = 'llama-3.3-70b-versatile';
-const MAX_TOKENS = 900;
+const MAX_TOKENS = 1200;
 const MODEL_TEMPERATURE = 0.85;
 
 // ─── System Prompt ───────────────────────────────────────────────────────────

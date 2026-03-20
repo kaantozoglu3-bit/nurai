@@ -4,7 +4,7 @@ import '../models/analysis_model.dart';
 /// Parses raw AI message text into structured data.
 class AnalysisParserService {
   static const int _maxCauses = 5;
-  /// Parses "YOUTUBE_EGZERSIZLER: egz1 | egz2 | egz3" from AI message.
+  /// Parses "YOUTUBE_EGZERSIZLER: egz1 | egz2 | egz3" (or comma-separated) from AI message.
   static List<String> parseExercises(String aiMessage) {
     final regex = RegExp(r'YOUTUBE_EGZERSIZLER:\s*(.+)', caseSensitive: false);
     final match = regex.firstMatch(aiMessage);
@@ -12,10 +12,14 @@ class AnalysisParserService {
       if (kDebugMode) debugPrint('[AnalysisParser] YOUTUBE_EGZERSIZLER etiketi bulunamadı — YouTube videosu gösterilmeyecek');
       return [];
     }
-    return match
-        .group(1)!
-        .split('|')
-        .map((e) => e.trim())
+    final raw = match.group(1)!;
+    // Support both pipe (|) and comma (,) as delimiters — LLMs may use either.
+    final delimiter = raw.contains('|') ? '|' : ',';
+    return raw
+        .split(delimiter)
+        .map((e) => e
+            .replaceAll(RegExp(r'^\[|\]$'), '') // strip surrounding brackets
+            .trim())
         .where((e) => e.isNotEmpty)
         .toList();
   }

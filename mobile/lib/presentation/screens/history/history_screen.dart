@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/router/app_router.dart';
 import '../../../data/models/analysis_model.dart';
+import '../../providers/history_provider.dart';
 
-class HistoryScreen extends StatelessWidget {
+class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final analyses = MockData.analyses;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final historyAsync = ref.watch(historyProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -22,44 +24,87 @@ class HistoryScreen extends StatelessWidget {
           onPressed: () => context.go(AppRoutes.home),
         ),
         title: const Text('Geçmiş Analizler'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: AppColors.textSecondary),
+            onPressed: () => ref.invalidate(historyProvider),
+          ),
+        ],
       ),
-      body: analyses.isEmpty
-          ? const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.history, size: 64, color: AppColors.textHint),
-                  SizedBox(height: 16),
-                  Text(
-                    'Henüz analiz yok',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 16,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
+      body: historyAsync.when(
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+        error: (err, _) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 48, color: AppColors.error),
+              const SizedBox(height: 12),
+              const Text(
+                'Geçmiş yüklenemedi',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 16,
+                  color: AppColors.textSecondary,
+                ),
               ),
-            )
-          : ListView.separated(
-              padding: const EdgeInsets.all(AppDimensions.paddingXXL),
-              itemCount: analyses.length,
-              separatorBuilder: (_, sep) =>
-                  const SizedBox(height: AppDimensions.paddingM),
-              itemBuilder: (context, index) {
-                final analysis = analyses[index];
-                return _HistoryCard(
-                  analysis: analysis,
-                  onTap: () => context.go(
-                    AppRoutes.analysisResult,
-                    extra: {
-                      'analysis': analysis,
-                      'bodyArea': analysis.bodyArea,
-                    },
-                  ),
-                );
-              },
-            ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => ref.invalidate(historyProvider),
+                child: const Text('Tekrar Dene'),
+              ),
+            ],
+          ),
+        ),
+        data: (analyses) => analyses.isEmpty
+            ? const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.history, size: 64, color: AppColors.textHint),
+                    SizedBox(height: 16),
+                    Text(
+                      'Henüz analiz yok',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 16,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'İlk analizini yapmak için ana sayfaya dön',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 13,
+                        color: AppColors.textHint,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : ListView.separated(
+                padding: const EdgeInsets.all(AppDimensions.paddingXXL),
+                itemCount: analyses.length,
+                separatorBuilder: (_, _) =>
+                    const SizedBox(height: AppDimensions.paddingM),
+                itemBuilder: (context, index) {
+                  final analysis = analyses[index];
+                  return _HistoryCard(
+                    analysis: analysis,
+                    onTap: () => context.go(
+                      AppRoutes.analysisResult,
+                      extra: {
+                        'analysis': analysis,
+                        'bodyArea': analysis.bodyArea,
+                        'bodyAreaLabel': analysis.bodyAreaLabel,
+                      },
+                    ),
+                  );
+                },
+              ),
+      ),
     );
   }
 }
