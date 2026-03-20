@@ -9,6 +9,8 @@ import '../library/library_screen.dart';
 import '../progress/progress_screen.dart';
 import '../program/program_screen.dart';
 import '../../providers/quick_exercise_provider.dart';
+import 'widgets/quota_card.dart';
+import 'widgets/empty_analysis_state.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -135,66 +137,7 @@ class _HomeTab extends ConsumerWidget {
             const SizedBox(height: 28),
 
             // Main CTA
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppDimensions.paddingXXL),
-              decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient,
-                borderRadius: BorderRadius.circular(AppDimensions.radiusL),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.self_improvement,
-                      color: Colors.white70, size: 36),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Ağrını Analiz Et',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'AI destekli analiz ile ağrının nedenini bul ve kişiselleştirilmiş egzersizlere başla.',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 13,
-                      color: Colors.white70,
-                      height: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: () => context.go(AppRoutes.bodySelector),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: AppColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(AppDimensions.radiusS),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        'Başla',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _AnalysisCta(),
             const SizedBox(height: 20),
 
             // Hızlı Egzersiz card
@@ -202,84 +145,7 @@ class _HomeTab extends ConsumerWidget {
             const SizedBox(height: 16),
 
             // Quota card
-            if (!isPremium)
-              Container(
-                padding: const EdgeInsets.all(AppDimensions.paddingL),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: remaining > 0
-                            ? AppColors.secondary.withValues(alpha: 0.1)
-                            : AppColors.error.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.analytics_outlined,
-                        color: remaining > 0
-                            ? AppColors.secondary
-                            : AppColors.error,
-                        size: 22,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            remaining > 0
-                                ? 'Bugün 1 analiz hakkın var'
-                                : 'Günlük 1 analiz hakkın doldu',
-                            style: const TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: LinearProgressIndicator(
-                              value: remaining > 0 ? 1.0 : 0.0,
-                              backgroundColor: AppColors.border,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                remaining > 0
-                                    ? AppColors.secondary
-                                    : AppColors.error,
-                              ),
-                              minHeight: 4,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (remaining == 0) ...[
-                      const SizedBox(width: 12),
-                      TextButton(
-                        onPressed: () => context.go(AppRoutes.paywall),
-                        child: const Text(
-                          'Premium',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
+            if (!isPremium) QuotaCard(remaining: remaining),
             const SizedBox(height: 24),
 
             // Son Analizler
@@ -310,9 +176,76 @@ class _HomeTab extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
 
-            const _EmptyAnalysisState(),
+            const EmptyAnalysisState(),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ─── Analysis CTA ─────────────────────────────────────────────────────────────
+
+class _AnalysisCta extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppDimensions.paddingXXL),
+      decoration: BoxDecoration(
+        gradient: AppColors.primaryGradient,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.self_improvement, color: Colors.white70, size: 36),
+          const SizedBox(height: 16),
+          const Text(
+            'Ağrını Analiz Et',
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'AI destekli analiz ile ağrının nedenini bul ve kişiselleştirilmiş egzersizlere başla.',
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 13,
+              color: Colors.white70,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: () => context.go(AppRoutes.bodySelector),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.radiusS),
+                ),
+                elevation: 0,
+              ),
+              child: const Text(
+                'Başla',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -365,7 +298,9 @@ class _QuickExerciseCard extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isDone ? 'Bugünkü Egzersiz Tamamlandı!' : 'Bugünün Hızlı Egzersizi',
+                    isDone
+                        ? 'Bugünkü Egzersiz Tamamlandı!'
+                        : 'Bugünün Hızlı Egzersizi',
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 14,
@@ -397,77 +332,7 @@ class _QuickExerciseCard extends ConsumerWidget {
   }
 }
 
-class _EmptyAnalysisState extends StatelessWidget {
-  const _EmptyAnalysisState();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.healing_outlined,
-            size: 48,
-            color: AppColors.textSecondary.withValues(alpha: 0.4),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Henüz analiz yapılmadı',
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'İlk analizini yaparak ağrının nedenini öğren.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 13,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 40,
-            child: ElevatedButton(
-              onPressed: () => context.go(AppRoutes.bodySelector),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                ),
-                elevation: 0,
-              ),
-              child: const Text(
-                'İlk Analizini Yap',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-
-
+// ─── Profile Tab ──────────────────────────────────────────────────────────────
 
 class _ProfileTab extends ConsumerWidget {
   const _ProfileTab();
