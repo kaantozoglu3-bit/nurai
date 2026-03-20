@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../data/services/analytics_service.dart';
@@ -8,42 +9,52 @@ import '../../../core/constants/app_dimensions.dart';
 import '../../../core/router/app_router.dart';
 import '../../../data/models/analysis_model.dart';
 import '../../../data/services/api_service.dart';
+import '../../providers/navigation_provider.dart';
 import '../../widgets/app_button.dart';
 import 'widgets/exercise_card_widget.dart';
 import 'widgets/pain_score_widget.dart';
 import 'widgets/result_section_title.dart';
 
-class AnalysisResultScreen extends StatefulWidget {
+class AnalysisResultScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> analysisData;
 
   const AnalysisResultScreen({super.key, required this.analysisData});
 
   @override
-  State<AnalysisResultScreen> createState() => _AnalysisResultScreenState();
+  ConsumerState<AnalysisResultScreen> createState() =>
+      _AnalysisResultScreenState();
 }
 
-class _AnalysisResultScreenState extends State<AnalysisResultScreen> {
+class _AnalysisResultScreenState extends ConsumerState<AnalysisResultScreen> {
   // exerciseName (lowercase) → video data
   Map<String, Map<String, dynamic>> _exerciseVideoMap = {};
   bool _videosLoading = true;
 
-  late final String _bodyArea =
-      widget.analysisData['bodyArea'] as String? ?? 'lower_back';
+  /// Returns the effective analysis data: widget field first (passed via
+  /// constructor for backwards-compatible callers), then provider state
+  /// (set before navigating from ChatScreen).
+  Map<String, dynamic> _effectiveData() {
+    if (widget.analysisData.isNotEmpty) return widget.analysisData;
+    return ref.read(analysisResultDataProvider);
+  }
+
+  late final String _bodyArea = _effectiveData()['bodyArea'] as String? ?? 'lower_back';
 
   late final AnalysisModel _analysis = () {
-    final passed = widget.analysisData['analysis'];
+    final data = _effectiveData();
+    final passed = data['analysis'];
     if (passed is AnalysisModel) return passed;
     final bodyAreaLabel =
-        widget.analysisData['bodyAreaLabel'] as String? ?? _bodyArea;
+        data['bodyAreaLabel'] as String? ?? _bodyArea;
     return AnalysisModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       bodyArea: _bodyArea,
       bodyAreaLabel: bodyAreaLabel,
-      painScore: widget.analysisData['painScore'] as int? ?? 5,
+      painScore: data['painScore'] as int? ?? 5,
       userComplaint: '',
-      aiSummary: widget.analysisData['aiSummary'] as String? ??
+      aiSummary: data['aiSummary'] as String? ??
           '$bodyAreaLabel bölgesinde ağrı analizi tamamlandı.',
-      possibleCauses: (widget.analysisData['possibleCauses'] as List?)
+      possibleCauses: (data['possibleCauses'] as List?)
               ?.cast<String>() ??
           ['Kas gerilmesi', 'Postür bozukluğu'],
       exercises: [],
@@ -292,14 +303,15 @@ ${exercises.isNotEmpty ? exercises : 'Egzersiz önerisi yok'}
                               exerciseName: exercise.name,
                               videoId: video['videoId'] as String? ?? '',
                             );
-                            context.go(
-                              AppRoutes.videoPlayer,
-                              extra: {
-                                'videoId': video['videoId'],
-                                'title': video['title'],
-                                'channel': video['channelTitle'],
-                              },
-                            );
+                            // Store video data in provider before navigating
+                            // so VideoPlayerScreen can read it without relying
+                            // on state.extra (which breaks deep links).
+                            ref.read(videoPlayerDataProvider.notifier).state = {
+                              'videoId': video['videoId'],
+                              'title': video['title'],
+                              'channel': video['channelTitle'],
+                            };
+                            context.go(AppRoutes.videoPlayer);
                           }
                         : null,
                   ),

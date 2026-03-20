@@ -38,6 +38,13 @@ dependencies:
   # Video
   youtube_player_flutter: ^9.1.1
 
+  # SSL Pinning — pending native setup
+  # ssl_pinning_plugin: ^2.0.2 is incompatible with AGP 8+ (missing namespace
+  # in android/build.gradle). The dart:io SPKI pinning in api_service.dart
+  # is the active mechanism. Re-enable once upstream support is available or
+  # switch to http_certificate_pinning.
+  # ssl_pinning_plugin: (pending — requires iOS/Android native setup)
+
   # Utils
   intl: ^0.19.0
   equatable: ^2.0.5

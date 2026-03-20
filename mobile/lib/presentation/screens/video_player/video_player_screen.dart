@@ -1,26 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
+import '../../providers/navigation_provider.dart';
 
-class VideoPlayerScreen extends StatefulWidget {
+class VideoPlayerScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> videoData;
 
   const VideoPlayerScreen({super.key, required this.videoData});
 
   @override
-  State<VideoPlayerScreen> createState() => _VideoPlayerScreenState();
+  ConsumerState<VideoPlayerScreen> createState() => _VideoPlayerScreenState();
 }
 
-class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
+class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
   YoutubePlayerController? _controller;
   bool _isCompleted = false;
+
+  /// Returns the effective video data map: widget field first (backwards-
+  /// compatible callers), then the Riverpod provider (set by the caller
+  /// before navigating to avoid state.extra deep-link breakage).
+  Map<String, dynamic> _effectiveData() {
+    if (widget.videoData.isNotEmpty) return widget.videoData;
+    return ref.read(videoPlayerDataProvider);
+  }
 
   @override
   void initState() {
     super.initState();
-    final videoId = widget.videoData['videoId'] as String? ?? '';
+    final videoId = _effectiveData()['videoId'] as String? ?? '';
     if (videoId.isNotEmpty) {
       _controller = YoutubePlayerController(
         initialVideoId: videoId,
@@ -40,8 +50,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final title = widget.videoData['title'] as String? ?? 'Egzersiz Videosu';
-    final channel = widget.videoData['channel'] as String? ?? '';
+    final data = _effectiveData();
+    final title = data['title'] as String? ?? 'Egzersiz Videosu';
+    final channel = data['channel'] as String? ?? '';
 
     return YoutubePlayerBuilder(
       player: YoutubePlayer(

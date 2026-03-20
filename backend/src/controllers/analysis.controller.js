@@ -44,6 +44,7 @@ async function chat(req, res) {
   }
   const { profile, bodyArea, messages, sessionId } = value;
   try {
+    res.set('Cache-Control', 'no-store');
     await streamChatResponse({ profile: profile ?? {}, bodyArea, messages, sessionId, res });
   } catch (err) {
     logger.error('[chat] Streaming error', { message: err.message });
@@ -66,6 +67,7 @@ async function chatSync(req, res) {
   const { profile, bodyArea, messages, sessionId } = value;
   try {
     const content = await getChatResponse({ profile: profile ?? {}, bodyArea, messages, sessionId });
+    res.set('Cache-Control', 'no-store');
     res.json({ content });
   } catch (err) {
     logger.error('[chatSync] error:', { message: err.message });

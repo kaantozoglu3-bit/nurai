@@ -22,6 +22,8 @@ import '../../presentation/screens/quick_exercise/quick_exercise_screen.dart';
 import '../../data/models/physiotherapist_model.dart';
 import '../../data/models/message_model.dart';
 import '../../presentation/providers/auth_provider.dart';
+// navigation_provider.dart is set by callers before pushing analysisResult /
+// videoPlayer routes; the screens read from it directly.
 
 class AppRoutes {
   static const String splash = '/';
@@ -127,21 +129,20 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.analysisResult,
         builder: (context, state) {
-          // state.extra carries a complex object; deep-link / null-extra falls
-          // back to an empty map so the screen can show a graceful empty state.
-          // TODO: migrate to a provider for proper deep-link support.
-          final analysisData = state.extra as Map<String, dynamic>? ?? {};
-          return AnalysisResultScreen(analysisData: analysisData);
+          // Data is stored in analysisResultDataProvider by the caller
+          // (e.g. ChatScreen) before navigating. Passing an empty map here
+          // tells the screen to read from the provider instead, which avoids
+          // the state.extra breakage on deep links.
+          return const AnalysisResultScreen(analysisData: {});
         },
       ),
       GoRoute(
         path: AppRoutes.videoPlayer,
         builder: (context, state) {
-          // state.extra carries a complex object; deep-link / null-extra falls
-          // back to an empty map so the screen can show a graceful empty state.
-          // TODO: migrate to a provider for proper deep-link support.
-          final videoData = state.extra as Map<String, dynamic>? ?? {};
-          return VideoPlayerScreen(videoData: videoData);
+          // Data is stored in videoPlayerDataProvider by the caller before
+          // navigating. Passing an empty map here tells the screen to read
+          // from the provider instead of state.extra.
+          return const VideoPlayerScreen(videoData: {});
         },
       ),
       GoRoute(
@@ -167,10 +168,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.ptDetail,
         builder: (context, state) {
-          // state.extra carries a complex object that cannot be encoded in query
-          // params. This is intentional; deep-link or null-extra scenario falls
-          // back to home rather than crashing with a cast error.
-          // TODO: migrate to a provider/state manager for proper deep-link support.
+          // state.extra carries a PhysiotherapistModel passed by the caller.
+          // When the route is reached via deep link (null extra), the user is
+          // redirected to home rather than crashing with a cast error.
           final pt = state.extra;
           if (pt is! PhysiotherapistModel) {
             WidgetsBinding.instance.addPostFrameCallback((_) {

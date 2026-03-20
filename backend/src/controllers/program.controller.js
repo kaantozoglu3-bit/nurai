@@ -36,6 +36,7 @@ async function generateProgramHandler(req, res) {
 
   try {
     const program = await generateProgram(targetAreas, avgPainScore, fitnessLevel);
+    res.set('Cache-Control', 'no-store');
     return res.json({ program });
   } catch (err) {
     logger.error('[ProgramController] Generate failed', { uid, message: err.message });

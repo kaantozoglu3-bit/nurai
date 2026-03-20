@@ -1,6 +1,7 @@
 'use strict';
 
 const { searchVideos, searchVideosByExercises } = require('../services/youtube.service');
+const logger = require('../config/logger');
 
 /**
  * GET /api/v1/youtube/search?bodyArea=right_shoulder&exercises=egzersiz1|egzersiz2
@@ -21,9 +22,10 @@ async function search(req, res) {
     } else {
       videos = await searchVideos(bodyArea, q);
     }
+    res.set('Cache-Control', 'public, max-age=21600'); // 6 hours
     res.json({ videos });
   } catch (err) {
-    console.error('[YouTube]', err.message);
+    logger.error('[YouTube] Search failed', { message: err.message });
     res.status(502).json({ error: 'YouTube search failed.', detail: err.message });
   }
 }

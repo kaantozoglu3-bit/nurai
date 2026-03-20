@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/router/app_router.dart';
 import '../../providers/chat_provider.dart';
+import '../../providers/navigation_provider.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   final String bodyArea;
@@ -82,11 +83,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         return;
       }
       if (next.completedAnalysis != null && prev?.completedAnalysis == null) {
-        context.go(AppRoutes.analysisResult, extra: {
+        // Store data in provider before navigating — avoids state.extra
+        // dependency that breaks deep links.
+        ref.read(analysisResultDataProvider.notifier).state = {
           'analysis': next.completedAnalysis,
           'bodyArea': widget.bodyArea,
           'bodyAreaLabel': kBodyAreaLabels[widget.bodyArea] ?? widget.bodyArea,
-        });
+        };
+        context.go(AppRoutes.analysisResult);
         return;
       }
       if (next.messages.length != (prev?.messages.length ?? 0)) {

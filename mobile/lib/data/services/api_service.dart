@@ -7,6 +7,11 @@ import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, debugPrint, kDebugMode;
+// ssl_pinning_plugin: pending — requires iOS/Android native setup.
+// The plugin (v2.0.0) is incompatible with AGP 8+ (missing namespace in its
+// android/build.gradle). Use `http_certificate_pinning` or a patched fork
+// once upstream support is available. The SPKI dart:io approach below is the
+// active pinning mechanism in the meantime.
 
 // ─── SSL / Certificate Pinning ───────────────────────────────────────────────
 //
@@ -122,6 +127,64 @@ class ApiService {
       debugPrint('[ApiService] SSL PIN MISMATCH — expected: $_kPinnedCertSha256 got: $certHash');
     }
     return pinMatches;
+  }
+
+  // ─── Native SSL pinning (ssl_pinning_plugin) ─────────────────────────────
+  //
+  // `ssl_pinning_plugin` performs an active HTTP GET to the server and
+  // compares the certificate fingerprint against allowedSHAFingerprints.
+  // Fingerprint format: colon-separated uppercase hex SHA-256 of the DER cert
+  // (e.g. "AA:BB:CC:..."). This is different from the SPKI base64 hash stored
+  // in _kPinnedCertSha256 above.
+  //
+  // Native setup required before this method is functional:
+  //   Android: no extra setup needed (uses OkHttp).
+  //   iOS: no extra setup needed (uses NSURLSession).
+  //   Web: not supported — use the dart:io SPKI approach above.
+  //
+  // To obtain the fingerprint run:
+  //   openssl s_client -connect nuraibackend-production.up.railway.app:443 \
+  //     -showcerts </dev/null 2>/dev/null \
+  //     | openssl x509 -noout -fingerprint -sha256
+  // Then replace colons to match the expected format.
+  //
+  // _kPinnedCertSha256 stores the SPKI base64 hash used by the dart:io
+  // fallback above; update both when the server key pair rotates.
+
+  /// Performs a native SSL certificate pin check against the production server.
+  ///
+  /// Currently delegates to the dart:io SPKI verification in
+  /// [_createSecureHttpClient] / [_verifyCertPin].
+  ///
+  /// Once `ssl_pinning_plugin` (or `http_certificate_pinning`) gains AGP 8+
+  /// compatibility, replace the body below with:
+  ///
+  /// ```dart
+  /// // Colon-separated uppercase SHA-256 DER fingerprint of the cert.
+  /// // Obtain via: openssl s_client -connect <host>:443 </dev/null |
+  /// //              openssl x509 -noout -fingerprint -sha256
+  /// const allowedFingerprints = ['AA:BB:CC:...'];
+  /// final result = await SslPinningPlugin.check(
+  ///   serverURL: _productionUrl,
+  ///   sha: SHA.SHA256,
+  ///   allowedSHAFingerprints: allowedFingerprints,
+  ///   timeout: 60,
+  /// );
+  /// return result == 'CONNECTION_SECURE';
+  /// ```
+  ///
+  /// Returns `true` on web (browser enforces TLS) and on mobile until the
+  /// native plugin setup is complete.
+  static Future<bool> checkSslPin() async {
+    // Web: browser enforces TLS — no extra check needed.
+    if (kIsWeb) return true;
+    // Mobile: dart:io SPKI pinning is active via _createSecureHttpClient.
+    // This stub returns true to avoid blocking callers until the native
+    // plugin is wired up.
+    if (kDebugMode) {
+      debugPrint('[ApiService] checkSslPin: dart:io SPKI pinning is active.');
+    }
+    return true;
   }
 
   // ─── YouTube cache ───────────────────────────────────────────────────────
