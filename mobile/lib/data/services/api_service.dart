@@ -81,12 +81,12 @@ class ApiService {
 
   // ─── YouTube cache ───────────────────────────────────────────────────────
   static final Map<String, _CacheEntry<List<Map<String, dynamic>>>> _youtubeCache = {};
-  static const Duration _youtubeCacheTtl = Duration(hours: 24);
+  static const Duration _youtubeCacheTtl = Duration(hours: 6);
 
   // ─── Public API ──────────────────────────────────────────────────────────
 
   /// Fetches YouTube exercise videos for the given body area.
-  /// Results are cached client-side for 24 hours to avoid redundant API calls.
+  /// Results are cached client-side for 6 hours to avoid redundant API calls.
   static Future<List<Map<String, dynamic>>> fetchYoutubeVideos({
     required String bodyArea,
     List<String>? exercises,
