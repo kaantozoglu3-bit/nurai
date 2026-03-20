@@ -62,14 +62,32 @@ class ApiService {
   }
 
   /// Returns an HttpClient with SPKI certificate pinning for the production host.
-  /// All bad-certificate callbacks return false (fail-closed) so that only
-  /// the pinned key is accepted and all others are rejected.
+  ///
+  /// dart:io's [badCertificateCallback] fires only for certificates that the
+  /// system trust store would normally reject (e.g. self-signed, expired, host
+  /// mismatch). Railway's Let's Encrypt certificate is trusted by the system
+  /// store, so this callback is the correct place to enforce pin verification
+  /// for cert-chain failures, while still being fail-closed for fully invalid
+  /// certificates from other hosts.
+  ///
+  /// Limitation: for production-grade TOFU (Trust-On-First-Use) pinning on
+  /// valid certs you need a native plugin such as `ssl_pinning_plugin`, because
+  /// dart:io does not expose a post-handshake hook for already-trusted chains.
   static HttpClient _createSecureHttpClient() {
     final client = HttpClient();
 
     client.badCertificateCallback = (X509Certificate cert, String host, int port) {
-      // Always reject in release mode without leaking cert details.
-      if (kReleaseMode) return false;
+      if (host != _productionHost) return false;
+      // For invalid certs from our own host: attempt pin verification.
+      // If the pinned hash matches we allow the connection (e.g. cert expired
+      // but it's still our key); all other scenarios are rejected fail-closed.
+      if (_kPinnedCertSha256.isNotEmpty) {
+        final pinMatch = _verifyCertPin(cert);
+        if (kReleaseMode) return pinMatch;
+        debugPrint('[ApiService] SSL: cert pin ${pinMatch ? "MATCHED" : "FAILED"} for $host:$port');
+        return pinMatch;
+      }
+      // No pin configured — reject (fail-closed).
       if (kDebugMode) {
         debugPrint(
           '[ApiService] SSL: Rejecting bad cert for $host:$port — issuer: ${cert.issuer}',
@@ -82,9 +100,13 @@ class ApiService {
   }
 
   /// Verifies that [cert] matches the pinned SPKI SHA-256 hash.
-  /// Called via [_createSecureHttpClient] when validating production TLS certs.
-  /// Returns true only when the certificate's DER bytes hash matches the pin.
-  // ignore: unused_element
+  ///
+  /// Called from [_createSecureHttpClient]'s [badCertificateCallback] when a
+  /// TLS handshake fails system validation for [_productionHost]. Returns true
+  /// only when the certificate's DER bytes hash matches [_kPinnedCertSha256].
+  ///
+  /// Upgrade path: replace this with `ssl_pinning_plugin` for full TOFU pinning
+  /// that also validates system-trusted certificates.
   static bool _verifyCertPin(X509Certificate cert) {
     if (_kPinnedCertSha256.isEmpty) {
       // Pin not configured — skip verification (development only).

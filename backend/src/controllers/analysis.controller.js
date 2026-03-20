@@ -30,6 +30,7 @@ const chatSchema = Joi.object({
   bodyArea: Joi.string().valid(...VALID_BODY_AREAS).required(),
   messages: Joi.array().items(messageSchema).min(1).max(50).required(),
   profile: profileSchema,
+  sessionId: Joi.string().uuid({ version: 'uuidv4' }).required(),
 });
 
 /**

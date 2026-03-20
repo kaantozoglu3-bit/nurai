@@ -127,6 +127,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.analysisResult,
         builder: (context, state) {
+          // state.extra carries a complex object; deep-link / null-extra falls
+          // back to an empty map so the screen can show a graceful empty state.
+          // TODO: migrate to a provider for proper deep-link support.
           final analysisData = state.extra as Map<String, dynamic>? ?? {};
           return AnalysisResultScreen(analysisData: analysisData);
         },
@@ -134,6 +137,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.videoPlayer,
         builder: (context, state) {
+          // state.extra carries a complex object; deep-link / null-extra falls
+          // back to an empty map so the screen can show a graceful empty state.
+          // TODO: migrate to a provider for proper deep-link support.
           final videoData = state.extra as Map<String, dynamic>? ?? {};
           return VideoPlayerScreen(videoData: videoData);
         },
@@ -161,7 +167,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.ptDetail,
         builder: (context, state) {
-          final pt = state.extra as PhysiotherapistModel;
+          // state.extra carries a complex object that cannot be encoded in query
+          // params. This is intentional; deep-link or null-extra scenario falls
+          // back to home rather than crashing with a cast error.
+          // TODO: migrate to a provider/state manager for proper deep-link support.
+          final pt = state.extra;
+          if (pt is! PhysiotherapistModel) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (context.mounted) context.go(AppRoutes.home);
+            });
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
           return PtDetailScreen(pt: pt);
         },
       ),
