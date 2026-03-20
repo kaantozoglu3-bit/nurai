@@ -5,7 +5,6 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, debugPrint, kDebugMode;
 // ssl_pinning_plugin: pending — requires iOS/Android native setup.
@@ -194,27 +193,11 @@ class ApiService {
     return true;
   }
 
-  // ─── App Check ─────────────────────────────────────────────────────────
-  /// Retrieves the current Firebase App Check token, or null if unavailable.
-  static Future<String?> _getAppCheckToken() async {
-    try {
-      return await FirebaseAppCheck.instance.getToken();
-    } catch (e) {
-      if (kDebugMode) debugPrint('[ApiService] App Check token error: $e');
-      return null;
-    }
-  }
-
-  /// Builds request headers with auth and App Check tokens.
+  /// Builds request headers with auth token.
+  /// App Check header is omitted — backend enforcement is disabled until
+  /// Firebase Console debug tokens are registered for all build variants.
   static Future<Map<String, String>> _buildHeaders(String idToken) async {
-    final headers = <String, String>{
-      'Authorization': 'Bearer $idToken',
-    };
-    final appCheckToken = await _getAppCheckToken();
-    if (appCheckToken != null) {
-      headers['X-Firebase-AppCheck'] = appCheckToken;
-    }
-    return headers;
+    return <String, String>{'Authorization': 'Bearer $idToken'};
   }
 
   // ─── YouTube cache ───────────────────────────────────────────────────────
