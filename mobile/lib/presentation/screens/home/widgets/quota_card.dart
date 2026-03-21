@@ -3,14 +3,18 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_dimensions.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../data/services/quota_service.dart';
 
 class QuotaCard extends StatelessWidget {
   final int remaining;
 
   const QuotaCard({super.key, required this.remaining});
 
+  static const int _dailyLimit = QuotaService.dailyLimit;
+
   @override
   Widget build(BuildContext context) {
+    final ratio = (_dailyLimit > 0) ? remaining / _dailyLimit : 0.0;
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
@@ -43,8 +47,8 @@ class QuotaCard extends StatelessWidget {
               children: [
                 Text(
                   remaining > 0
-                      ? 'Bugün 1 analiz hakkın var'
-                      : 'Günlük 1 analiz hakkın doldu',
+                      ? 'Bugün $remaining analiz hakkın kaldı'
+                      : 'Günlük $_dailyLimit analiz hakkın doldu',
                   style: const TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 14,
@@ -56,7 +60,7 @@ class QuotaCard extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
-                    value: remaining > 0 ? 1.0 : 0.0,
+                    value: ratio.clamp(0.0, 1.0),
                     backgroundColor: AppColors.border,
                     valueColor: AlwaysStoppedAnimation<Color>(
                       remaining > 0
