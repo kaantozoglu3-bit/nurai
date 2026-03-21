@@ -67,9 +67,31 @@ Tarih: 2026-03-21
 - Backend deploy: Railway'e gönderildi ✅
 - Commit: 029a03e ✅
 
+## DÖNGÜ 2 Sonucu (23:35–23:37)
+### Eklenen Özellikler / Düzeltmeler
+- help_content_widgets.dart 687 satır → 3 dosyaya bölündü (barrel export)
+  - help_basic_widgets.dart (193 satır)
+  - help_safety_widgets.dart (242 satır)
+  - help_faq_contact_widgets.dart (260 satır)
+
+### Test Sonuçları (Döngü 2)
+- flutter analyze: 0 hata ✅
+- Commit: 40e6c50 ✅
+
+## DÖNGÜ 3 Sonucu (23:38–23:39)
+### Düzeltmeler
+- program.controller.js: manuel validasyon → Joi schema (targetAreas, avgPainScore, fitnessLevel)
+- Tüm backend endpoint'ler artık Joi kullanıyor
+
+### Test Sonuçları (Döngü 3)
+- flutter analyze: 0 hata ✅
+- Backend deploy #2: Railway'e gönderildi ✅
+- Commit: 6fcfbfc ✅
+
+## Son Review Puanı: 47/50
+
 ## Kalan / Yarın Yapılacaklar
-1. help_content_widgets.dart bölünmesi (687 satır)
-2. program.controller.js Joi validasyonu
+1. App Check Play Integrity: Play Store kaydı sonrası etkinleştir
+2. SSL pinning: uyumlu paket versiyonu çıkınca ekle
 3. Bildirim testleri cihazda doğrula
-4. Play Store App Check etkinleştir
-5. SSL pinning güncellemesi
+4. APK cihaza yükle ve tüm akışları doğrula
