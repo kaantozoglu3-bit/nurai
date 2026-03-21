@@ -1,7 +1,24 @@
 'use strict';
 
+const Joi = require('joi');
 const logger = require('../config/logger');
 const { generateProgram } = require('../services/program.service');
+
+const VALID_BODY_AREAS = [
+  'neck', 'left_shoulder', 'right_shoulder', 'upper_back', 'lower_back',
+  'hip', 'left_knee', 'right_knee', 'left_elbow', 'right_elbow',
+  'left_wrist', 'right_wrist', 'left_ankle', 'right_ankle', 'core', 'general',
+];
+
+const programSchema = Joi.object({
+  targetAreas: Joi.array()
+    .items(Joi.string().valid(...VALID_BODY_AREAS))
+    .min(1)
+    .max(5)
+    .required(),
+  avgPainScore: Joi.number().min(1).max(10).required(),
+  fitnessLevel: Joi.string().valid('beginner', 'intermediate', 'advanced').required(),
+});
 
 /**
  * POST /api/v1/program/generate
@@ -16,21 +33,13 @@ const { generateProgram } = require('../services/program.service');
  */
 async function generateProgramHandler(req, res) {
   const uid = req.user?.uid;
-  const { targetAreas, avgPainScore, fitnessLevel } = req.body;
 
-  // Input validation
-  if (!Array.isArray(targetAreas) || targetAreas.length === 0) {
-    return res.status(400).json({ error: 'targetAreas array required.' });
+  const { error, value } = programSchema.validate(req.body, { stripUnknown: true });
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
   }
-  if (typeof avgPainScore !== 'number' || avgPainScore < 1 || avgPainScore > 10) {
-    return res.status(400).json({ error: 'avgPainScore must be a number between 1 and 10.' });
-  }
-  const VALID_FITNESS_LEVELS = ['beginner', 'intermediate', 'advanced'];
-  if (!fitnessLevel || !VALID_FITNESS_LEVELS.includes(fitnessLevel)) {
-    return res.status(400).json({
-      error: `fitnessLevel must be one of: ${VALID_FITNESS_LEVELS.join(', ')}.`,
-    });
-  }
+
+  const { targetAreas, avgPainScore, fitnessLevel } = value;
 
   logger.info('[ProgramController] Generate request', { uid, targetAreas, avgPainScore });
 
