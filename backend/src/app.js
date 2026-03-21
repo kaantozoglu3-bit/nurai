@@ -9,6 +9,7 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 
 const logger = require('./config/logger');
+const appCheckMiddleware = require('./middleware/appcheck.middleware');
 const analysisRoutes = require('./routes/analysis.routes');
 const youtubeRoutes = require('./routes/youtube.routes');
 const userRoutes = require('./routes/user.routes');
@@ -45,6 +46,10 @@ app.use(cors({
   },
   credentials: true,
 }));
+
+// ─── App Check ────────────────────────────────────────────────────────────────
+// Skipped in dev (NODE_ENV !== 'production'); enforced in production.
+app.use('/api', appCheckMiddleware);
 
 // ─── Rate limiting ────────────────────────────────────────────────────────────
 const limiter = rateLimit({

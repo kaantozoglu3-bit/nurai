@@ -48,6 +48,9 @@ dependencies:
   # switch to http_certificate_pinning.
   # ssl_pinning_plugin: (pending — requires iOS/Android native setup)
 
+  # App Info
+  package_info_plus: ^8.1.2
+
   # Utils
   intl: ^0.20.2
   equatable: ^2.0.5

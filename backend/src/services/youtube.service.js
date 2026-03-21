@@ -68,17 +68,9 @@ async function searchVideos(bodyArea, query) {
     return [];
   }
 
-  const params = new URLSearchParams({
-    part: 'snippet',
-    q: searchQuery,
-    type: 'video',
-    videoCategoryId: YOUTUBE_SPORTS_CATEGORY_ID,
-    maxResults: String(YOUTUBE_MAX_RESULTS),
-    relevanceLanguage: 'tr',
-    regionCode: 'TR',
-    safeSearch: 'strict',
-    key: process.env.YOUTUBE_API_KEY,
-  });
+  const params = _buildYoutubeSearchParams(searchQuery, YOUTUBE_MAX_RESULTS);
+  // videoCategoryId (Sports) — added after base params
+  params.set('videoCategoryId', YOUTUBE_SPORTS_CATEGORY_ID);
 
   const searchUrl = `${YOUTUBE_API_BASE}/search?${params}`;
   const searchRes = await fetch(searchUrl, { signal: AbortSignal.timeout(10000) });
@@ -94,11 +86,7 @@ async function searchVideos(bodyArea, query) {
 
   // Fetch video durations in a second call (contentDetails)
   const videoIds = searchData.items.map((i) => i.id.videoId).join(',');
-  const detailParams = new URLSearchParams({
-    part: 'contentDetails,statistics',
-    id: videoIds,
-    key: process.env.YOUTUBE_API_KEY,
-  });
+  const detailParams = _buildYoutubeDetailParams(videoIds);
   const detailRes = await fetch(`${YOUTUBE_API_BASE}/videos?${detailParams}`, { signal: AbortSignal.timeout(10000) });
   const detailData = detailRes.ok ? await detailRes.json() : { items: [] };
 
@@ -128,6 +116,41 @@ async function searchVideos(bodyArea, query) {
 
   _cache.set(cacheKey, { data: videos, expiresAt: Date.now() + CACHE_TTL_MS });
   return videos;
+}
+
+/**
+ * Builds URLSearchParams for a YouTube Data API v3 search request.
+ * Centralises common parameters to avoid duplication across search functions.
+ *
+ * @param {string} query - Search query string
+ * @param {number} maxResults - Maximum number of results
+ * @returns {URLSearchParams}
+ */
+function _buildYoutubeSearchParams(query, maxResults) {
+  return new URLSearchParams({
+    part: 'snippet',
+    q: query,
+    type: 'video',
+    maxResults: String(maxResults),
+    relevanceLanguage: 'tr',
+    regionCode: 'TR',
+    safeSearch: 'strict',
+    key: process.env.YOUTUBE_API_KEY,
+  });
+}
+
+/**
+ * Builds URLSearchParams for a YouTube Data API v3 video detail request.
+ *
+ * @param {string} videoIds - Comma-separated video IDs
+ * @returns {URLSearchParams}
+ */
+function _buildYoutubeDetailParams(videoIds) {
+  return new URLSearchParams({
+    part: 'contentDetails,statistics',
+    id: videoIds,
+    key: process.env.YOUTUBE_API_KEY,
+  });
 }
 
 /** Convert ISO 8601 duration (PT4M13S) to MM:SS */
@@ -164,28 +187,14 @@ async function searchVideosByExercises(exerciseNames) {
     }
 
     try {
-      const params = new URLSearchParams({
-        part: 'snippet',
-        q: query,
-        type: 'video',
-        maxResults: String(YOUTUBE_EXERCISE_MAX_RESULTS),
-        relevanceLanguage: 'tr',
-        regionCode: 'TR',
-        safeSearch: 'strict',
-        key: process.env.YOUTUBE_API_KEY,
-      });
-
+      const params = _buildYoutubeSearchParams(query, YOUTUBE_EXERCISE_MAX_RESULTS);
       const searchRes = await fetch(`${YOUTUBE_API_BASE}/search?${params}`, { signal: AbortSignal.timeout(10000) });
       if (!searchRes.ok) continue;
       const searchData = await searchRes.json();
       if (!searchData.items?.length) continue;
 
       const videoIds = searchData.items.map((i) => i.id.videoId).join(',');
-      const detailParams = new URLSearchParams({
-        part: 'contentDetails,statistics',
-        id: videoIds,
-        key: process.env.YOUTUBE_API_KEY,
-      });
+      const detailParams = _buildYoutubeDetailParams(videoIds);
       const detailRes = await fetch(`${YOUTUBE_API_BASE}/videos?${detailParams}`, { signal: AbortSignal.timeout(10000) });
       const detailData = detailRes.ok ? await detailRes.json() : { items: [] };
 

@@ -258,7 +258,7 @@ class ProfileScreen extends ConsumerWidget {
           _SettingsTile(
             icon: Icons.help_outline,
             title: 'Yardım & SSS',
-            onTap: () {},
+            onTap: () => context.go(AppRoutes.helpSupport),
           ),
           _SettingsTile(
             icon: Icons.feedback_outlined,

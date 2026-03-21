@@ -88,7 +88,7 @@ class ProfileTab extends ConsumerWidget {
           ProfileTile(
             icon: Icons.help_outline,
             title: 'Yardım & Destek',
-            onTap: () => context.go(AppRoutes.settings),
+            onTap: () => context.go(AppRoutes.helpSupport),
           ),
           ProfileTile(
             icon: Icons.privacy_tip_outlined,

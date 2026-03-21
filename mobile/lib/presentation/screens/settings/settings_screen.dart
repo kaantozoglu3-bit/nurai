@@ -6,9 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../data/services/badge_service.dart';
-import '../../../data/services/notification_service.dart';
-import '../../../data/services/profile_service.dart';
 import '../../providers/locale_provider.dart';
+import '../../providers/settings_provider.dart';
 import '../../../core/router/app_router.dart';
 import 'widgets/badges_section.dart';
 import 'widgets/goals_section.dart';
@@ -24,179 +23,38 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  // Profile fields
+  // UI-specific controllers — stay in the widget
   final _ageCtrl = TextEditingController();
   final _heightCtrl = TextEditingController();
   final _weightCtrl = TextEditingController();
-  String _fitnessLevel = 'beginner';
-  List<String> _injuries = [];
 
-  // Notification fields
-  bool _exerciseNotifEnabled = false;
-  TimeOfDay _exerciseTime = const TimeOfDay(hour: 9, minute: 0);
-  bool _painLogNotifEnabled = false;
-  TimeOfDay _painLogTime = const TimeOfDay(hour: 20, minute: 0);
-
-  // Goals
-  int _weeklyGoal = 3;
-
-  // Stats
-  int _totalExercises = 0;
-  int _longestStreak = 0;
-  String _topBodyArea = '-';
-
-  // Badges
-  Set<String> _earnedBadges = {};
-
-  bool _loading = true;
-  String? _loadError;
+  bool _controllersPopulated = false;
 
   @override
-  void initState() {
-    super.initState();
-    _loadAll();
+  void dispose() {
+    _ageCtrl.dispose();
+    _heightCtrl.dispose();
+    _weightCtrl.dispose();
+    super.dispose();
   }
 
-  Future<void> _loadAll() async {
-    try {
-      final profile = await ProfileService.loadProfile();
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-
-      Map<String, dynamic> settings = {};
-      if (uid != null) {
-        try {
-          final doc = await FirebaseFirestore.instance
-              .collection('users')
-              .doc(uid)
-              .get();
-          settings = doc.data() ?? {};
-        } catch (_) {
-          // Firestore erişim hatası — varsayılan değerler kullan
-        }
-      }
-
-      Set<String> earnedBadges = {};
-      try {
-        earnedBadges = await BadgeService.getEarnedBadgeIds();
-      } catch (_) {
-        // Rozet verisi alınamadı — boş set ile devam et
-      }
-
-      try {
-        await _loadStats(uid);
-      } catch (_) {
-        // İstatistik verisi alınamadı — varsayılan sıfırlar kullan
-      }
-
-      final notifSettings =
-          await NotificationService.instance.getReminderSettings();
-
-      if (mounted) {
-        setState(() {
-          _ageCtrl.text = profile['age']?.toString() ?? '';
-          _heightCtrl.text = profile['height']?.toString() ?? '';
-          _weightCtrl.text = profile['weight']?.toString() ?? '';
-          _fitnessLevel = _sanitizeFitnessLevel(
-              profile['fitnessLevel']?.toString());
-          _injuries =
-              List<String>.from(profile['injuries'] as List? ?? []);
-          _weeklyGoal = (settings['weeklyGoal'] as int?) ?? 3;
-          _earnedBadges = earnedBadges;
-          _exerciseNotifEnabled = notifSettings.enabled;
-          _exerciseTime = TimeOfDay(
-            hour: notifSettings.hour,
-            minute: notifSettings.minute,
-          );
-          _painLogNotifEnabled =
-              settings['painLogNotifEnabled'] as bool? ?? false;
-          _loading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-          _loadError = e.toString();
-        });
-      }
-    }
+  /// Populate text controllers once when data first loads.
+  void _populateControllers(SettingsState s) {
+    if (_controllersPopulated) return;
+    _ageCtrl.text = s.age;
+    _heightCtrl.text = s.height;
+    _weightCtrl.text = s.weight;
+    _controllersPopulated = true;
   }
 
-  Future<void> _loadStats(String? uid) async {
-    if (uid == null) return;
-    final snap = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .collection('analyses')
-        .orderBy('createdAt', descending: false)
-        .get();
-
-    _totalExercises = snap.docs.length;
-
-    // Streak calculation
-    final dates = snap.docs
-        .map((d) {
-          final ts = d.data()['createdAt'];
-          if (ts is Timestamp) return ts.toDate();
-          return null;
-        })
-        .whereType<DateTime>()
-        .map((d) => DateTime(d.year, d.month, d.day))
-        .toSet()
-        .toList()
-      ..sort();
-
-    int maxStreak = 0, cur = 0;
-    for (int i = 0; i < dates.length; i++) {
-      if (i == 0 || dates[i].difference(dates[i - 1]).inDays == 1) {
-        cur++;
-        if (cur > maxStreak) maxStreak = cur;
-      } else {
-        cur = 1;
-      }
-    }
-    _longestStreak = maxStreak;
-
-    // Top body area
-    final areaCount = <String, int>{};
-    for (final d in snap.docs) {
-      final area = d.data()['bodyArea'] as String? ?? '';
-      if (area.isNotEmpty) {
-        areaCount[area] = (areaCount[area] ?? 0) + 1;
-      }
-    }
-    if (areaCount.isNotEmpty) {
-      _topBodyArea = areaCount.entries
-          .reduce((a, b) => a.value > b.value ? a : b)
-          .key;
-    }
-  }
-
-  Future<void> _saveProfile() async {
-    final profile = await ProfileService.loadProfile();
-    profile['age'] = int.tryParse(_ageCtrl.text) ?? profile['age'];
-    profile['height'] =
-        int.tryParse(_heightCtrl.text) ?? profile['height'];
-    profile['weight'] =
-        int.tryParse(_weightCtrl.text) ?? profile['weight'];
-    profile['fitnessLevel'] = _fitnessLevel;
-    profile['injuries'] = _injuries;
-    await ProfileService.saveProfile(profile);
-
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid != null) {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .set({
-        'age': int.tryParse(_ageCtrl.text),
-        'height': int.tryParse(_heightCtrl.text),
-        'weight': int.tryParse(_weightCtrl.text),
-        'fitnessLevel': _fitnessLevel,
-        'injuries': _injuries,
-      }, SetOptions(merge: true));
-    }
-
+  Future<void> _saveProfile(SettingsState s) async {
+    await ref.read(settingsProvider.notifier).saveProfile({
+      'age': _ageCtrl.text,
+      'height': _heightCtrl.text,
+      'weight': _weightCtrl.text,
+      'fitnessLevel': s.fitnessLevel,
+      'injuries': s.injuries,
+    });
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Profil kaydedildi')),
@@ -204,13 +62,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  Future<void> _saveGoal() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .set({'weeklyGoal': _weeklyGoal}, SetOptions(merge: true));
+  Future<void> _saveGoal(SettingsState s) async {
+    await ref.read(settingsProvider.notifier).saveGoal(s.weeklyGoal);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Hedef kaydedildi')),
@@ -218,27 +71,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  Future<void> _saveNotifSettings() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (_exerciseNotifEnabled) {
-      await NotificationService.instance.requestPermission();
-      await NotificationService.instance.scheduleDaily(
-        _exerciseTime.hour,
-        _exerciseTime.minute,
-      );
-    } else {
-      await NotificationService.instance.cancel();
-    }
-
-    if (uid != null) {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .set({
-        'painLogNotifEnabled': _painLogNotifEnabled,
-      }, SetOptions(merge: true));
-    }
-
+  Future<void> _saveNotifSettings(SettingsState s) async {
+    await ref.read(settingsProvider.notifier).saveNotifSettings(
+          exerciseEnabled: s.exerciseNotifEnabled,
+          exerciseTime: s.exerciseTime,
+          painLogEnabled: s.painLogNotifEnabled,
+        );
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Bildirim ayarları kaydedildi')),
@@ -321,15 +159,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (mounted) context.go(AppRoutes.login);
   }
 
-  void _shareAchievement() {
+  void _shareAchievement(SettingsState s) {
     final earnedNames = BadgeService.allBadges
-        .where((b) => _earnedBadges.contains(b.id))
+        .where((b) => s.earnedBadges.contains(b.id))
         .map((b) => '${b.icon} ${b.name}')
         .join('\n');
 
     Share.share(
-      'Nurai ile $_totalExercises egzersiz tamamladım! 🏆\n'
-      'En uzun seri: $_longestStreak gün\n\n'
+      'Nurai ile ${s.totalExercises} egzersiz tamamladım! 🏆\n'
+      'En uzun seri: ${s.longestStreak} gün\n\n'
       'Rozetlerim:\n$earnedNames\n\n'
       'Sen de dene: nurai.app',
       subject: 'Nurai Başarılarım',
@@ -350,14 +188,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
+    final asyncSettings = ref.watch(settingsProvider);
 
-    if (_loadError != null) {
-      return Scaffold(
+    return asyncSettings.when(
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, st) => Scaffold(
         appBar: AppBar(title: const Text('Ayarlar')),
         body: Center(
           child: Padding(
@@ -370,184 +207,163 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const Text('Ayarlar yüklenemedi.'),
                 const SizedBox(height: 8),
                 ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _loading = true;
-                      _loadError = null;
-                    });
-                    _loadAll();
-                  },
+                  onPressed: () =>
+                      ref.read(settingsProvider.notifier).reload(),
                   child: const Text('Tekrar Dene'),
                 ),
               ],
             ),
           ),
         ),
-      );
-    }
+      ),
+      data: (s) {
+        _populateControllers(s);
+        final notifier = ref.read(settingsProvider.notifier);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Ayarlar')),
-      body: ListView(
-        children: [
-          // ── BÖLÜM 1: Profil Düzenleme ────────────────────────────
-          _sectionHeader('Profil Düzenleme'),
-          ProfileSection(
-            ageCtrl: _ageCtrl,
-            heightCtrl: _heightCtrl,
-            weightCtrl: _weightCtrl,
-            fitnessLevel: _fitnessLevel,
-            injuries: _injuries,
-            onFitnessLevelChanged: (v) => setState(() => _fitnessLevel = v),
-            onInjuryAdded: (v) => setState(() => _injuries.add(v)),
-            onInjuryRemoved: (v) => setState(() => _injuries.remove(v)),
-            onSave: _saveProfile,
-          ),
+        return Scaffold(
+          appBar: AppBar(title: const Text('Ayarlar')),
+          body: ListView(
+            children: [
+              // ── BÖLÜM 1: Profil Düzenleme ────────────────────────────
+              _sectionHeader('Profil Düzenleme'),
+              ProfileSection(
+                ageCtrl: _ageCtrl,
+                heightCtrl: _heightCtrl,
+                weightCtrl: _weightCtrl,
+                fitnessLevel: s.fitnessLevel,
+                injuries: s.injuries,
+                onFitnessLevelChanged: notifier.setFitnessLevel,
+                onInjuryAdded: notifier.addInjury,
+                onInjuryRemoved: notifier.removeInjury,
+                onSave: () => _saveProfile(s),
+              ),
 
-          // ── BÖLÜM 2: Bildirimler ─────────────────────────────────
-          _sectionHeader('Bildirimler'),
-          NotificationSection(
-            exerciseNotifEnabled: _exerciseNotifEnabled,
-            exerciseTime: _exerciseTime,
-            painLogNotifEnabled: _painLogNotifEnabled,
-            painLogTime: _painLogTime,
-            onExerciseNotifChanged: (v) =>
-                setState(() => _exerciseNotifEnabled = v),
-            onExerciseTimeChanged: (t) => setState(() => _exerciseTime = t),
-            onPainLogNotifChanged: (v) =>
-                setState(() => _painLogNotifEnabled = v),
-            onPainLogTimeChanged: (t) => setState(() => _painLogTime = t),
-            onSave: _saveNotifSettings,
-          ),
+              // ── BÖLÜM 2: Bildirimler ─────────────────────────────────
+              _sectionHeader('Bildirimler'),
+              NotificationSection(
+                exerciseNotifEnabled: s.exerciseNotifEnabled,
+                exerciseTime: s.exerciseTime,
+                painLogNotifEnabled: s.painLogNotifEnabled,
+                painLogTime: s.painLogTime,
+                onExerciseNotifChanged: notifier.setExerciseNotifEnabled,
+                onExerciseTimeChanged: notifier.setExerciseTime,
+                onPainLogNotifChanged: notifier.setPainLogNotifEnabled,
+                onPainLogTimeChanged: notifier.setPainLogTime,
+                onSave: () => _saveNotifSettings(s),
+              ),
 
-          // ── BÖLÜM 3: Hedefler ────────────────────────────────────
-          _sectionHeader('Hedefler'),
-          GoalsSection(
-            weeklyGoal: _weeklyGoal,
-            onChanged: (v) => setState(() => _weeklyGoal = v),
-            onSave: _saveGoal,
-          ),
+              // ── BÖLÜM 3: Hedefler ────────────────────────────────────
+              _sectionHeader('Hedefler'),
+              GoalsSection(
+                weeklyGoal: s.weeklyGoal,
+                onChanged: notifier.setWeeklyGoal,
+                onSave: () => _saveGoal(s),
+              ),
 
-          // ── BÖLÜM 4: İlerleme Özeti ──────────────────────────────
-          _sectionHeader('İlerleme Özeti'),
-          ListTile(
-            leading: const Icon(Icons.fitness_center),
-            title: const Text('Toplam Egzersiz'),
-            trailing: Text('$_totalExercises'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.local_fire_department),
-            title: const Text('En Uzun Seri'),
-            trailing: Text('$_longestStreak gün'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.person_pin),
-            title: const Text('En Çok Çalışılan Bölge'),
-            trailing: Text(_topBodyArea),
-          ),
+              // ── BÖLÜM 4: İlerleme Özeti ──────────────────────────────
+              _sectionHeader('İlerleme Özeti'),
+              ListTile(
+                leading: const Icon(Icons.fitness_center),
+                title: const Text('Toplam Egzersiz'),
+                trailing: Text('${s.totalExercises}'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.local_fire_department),
+                title: const Text('En Uzun Seri'),
+                trailing: Text('${s.longestStreak} gün'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.person_pin),
+                title: const Text('En Çok Çalışılan Bölge'),
+                trailing: Text(s.topBodyArea),
+              ),
 
-          // ── BÖLÜM 5: Rozetler ────────────────────────────────────
-          _sectionHeader('Rozetler'),
-          BadgesSection(earnedBadges: _earnedBadges),
+              // ── BÖLÜM 5: Rozetler ────────────────────────────────────
+              _sectionHeader('Rozetler'),
+              BadgesSection(earnedBadges: s.earnedBadges),
 
-          // ── BÖLÜM 6: Paylaşım ────────────────────────────────────
-          _sectionHeader('Paylaşım'),
-          ListTile(
-            leading: const Icon(Icons.ios_share),
-            title: const Text('Başarımı Paylaş'),
-            subtitle: const Text(
-              'Streak ve rozetlerini arkadaşlarınla paylaş',
-            ),
-            onTap: _shareAchievement,
-          ),
+              // ── BÖLÜM 6: Paylaşım ────────────────────────────────────
+              _sectionHeader('Paylaşım'),
+              ListTile(
+                leading: const Icon(Icons.ios_share),
+                title: const Text('Başarımı Paylaş'),
+                subtitle: const Text(
+                  'Streak ve rozetlerini arkadaşlarınla paylaş',
+                ),
+                onTap: () => _shareAchievement(s),
+              ),
 
-          // ── BÖLÜM 7: Veri Dışa Aktarım ───────────────────────────
-          _sectionHeader('Veri Dışa Aktarım'),
-          ListTile(
-            leading: const Icon(Icons.download),
-            title: const Text('Verilerimi İndir'),
-            subtitle:
-                const Text('Ağrı günlüğü ve egzersiz geçmişi (JSON)'),
-            onTap: _exportData,
-          ),
+              // ── BÖLÜM 7: Veri Dışa Aktarım ───────────────────────────
+              _sectionHeader('Veri Dışa Aktarım'),
+              ListTile(
+                leading: const Icon(Icons.download),
+                title: const Text('Verilerimi İndir'),
+                subtitle:
+                    const Text('Ağrı günlüğü ve egzersiz geçmişi (JSON)'),
+                onTap: _exportData,
+              ),
 
-          // ── BÖLÜM 8: Fizyoterapist ───────────────────────────────
-          _sectionHeader('Fizyoterapistim'),
-          ListTile(
-            leading: const Icon(Icons.medical_services),
-            title: const Text('Fizyoterapiste Git'),
-            subtitle: const Text('Fizyoterapist bağlantısını yönet'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.go(AppRoutes.marketplace),
-          ),
+              // ── BÖLÜM 8: Fizyoterapist ───────────────────────────────
+              _sectionHeader('Fizyoterapistim'),
+              ListTile(
+                leading: const Icon(Icons.medical_services),
+                title: const Text('Fizyoterapiste Git'),
+                subtitle: const Text('Fizyoterapist bağlantısını yönet'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go(AppRoutes.marketplace),
+              ),
 
-          // ── BÖLÜM 9: Premium & Hesap ─────────────────────────────
-          _sectionHeader('Premium & Abonelik'),
-          ListTile(
-            leading: const Icon(Icons.star, color: Colors.amber),
-            title: const Text('Abonelik Durumu'),
-            subtitle: const Text('Ücretsiz Plan'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.go(AppRoutes.paywall),
-          ),
-          ListTile(
-            leading: const Icon(Icons.restore),
-            title: const Text('Satın Almaları Geri Yükle'),
-            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Satın alma geri yükleme yakında eklenecek.',
+              // ── BÖLÜM 9: Premium & Hesap ─────────────────────────────
+              _sectionHeader('Premium & Abonelik'),
+              ListTile(
+                leading: const Icon(Icons.star, color: Colors.amber),
+                title: const Text('Abonelik Durumu'),
+                subtitle: const Text('Ücretsiz Plan'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go(AppRoutes.paywall),
+              ),
+              ListTile(
+                leading: const Icon(Icons.restore),
+                title: const Text('Satın Almaları Geri Yükle'),
+                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Satın alma geri yükleme yakında eklenecek.',
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
 
-          // ── BÖLÜM 10: Dil & Görünüm ──────────────────────────────
-          _sectionHeader('Dil & Görünüm'),
-          ListTile(
-            leading: const Icon(Icons.language),
-            title: const Text('Dil'),
-            trailing: DropdownButton<String>(
-              value: ref.watch(localeProvider).languageCode,
-              underline: const SizedBox(),
-              items: const [
-                DropdownMenuItem(value: 'tr', child: Text('Türkçe')),
-                DropdownMenuItem(value: 'en', child: Text('English')),
-              ],
-              onChanged: (v) {
-                if (v != null) {
-                  ref.read(localeProvider.notifier).setLocale(v);
-                }
-              },
-            ),
-          ),
+              // ── BÖLÜM 10: Dil & Görünüm ──────────────────────────────
+              _sectionHeader('Dil & Görünüm'),
+              ListTile(
+                leading: const Icon(Icons.language),
+                title: const Text('Dil'),
+                trailing: DropdownButton<String>(
+                  value: ref.watch(localeProvider).languageCode,
+                  underline: const SizedBox(),
+                  items: const [
+                    DropdownMenuItem(value: 'tr', child: Text('Türkçe')),
+                    DropdownMenuItem(value: 'en', child: Text('English')),
+                  ],
+                  onChanged: (v) {
+                    if (v != null) {
+                      ref.read(localeProvider.notifier).setLocale(v);
+                    }
+                  },
+                ),
+              ),
 
-          // ── BÖLÜM 11-12: Güvenlik & Hesap ───────────────────────
-          SecurityLinksSection(
-            onDeleteAccount: _deleteAccount,
-            sectionHeader: _sectionHeader,
+              // ── BÖLÜM 11-12: Güvenlik & Hesap ───────────────────────
+              SecurityLinksSection(
+                onDeleteAccount: _deleteAccount,
+                sectionHeader: _sectionHeader,
+              ),
+              const SizedBox(height: 40),
+            ],
           ),
-          const SizedBox(height: 40),
-        ],
-      ),
+        );
+      },
     );
   }
-
-  static const _validFitnessLevels = {'beginner', 'intermediate', 'advanced'};
-
-  /// Profil verisinden gelen fitness seviyesini dropdown ile uyumlu hale getirir.
-  /// Bilinmeyen değerler (örn. 'moderate') 'beginner' olarak normalize edilir.
-  static String _sanitizeFitnessLevel(String? raw) {
-    if (raw != null && _validFitnessLevels.contains(raw)) return raw;
-    return 'beginner';
-  }
-
-  @override
-  void dispose() {
-    _ageCtrl.dispose();
-    _heightCtrl.dispose();
-    _weightCtrl.dispose();
-    super.dispose();
-  }
 }
-
