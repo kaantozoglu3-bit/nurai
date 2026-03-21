@@ -252,6 +252,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 onSave: () => _saveNotifSettings(s),
               ),
 
+              // Dedicated notification settings screen link
+              ListTile(
+                leading: const Icon(Icons.notifications_outlined),
+                title: const Text(
+                  'Bildirim Ayarları',
+                  style: TextStyle(fontFamily: 'Inter', fontSize: 14),
+                ),
+                subtitle: const Text(
+                  'Egzersiz ve ağrı günlüğü hatırlatıcıları',
+                  style: TextStyle(fontFamily: 'Inter', fontSize: 12),
+                ),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+                onTap: () => context.go(AppRoutes.notifications),
+              ),
+
               // ── BÖLÜM 3: Hedefler ────────────────────────────────────
               _sectionHeader('Hedefler'),
               GoalsSection(

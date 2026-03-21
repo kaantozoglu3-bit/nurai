@@ -21,6 +21,8 @@ import '../../presentation/screens/marketplace/messaging_screen.dart';
 import '../../presentation/screens/quick_exercise/quick_exercise_screen.dart';
 import '../../presentation/screens/settings/settings_screen.dart';
 import '../../presentation/screens/help/help_support_screen.dart';
+import '../../presentation/screens/legal/privacy_policy_screen.dart';
+import '../../presentation/screens/notifications/notification_settings_screen.dart';
 import '../../presentation/providers/auth_provider.dart';
 import '../../presentation/providers/navigation_provider.dart';
 // navigation_provider.dart is set by callers before pushing analysisResult /
@@ -47,6 +49,8 @@ class AppRoutes {
   static const String quickExercise = '/quick-exercise';
   static const String settings = '/settings';
   static const String helpSupport = '/help-support';
+  static const String notifications = '/notifications';
+  static const String privacyPolicy = '/privacy-policy';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -196,6 +200,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.helpSupport,
         builder: (context, state) => const HelpSupportScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.notifications,
+        builder: (context, state) => const NotificationSettingsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.privacyPolicy,
+        builder: (context, state) => const PrivacyPolicyScreen(),
       ),
       GoRoute(
         path: AppRoutes.messaging,
