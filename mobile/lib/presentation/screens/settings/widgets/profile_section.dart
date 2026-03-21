@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+const _validFitnessLevels = {'beginner', 'intermediate', 'advanced'};
+
 class ProfileSection extends StatelessWidget {
   const ProfileSection({
     super.key,
@@ -68,7 +70,9 @@ class ProfileSection extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
-            initialValue: fitnessLevel,
+            initialValue: _validFitnessLevels.contains(fitnessLevel)
+                ? fitnessLevel
+                : 'beginner',
             decoration: const InputDecoration(
               labelText: 'Fitness Seviyesi',
               border: OutlineInputBorder(),
@@ -98,24 +102,27 @@ class ProfileSection extends StatelessWidget {
                     final ctrl = TextEditingController();
                     final result = await showDialog<String>(
                       context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: const Text('Sakatlık/Rahatsızlık Ekle'),
-                        content: TextField(
-                          controller: ctrl,
-                          decoration: const InputDecoration(
-                            hintText: 'örn: Bel fıtığı',
+                      builder: (ctx) => Material(
+                        type: MaterialType.transparency,
+                        child: AlertDialog(
+                          title: const Text('Sakatlık/Rahatsızlık Ekle'),
+                          content: TextField(
+                            controller: ctrl,
+                            decoration: const InputDecoration(
+                              hintText: 'örn: Bel fıtığı',
+                            ),
                           ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: const Text('İptal'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, ctrl.text),
+                              child: const Text('Ekle'),
+                            ),
+                          ],
                         ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            child: const Text('İptal'),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, ctrl.text),
-                            child: const Text('Ekle'),
-                          ),
-                        ],
                       ),
                     );
                     if (result != null && result.trim().isNotEmpty) {

@@ -49,6 +49,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Set<String> _earnedBadges = {};
 
   bool _loading = true;
+  String? _loadError;
 
   @override
   void initState() {
@@ -57,44 +58,67 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _loadAll() async {
-    final profile = await ProfileService.loadProfile();
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    try {
+      final profile = await ProfileService.loadProfile();
+      final uid = FirebaseAuth.instance.currentUser?.uid;
 
-    Map<String, dynamic> settings = {};
-    if (uid != null) {
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .get();
-      settings = doc.data() ?? {};
-    }
+      Map<String, dynamic> settings = {};
+      if (uid != null) {
+        try {
+          final doc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(uid)
+              .get();
+          settings = doc.data() ?? {};
+        } catch (_) {
+          // Firestore erişim hatası — varsayılan değerler kullan
+        }
+      }
 
-    _earnedBadges = await BadgeService.getEarnedBadgeIds();
-    await _loadStats(uid);
+      Set<String> earnedBadges = {};
+      try {
+        earnedBadges = await BadgeService.getEarnedBadgeIds();
+      } catch (_) {
+        // Rozet verisi alınamadı — boş set ile devam et
+      }
 
-    // Load notification settings
-    final notifSettings =
-        await NotificationService.instance.getReminderSettings();
+      try {
+        await _loadStats(uid);
+      } catch (_) {
+        // İstatistik verisi alınamadı — varsayılan sıfırlar kullan
+      }
 
-    if (mounted) {
-      setState(() {
-        _ageCtrl.text = profile['age']?.toString() ?? '';
-        _heightCtrl.text = profile['height']?.toString() ?? '';
-        _weightCtrl.text = profile['weight']?.toString() ?? '';
-        _fitnessLevel =
-            profile['fitnessLevel']?.toString() ?? 'beginner';
-        _injuries =
-            List<String>.from(profile['injuries'] as List? ?? []);
-        _weeklyGoal = (settings['weeklyGoal'] as int?) ?? 3;
-        _exerciseNotifEnabled = notifSettings.enabled;
-        _exerciseTime = TimeOfDay(
-          hour: notifSettings.hour,
-          minute: notifSettings.minute,
-        );
-        _painLogNotifEnabled =
-            settings['painLogNotifEnabled'] as bool? ?? false;
-        _loading = false;
-      });
+      final notifSettings =
+          await NotificationService.instance.getReminderSettings();
+
+      if (mounted) {
+        setState(() {
+          _ageCtrl.text = profile['age']?.toString() ?? '';
+          _heightCtrl.text = profile['height']?.toString() ?? '';
+          _weightCtrl.text = profile['weight']?.toString() ?? '';
+          _fitnessLevel = _sanitizeFitnessLevel(
+              profile['fitnessLevel']?.toString());
+          _injuries =
+              List<String>.from(profile['injuries'] as List? ?? []);
+          _weeklyGoal = (settings['weeklyGoal'] as int?) ?? 3;
+          _earnedBadges = earnedBadges;
+          _exerciseNotifEnabled = notifSettings.enabled;
+          _exerciseTime = TimeOfDay(
+            hour: notifSettings.hour,
+            minute: notifSettings.minute,
+          );
+          _painLogNotifEnabled =
+              settings['painLogNotifEnabled'] as bool? ?? false;
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _loadError = e.toString();
+        });
+      }
     }
   }
 
@@ -245,23 +269,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _deleteAccount() async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Hesabı Sil'),
-        content: const Text(
-          'Tüm verileriniz kalıcı olarak silinecek. '
-          'Bu işlem geri alınamaz. Devam etmek istiyor musunuz?',
+      builder: (ctx) => Material(
+        type: MaterialType.transparency,
+        child: AlertDialog(
+          title: const Text('Hesabı Sil'),
+          content: const Text(
+            'Tüm verileriniz kalıcı olarak silinecek. '
+            'Bu işlem geri alınamaz. Devam etmek istiyor musunuz?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('İptal'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Sil'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('İptal'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Sil'),
-          ),
-        ],
       ),
     );
     if (confirm != true) return;
@@ -326,6 +353,36 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (_loading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_loadError != null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Ayarlar')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                const SizedBox(height: 16),
+                const Text('Ayarlar yüklenemedi.'),
+                const SizedBox(height: 8),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _loading = true;
+                      _loadError = null;
+                    });
+                    _loadAll();
+                  },
+                  child: const Text('Tekrar Dene'),
+                ),
+              ],
+            ),
+          ),
+        ),
       );
     }
 
@@ -474,6 +531,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ],
       ),
     );
+  }
+
+  static const _validFitnessLevels = {'beginner', 'intermediate', 'advanced'};
+
+  /// Profil verisinden gelen fitness seviyesini dropdown ile uyumlu hale getirir.
+  /// Bilinmeyen değerler (örn. 'moderate') 'beginner' olarak normalize edilir.
+  static String _sanitizeFitnessLevel(String? raw) {
+    if (raw != null && _validFitnessLevels.contains(raw)) return raw;
+    return 'beginner';
   }
 
   @override
