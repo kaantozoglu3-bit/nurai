@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -13,6 +15,35 @@ import '../../providers/quick_exercise_provider.dart';
 import 'widgets/quota_card.dart';
 import 'widgets/empty_analysis_state.dart';
 import 'widgets/profile_tab.dart';
+
+final weeklyProgressProvider =
+    FutureProvider<Map<String, int>>((ref) async {
+  final uid = FirebaseAuth.instance.currentUser?.uid;
+  if (uid == null) return {'done': 0, 'goal': 3};
+
+  final now = DateTime.now();
+  final weekStart = now.subtract(Duration(days: now.weekday - 1));
+  final weekStartDate =
+      DateTime(weekStart.year, weekStart.month, weekStart.day);
+
+  final snap = await FirebaseFirestore.instance
+      .collection('users')
+      .doc(uid)
+      .collection('analyses')
+      .where(
+        'createdAt',
+        isGreaterThanOrEqualTo: Timestamp.fromDate(weekStartDate),
+      )
+      .get();
+
+  final userDoc = await FirebaseFirestore.instance
+      .collection('users')
+      .doc(uid)
+      .get();
+  final goal = (userDoc.data()?['weeklyGoal'] as int?) ?? 3;
+
+  return {'done': snap.docs.length, 'goal': goal};
+});
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -142,6 +173,10 @@ class _HomeTab extends ConsumerWidget {
             _AnalysisCta(),
             const SizedBox(height: 20),
 
+            // Weekly progress
+            _WeeklyProgressCard(),
+            const SizedBox(height: 16),
+
             // Hızlı Egzersiz card
             _QuickExerciseCard(),
             const SizedBox(height: 16),
@@ -253,6 +288,76 @@ class _AnalysisCta extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ─── Weekly Progress Card ─────────────────────────────────────────────────────
+
+class _WeeklyProgressCard extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final progress = ref.watch(weeklyProgressProvider);
+
+    return progress.when(
+      loading: () => const SizedBox.shrink(),
+      error: (e, _) => const SizedBox.shrink(),
+      data: (data) {
+        final done = data['done'] ?? 0;
+        final goal = data['goal'] ?? 3;
+        final ratio = goal > 0 ? (done / goal).clamp(0.0, 1.0) : 0.0;
+        return Container(
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.2),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Bu Haftaki İlerleme',
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  Text(
+                    '$done / $goal egzersiz',
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: ratio,
+                  minHeight: 8,
+                  backgroundColor:
+                      AppColors.primary.withValues(alpha: 0.1),
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                    AppColors.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

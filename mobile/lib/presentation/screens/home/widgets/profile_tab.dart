@@ -83,17 +83,17 @@ class ProfileTab extends ConsumerWidget {
           ProfileTile(
             icon: Icons.settings_outlined,
             title: 'Ayarlar',
-            onTap: () {},
+            onTap: () => context.go(AppRoutes.settings),
           ),
           ProfileTile(
             icon: Icons.help_outline,
             title: 'Yardım & Destek',
-            onTap: () {},
+            onTap: () => context.go(AppRoutes.settings),
           ),
           ProfileTile(
             icon: Icons.privacy_tip_outlined,
             title: 'Gizlilik Politikası',
-            onTap: () {},
+            onTap: () => context.go(AppRoutes.settings),
           ),
           const Divider(height: 32),
           ProfileTile(

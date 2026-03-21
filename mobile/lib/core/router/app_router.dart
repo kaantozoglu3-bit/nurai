@@ -19,6 +19,7 @@ import '../../presentation/screens/marketplace/pt_registration_screen.dart';
 import '../../presentation/screens/marketplace/pt_detail_screen.dart';
 import '../../presentation/screens/marketplace/messaging_screen.dart';
 import '../../presentation/screens/quick_exercise/quick_exercise_screen.dart';
+import '../../presentation/screens/settings/settings_screen.dart';
 import '../../presentation/providers/auth_provider.dart';
 import '../../presentation/providers/navigation_provider.dart';
 // navigation_provider.dart is set by callers before pushing analysisResult /
@@ -43,6 +44,7 @@ class AppRoutes {
   static const String ptDetail = '/pt-detail';
   static const String messaging = '/messaging';
   static const String quickExercise = '/quick-exercise';
+  static const String settings = '/settings';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -184,6 +186,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.quickExercise,
         builder: (context, state) => const QuickExerciseScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.settings,
+        builder: (context, state) => const SettingsScreen(),
       ),
       GoRoute(
         path: AppRoutes.messaging,
