@@ -5,12 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../data/services/badge_service.dart';
 import '../../../data/services/notification_service.dart';
 import '../../../data/services/profile_service.dart';
 import '../../providers/locale_provider.dart';
 import '../../../core/router/app_router.dart';
+import 'widgets/badges_section.dart';
+import 'widgets/goals_section.dart';
+import 'widgets/notification_section.dart';
+import 'widgets/profile_section.dart';
+import 'widgets/security_links_section.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -331,204 +335,40 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         children: [
           // ── BÖLÜM 1: Profil Düzenleme ────────────────────────────
           _sectionHeader('Profil Düzenleme'),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _ageCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Yaş',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextField(
-                        controller: _heightCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Boy (cm)',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextField(
-                        controller: _weightCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Kilo (kg)',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  initialValue: _fitnessLevel,
-                  decoration: const InputDecoration(
-                    labelText: 'Fitness Seviyesi',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: const [
-                    DropdownMenuItem(
-                      value: 'beginner',
-                      child: Text('Başlangıç'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'intermediate',
-                      child: Text('Orta'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'advanced',
-                      child: Text('İleri'),
-                    ),
-                  ],
-                  onChanged: (v) =>
-                      setState(() => _fitnessLevel = v ?? 'beginner'),
-                ),
-                const SizedBox(height: 12),
-                // Injuries chip list
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Wrap(
-                    spacing: 8,
-                    children: [
-                      ..._injuries.map(
-                        (inj) => Chip(
-                          label: Text(inj),
-                          onDeleted: () =>
-                              setState(() => _injuries.remove(inj)),
-                        ),
-                      ),
-                      ActionChip(
-                        label: const Text('+ Ekle'),
-                        onPressed: () async {
-                          final ctrl = TextEditingController();
-                          final result = await showDialog<String>(
-                            context: context,
-                            builder: (ctx) => AlertDialog(
-                              title: const Text('Sakatlık/Rahatsızlık Ekle'),
-                              content: TextField(
-                                controller: ctrl,
-                                decoration: const InputDecoration(
-                                  hintText: 'örn: Bel fıtığı',
-                                ),
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx),
-                                  child: const Text('İptal'),
-                                ),
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.pop(ctx, ctrl.text),
-                                  child: const Text('Ekle'),
-                                ),
-                              ],
-                            ),
-                          );
-                          if (result != null && result.trim().isNotEmpty) {
-                            setState(() => _injuries.add(result.trim()));
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _saveProfile,
-                    child: const Text('Profili Kaydet'),
-                  ),
-                ),
-              ],
-            ),
+          ProfileSection(
+            ageCtrl: _ageCtrl,
+            heightCtrl: _heightCtrl,
+            weightCtrl: _weightCtrl,
+            fitnessLevel: _fitnessLevel,
+            injuries: _injuries,
+            onFitnessLevelChanged: (v) => setState(() => _fitnessLevel = v),
+            onInjuryAdded: (v) => setState(() => _injuries.add(v)),
+            onInjuryRemoved: (v) => setState(() => _injuries.remove(v)),
+            onSave: _saveProfile,
           ),
 
           // ── BÖLÜM 2: Bildirimler ─────────────────────────────────
           _sectionHeader('Bildirimler'),
-          SwitchListTile(
-            title: const Text('Egzersiz Hatırlatıcısı'),
-            value: _exerciseNotifEnabled,
-            onChanged: (v) => setState(() => _exerciseNotifEnabled = v),
-          ),
-          if (_exerciseNotifEnabled)
-            ListTile(
-              title: const Text('Egzersiz Saati'),
-              trailing: Text(_exerciseTime.format(context)),
-              onTap: () async {
-                final t = await showTimePicker(
-                  context: context,
-                  initialTime: _exerciseTime,
-                );
-                if (t != null) setState(() => _exerciseTime = t);
-              },
-            ),
-          SwitchListTile(
-            title: const Text('Ağrı Günlüğü Hatırlatması'),
-            value: _painLogNotifEnabled,
-            onChanged: (v) => setState(() => _painLogNotifEnabled = v),
-          ),
-          if (_painLogNotifEnabled)
-            ListTile(
-              title: const Text('Günlük Kayıt Saati'),
-              trailing: Text(_painLogTime.format(context)),
-              onTap: () async {
-                final t = await showTimePicker(
-                  context: context,
-                  initialTime: _painLogTime,
-                );
-                if (t != null) setState(() => _painLogTime = t);
-              },
-            ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _saveNotifSettings,
-                child: const Text('Bildirimleri Kaydet'),
-              ),
-            ),
+          NotificationSection(
+            exerciseNotifEnabled: _exerciseNotifEnabled,
+            exerciseTime: _exerciseTime,
+            painLogNotifEnabled: _painLogNotifEnabled,
+            painLogTime: _painLogTime,
+            onExerciseNotifChanged: (v) =>
+                setState(() => _exerciseNotifEnabled = v),
+            onExerciseTimeChanged: (t) => setState(() => _exerciseTime = t),
+            onPainLogNotifChanged: (v) =>
+                setState(() => _painLogNotifEnabled = v),
+            onPainLogTimeChanged: (t) => setState(() => _painLogTime = t),
+            onSave: _saveNotifSettings,
           ),
 
           // ── BÖLÜM 3: Hedefler ────────────────────────────────────
           _sectionHeader('Hedefler'),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Haftalık Egzersiz Hedefi: $_weeklyGoal gün'),
-                Slider(
-                  value: _weeklyGoal.toDouble(),
-                  min: 1,
-                  max: 7,
-                  divisions: 6,
-                  label: '$_weeklyGoal gün',
-                  onChanged: (v) =>
-                      setState(() => _weeklyGoal = v.round()),
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _saveGoal,
-                    child: const Text('Hedefi Kaydet'),
-                  ),
-                ),
-              ],
-            ),
+          GoalsSection(
+            weeklyGoal: _weeklyGoal,
+            onChanged: (v) => setState(() => _weeklyGoal = v),
+            onSave: _saveGoal,
           ),
 
           // ── BÖLÜM 4: İlerleme Özeti ──────────────────────────────
@@ -551,49 +391,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           // ── BÖLÜM 5: Rozetler ────────────────────────────────────
           _sectionHeader('Rozetler'),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate:
-                  const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-              ),
-              itemCount: BadgeService.allBadges.length,
-              itemBuilder: (ctx, i) {
-                final badge = BadgeService.allBadges[i];
-                final earned = _earnedBadges.contains(badge.id);
-                return Tooltip(
-                  message: badge.description,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        badge.icon,
-                        style: TextStyle(
-                          fontSize: 28,
-                          color: earned ? null : Colors.grey,
-                        ),
-                      ),
-                      Text(
-                        badge.name,
-                        style: TextStyle(
-                          fontSize: 9,
-                          color: earned ? null : Colors.grey,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
+          BadgesSection(earnedBadges: _earnedBadges),
 
           // ── BÖLÜM 6: Paylaşım ────────────────────────────────────
           _sectionHeader('Paylaşım'),
@@ -667,71 +465,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ),
 
-          // ── BÖLÜM 11: Güvenlik & Gizlilik ────────────────────────
-          _sectionHeader('Güvenlik & Gizlilik'),
-          ListTile(
-            leading: const Icon(Icons.lock_reset),
-            title: const Text('Şifre Değiştir'),
-            onTap: () async {
-              final email =
-                  FirebaseAuth.instance.currentUser?.email;
-              if (email != null) {
-                final messenger = ScaffoldMessenger.of(context);
-                await FirebaseAuth.instance
-                    .sendPasswordResetEmail(email: email);
-                if (mounted) {
-                  messenger.showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Şifre sıfırlama e-postası $email adresine gönderildi.',
-                      ),
-                    ),
-                  );
-                }
-              }
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.privacy_tip),
-            title: const Text('Gizlilik Politikası'),
-            onTap: () =>
-                launchUrl(Uri.parse('https://nurai.app/privacy')),
-          ),
-          ListTile(
-            leading: const Icon(Icons.description),
-            title: const Text('Kullanım Şartları'),
-            onTap: () =>
-                launchUrl(Uri.parse('https://nurai.app/terms')),
-          ),
-          ListTile(
-            leading: const Icon(Icons.support_agent),
-            title: const Text('Destek / Geri Bildirim'),
-            onTap: () => launchUrl(
-              Uri.parse(
-                'mailto:destek@nurai.app?subject=Nurai Destek',
-              ),
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.bug_report),
-            title: const Text('Hata Bildir'),
-            onTap: () => launchUrl(
-              Uri.parse(
-                'mailto:destek@nurai.app?subject=Hata Bildirimi',
-              ),
-            ),
-          ),
-
-          // ── BÖLÜM 12: Hesap Sil ──────────────────────────────────
-          _sectionHeader('Hesap'),
-          ListTile(
-            leading: const Icon(Icons.delete_forever, color: Colors.red),
-            title: const Text(
-              'Hesabı Sil',
-              style: TextStyle(color: Colors.red),
-            ),
-            subtitle: const Text('Tüm verileriniz kalıcı olarak silinir'),
-            onTap: _deleteAccount,
+          // ── BÖLÜM 11-12: Güvenlik & Hesap ───────────────────────
+          SecurityLinksSection(
+            onDeleteAccount: _deleteAccount,
+            sectionHeader: _sectionHeader,
           ),
           const SizedBox(height: 40),
         ],
@@ -747,3 +484,4 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     super.dispose();
   }
 }
+
