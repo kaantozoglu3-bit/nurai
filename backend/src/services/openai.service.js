@@ -10,14 +10,16 @@ const client = new OpenAI({
 });
 
 const MODEL = 'llama-3.3-70b-versatile';
-const MAX_TOKENS = 1200;
+const MAX_TOKENS_CHAT = 600;
+const MAX_TOKENS_SHORT = 300;
 const MODEL_TEMPERATURE = 0.85;
+const MAX_HISTORY = 6; // son 6 mesaj (önceki 10'du)
 
-// ─── System Prompt ───────────────────────────────────────────────────────────
+// ─── System Prompt ────────────────────────────────────────────────────────────
+// Egzersiz kütüphanesi kaldırıldı (~250 token tasarruf) — model zaten biliyor.
+// Profil sadece ilk mesajda ekleniyor.
 
-const SYSTEM_PROMPT_TEMPLATE = `Sen "Nurai" adlı uzman bir fizyoterapi yapay zeka asistanısın. Kas-iskelet ağrılarını analiz eder ve egzersiz önerirsin.
-
-KULLANICI: age={age} gender={gender} height={height}cm weight={weight}kg fitness={fitnessLevel} injuries={pastInjuries} goal={goal} area={bodyArea}
+const BASE_PROMPT = `Sen "Nurai" adlı uzman fizyoterapi AI asistanısın. Kas-iskelet ağrılarını analiz eder, egzersiz önerirsin.
 
 KURALLAR:
 - Kullanıcının dilinde yanıtla (TR/EN)
@@ -31,16 +33,11 @@ SORU AKIŞI (sırayla, önceki yanıta göre uyarla):
 2. Şiddet (1-10) → 8-10=doktor öner+devam, 1-4=koruyucu, 5-7=dengeli
 3. Karakter → yanma/zonklama/baskı/sertlik/uyuşma → sinir/iltihap/artrit ipucu
 4. Kötüleşme → hareket/dinlenme/sabah/gece/pozisyon → gece/dinlenmede=ciddi uyarı
-5. Bölgeye özel:
-   - boyun/üst sırt: masabaşı saatleri, telefon bakışı
-   - bel: uzun oturma, bacağa yayılma
-   - diz: klik sesi, şişlik
-   - omuz: kol kaldırma, geceye uyanma
-   - kalça: topallama, iç/dış ağrı
+5. Bölgeye özel soru (boyun: masa saatleri; bel: bacağa yayılma; diz: klik/şişlik; omuz: geceye uyanma)
 6. Son aktivite → düşme/darbe/yoğun egzersiz
 
 KIRMIZI BAYRAKLAR (herhangi biri → "Lütfen acilen doktora gidin"):
-- İki bacakta uyuşma/güçsüzlük, mesane/bağırsak kontrolü kaybı, ciddi kaza sonrası ağrı, göğüs+kol/sırt ağrısı, ani şiddetli baş ağrısı+boyun
+- İki bacakta uyuşma/güçsüzlük, mesane/bağırsak kontrolü kaybı, ciddi kaza sonrası ağrı, göğüs+kol/sırt ağrısı
 
 ANALİZ ÇIKTISI (tüm sorular sonrası bu EXACT format):
 ---
@@ -57,31 +54,9 @@ YOUTUBE_EGZERSIZLER: [ad1] | [ad2] | [ad3]
 ⚠️ Bu tıbbi teşhis değildir. Şiddetli ağrıda uzman görüşü alın.
 ---
 
-EGZERSİZ KÜTÜPHANESİ (bölge+süreye göre seç):
-BOYUN akut: boyun izometrik, nazik rotasyon, üst trapez germe
-BOYUN kronik: chin tuck, skapular retraksiyon, levator scapulae germe, torasik mobilizasyon
-BOYUN sinir: servikal traksiyon, nerve flossing, McKenzie boyun
-BEL akut: McKenzie prone press-up, diz-göğüs, pelvik tilt, kedi-inek
-BEL kronik: dead bug, bird dog, glute bridge, yan plank, McGill Big 3
-BEL sinir: McKenzie ekstansiyon, siyatik mobilizasyon, piriformis germe
-OMUZ akut: sarkaç(Codman), iç/dış rotasyon, kürek sıkıştırma
-OMUZ kronik: theraband dış rotasyon, sleeper stretch, duvar tırmanma
-OMUZ rotator: empty can, side-lying dış rotasyon, prone Y-T-W
-DIZ akut: quad sets, düz bacak kaldırma, buz+istirahat
-DIZ kronik: TKE, step-up, VMO squat, bisiklet
-DIZ patella: yan bacak kaldırma, clamshell, kalça abdüktör
-KALÇA akut: sırtüstü rotasyon, diz-göğüs, Thomas stretch
-KALÇA kronik: tek bacak glute bridge, clamshell, lateral band walk, hip flexor germe
-ÜST SIRT: foam roller torasik, skapular retraksiyon/depresyon, wall angels, Y-T-W, rhomboid
-DİRSEK tenisçi: eksantrik bilek ekstansiyon, tyler twist, önkol germe
-DİRSEK golfçü: eksantrik bilek fleksiyon, pronasyon/supinasyon
-BİLEK: fleksiyon/ekstansiyon germe, pronasyon/supinasyon, tendon kaydırma, kavrama
-AYAK akut: alfabe, theraband dorsifleksiyon, towel scrunching
-AYAK kronik: tek ayak denge, BOSU, gastrocnemius/soleus germe
-CORE akut: McGill curl-up, pelvik tilt, diyafragmatik nefes
-CORE kronik: dead bug, bird dog, plank, hollow body, McGill Big 3
-
 YOUTUBE_EGZERSIZLER satırı daima son satır olmalı.`;
+
+const PROFILE_LINE = `\nPROFİL: yaş={age} cinsiyet={gender} boy={height}cm kilo={weight}kg seviye={fitnessLevel} yaralanma={pastInjuries} hedef={goal}`;
 
 // ─── Prompt Builder ───────────────────────────────────────────────────────────
 
@@ -109,26 +84,39 @@ function _sanitize(val) {
   return String(val).slice(0, 100).replace(/[<>]/g, '');
 }
 
-function buildSystemPrompt(profile, bodyArea) {
-  const injuries = Array.isArray(profile.pastInjuries)
-    ? profile.pastInjuries.map(_sanitize).join(', ')
-    : 'None';
+function buildSystemPrompt(profile, bodyArea, isFirstMessage) {
+  const areaLabel = BODY_AREA_LABELS[bodyArea] ?? bodyArea;
+  let prompt = BASE_PROMPT.replaceAll('{bodyArea}', areaLabel);
 
-  return SYSTEM_PROMPT_TEMPLATE
-    .replace('{age}', _sanitize(profile.age))
-    .replace('{gender}', _sanitize(profile.gender))
-    .replace('{height}', _sanitize(profile.height))
-    .replace('{weight}', _sanitize(profile.weight))
-    .replace('{fitnessLevel}', _sanitize(profile.fitnessLevel))
-    .replace('{pastInjuries}', injuries)
-    .replace('{goal}', _sanitize(profile.goal))
-    .replaceAll('{bodyArea}', BODY_AREA_LABELS[bodyArea] ?? bodyArea);
+  // Profili sadece ilk mesajda ekle (~20 token tasarruf/mesaj)
+  if (isFirstMessage) {
+    const injuries = Array.isArray(profile.pastInjuries)
+      ? profile.pastInjuries.map(_sanitize).join(', ')
+      : 'None';
+
+    const profileText = PROFILE_LINE
+      .replace('{age}', _sanitize(profile.age))
+      .replace('{gender}', _sanitize(profile.gender))
+      .replace('{height}', _sanitize(profile.height))
+      .replace('{weight}', _sanitize(profile.weight))
+      .replace('{fitnessLevel}', _sanitize(profile.fitnessLevel))
+      .replace('{pastInjuries}', injuries)
+      .replace('{goal}', _sanitize(profile.goal));
+      
+    // Insert profile before the final instruction to ensure the AI doesn't miss the YOUTUBE_EGZERSIZLER instruction
+    prompt = prompt.replace('YOUTUBE_EGZERSIZLER satırı daima son satır olmalı.', profileText + '\n\nYOUTUBE_EGZERSIZLER satırı daima son satır olmalı.');
+  }
+
+  return prompt;
 }
 
 // ─── Streaming Chat ───────────────────────────────────────────────────────────
 
 async function streamChatResponse({ profile, bodyArea, messages, res }) {
-  const systemPrompt = buildSystemPrompt(profile, bodyArea);
+  const isFirstMessage = messages.length <= 1;
+  const systemPrompt = buildSystemPrompt(profile, bodyArea, isFirstMessage);
+  const recentMessages = messages.slice(-MAX_HISTORY);
+  const maxTokens = isFirstMessage ? MAX_TOKENS_SHORT : MAX_TOKENS_CHAT;
 
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
@@ -137,7 +125,6 @@ async function streamChatResponse({ profile, bodyArea, messages, res }) {
   res.flushHeaders();
 
   try {
-    const recentMessages = messages.slice(-10);
     const stream = await client.chat.completions.create({
       model: MODEL,
       stream: true,
@@ -145,15 +132,21 @@ async function streamChatResponse({ profile, bodyArea, messages, res }) {
         { role: 'system', content: systemPrompt },
         ...recentMessages,
       ],
-      max_tokens: MAX_TOKENS,
+      max_tokens: maxTokens,
       temperature: MODEL_TEMPERATURE,
     });
 
+    let totalTokens = 0;
     for await (const chunk of stream) {
       const delta = chunk.choices[0]?.delta?.content;
       if (delta) {
         res.write(`data: ${JSON.stringify({ content: delta })}\n\n`);
       }
+      if (chunk.usage) totalTokens = chunk.usage.total_tokens;
+    }
+
+    if (totalTokens > 0) {
+      logger.info('[Groq] stream tokens', { total: totalTokens, bodyArea, isFirstMessage });
     }
 
     res.write('data: [DONE]\n\n');
@@ -165,12 +158,14 @@ async function streamChatResponse({ profile, bodyArea, messages, res }) {
   }
 }
 
-// ─── Non-Streaming Chat (for web clients) ─────────────────────────────────────
+// ─── Non-Streaming Chat (for web clients) ────────────────────────────────────
 
 async function getChatResponse({ profile, bodyArea, messages }) {
-  const systemPrompt = buildSystemPrompt(profile, bodyArea);
+  const isFirstMessage = messages.length <= 1;
+  const systemPrompt = buildSystemPrompt(profile, bodyArea, isFirstMessage);
+  const recentMessages = messages.slice(-MAX_HISTORY);
+  const maxTokens = isFirstMessage ? MAX_TOKENS_SHORT : MAX_TOKENS_CHAT;
 
-  const recentMessages = messages.slice(-10);
   const completion = await client.chat.completions.create({
     model: MODEL,
     stream: false,
@@ -178,8 +173,17 @@ async function getChatResponse({ profile, bodyArea, messages }) {
       { role: 'system', content: systemPrompt },
       ...recentMessages,
     ],
-    max_tokens: MAX_TOKENS,
+    max_tokens: maxTokens,
     temperature: MODEL_TEMPERATURE,
+  });
+
+  const usage = completion.usage;
+  logger.info('[Groq] tokens', {
+    prompt: usage?.prompt_tokens,
+    completion: usage?.completion_tokens,
+    total: usage?.total_tokens,
+    bodyArea,
+    isFirstMessage,
   });
 
   return completion.choices[0]?.message?.content ?? '';

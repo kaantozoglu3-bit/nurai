@@ -55,13 +55,46 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     }
   }
 
+  /// Firestore users/{uid} dokümanından premium durumunu kontrol eder.
+  /// Backend ile aynı field adını kullanır: `premium` (bool) ve `premiumExpiresAt` (Timestamp).
+  Future<bool> _checkPremiumStatus(String uid) async {
+    try {
+      final doc = await _db.doc(FirestorePaths.user(uid)).get();
+      if (!doc.exists) return false;
+      final data = doc.data();
+      if (data == null) return false;
+
+      final isPremium = data['premium'] == true;
+      if (!isPremium) return false;
+
+      // Süre dolmuşsa premium sayma
+      final expiresAt = data['premiumExpiresAt'];
+      if (expiresAt != null) {
+        final DateTime expiry = (expiresAt as dynamic).toDate() as DateTime;
+        if (expiry.isBefore(DateTime.now())) return false;
+      }
+
+      return true;
+    } catch (e) {
+      if (kDebugMode) debugPrint('[AuthProvider] Premium kontrol hatası: $e');
+      return false;
+    }
+  }
+
   @override
   Future<AuthState> build() async {
     final firebaseUser = _auth.currentUser;
     if (firebaseUser == null) return const AuthState();
 
-    final isProfileComplete = await _checkProfileComplete(firebaseUser.uid);
-    final remaining = await QuotaService.getRemainingUses();
+    final results = await Future.wait([
+      _checkProfileComplete(firebaseUser.uid),
+      _checkPremiumStatus(firebaseUser.uid),
+      QuotaService.getRemainingUses(),
+    ]);
+
+    final isProfileComplete = results[0] as bool;
+    final isPremium = results[1] as bool;
+    final remaining = results[2] as int;
 
     return AuthState(
       isLoggedIn: true,
@@ -74,6 +107,7 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
             '',
         isLoggedIn: true,
         isProfileComplete: isProfileComplete,
+        isPremium: isPremium,
         dailyAnalysisCount: QuotaService.dailyLimit - remaining,
         lastAnalysisDate: DateTime.now(),
       ),
@@ -88,9 +122,16 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
         password: password,
       );
       final firebaseUser = credential.user!;
-      final isProfileComplete =
-          await _checkProfileComplete(firebaseUser.uid);
-      final remaining = await QuotaService.getRemainingUses();
+
+      final results = await Future.wait([
+        _checkProfileComplete(firebaseUser.uid),
+        _checkPremiumStatus(firebaseUser.uid),
+        QuotaService.getRemainingUses(),
+      ]);
+
+      final isProfileComplete = results[0] as bool;
+      final isPremium = results[1] as bool;
+      final remaining = results[2] as int;
 
       state = AsyncValue.data(AuthState(
         isLoggedIn: true,
@@ -98,10 +139,10 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
         user: UserModel(
           id: firebaseUser.uid,
           email: firebaseUser.email ?? '',
-          displayName:
-              firebaseUser.displayName ?? email.split('@').first,
+          displayName: firebaseUser.displayName ?? email.split('@').first,
           isLoggedIn: true,
           isProfileComplete: isProfileComplete,
+          isPremium: isPremium,
           dailyAnalysisCount: QuotaService.dailyLimit - remaining,
           lastAnalysisDate: DateTime.now(),
         ),

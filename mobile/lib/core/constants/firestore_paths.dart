@@ -7,6 +7,9 @@ class FirestorePaths {
   /// user_profiles/{uid}
   static String userProfile(String uid) => 'user_profiles/$uid';
 
+  /// users/{uid}
+  static String user(String uid) => 'users/$uid';
+
   /// users/{uid}/analyses
   static String userAnalyses(String uid) => 'users/$uid/analyses';
 

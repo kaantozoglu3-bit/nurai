@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/weekly_program_model.dart';
 import '../../data/services/history_service.dart';
@@ -46,6 +47,21 @@ class ProgramNotifier extends AutoDisposeAsyncNotifier<ProgramState> {
     return ProgramState(program: program);
   }
 
+  /// Maps onboarding activity keys to backend-accepted fitness level values.
+  String _toBackendFitnessLevel(String level) {
+    switch (level) {
+      case 'sedentary':
+      case 'light':
+        return 'beginner';
+      case 'moderate':
+        return 'intermediate';
+      case 'active':
+        return 'advanced';
+      default:
+        return level; // already beginner/intermediate/advanced
+    }
+  }
+
   Future<void> generate(String fitnessLevel) async {
     final current = state.valueOrNull ?? const ProgramState();
     state = AsyncValue.data(current.copyWith(status: ProgramStatus.generating));
@@ -81,14 +97,20 @@ class ProgramNotifier extends AutoDisposeAsyncNotifier<ProgramState> {
       final program = await ProgramService.generateAndSave(
         targetAreas: targetAreas,
         avgPainScore: avgPainScore,
-        fitnessLevel: fitnessLevel,
+        fitnessLevel: _toBackendFitnessLevel(fitnessLevel),
       );
 
       state = AsyncValue.data(ProgramState(program: program));
     } catch (e) {
-      final errMsg = e.toString().contains('Backend')
-          ? 'Program oluşturulamadı. Lütfen tekrar deneyin.'
-          : 'Bağlantı hatası. İnternet bağlantınızı kontrol edin.';
+      if (kDebugMode) debugPrint('[ProgramProvider] generate error: $e');
+      final msg = e.toString();
+      final errMsg = msg.contains('SocketException') || msg.contains('connection')
+          ? 'Bağlantı hatası. İnternet bağlantınızı kontrol edin.'
+          : msg.contains('401') || msg.contains('App Check') || msg.contains('oturum')
+              ? 'Oturum hatası. Çıkış yapıp tekrar giriş yapın.'
+              : msg.contains('timeout') || msg.contains('TimeoutException')
+                  ? 'Sunucu yanıt vermedi. Lütfen tekrar deneyin.'
+                  : 'Program oluşturulamadı. Lütfen tekrar deneyin.';
       state = AsyncValue.data(current.copyWith(
         status: ProgramStatus.error,
         errorMessage: errMsg,

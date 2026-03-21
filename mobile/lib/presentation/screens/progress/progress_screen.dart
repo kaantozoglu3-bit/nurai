@@ -8,6 +8,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/pain_log_provider.dart';
 import 'widgets/progress_header.dart';
 import 'widgets/chart_section.dart';
+import 'widgets/pain_body_map.dart';
 
 class ProgressScreen extends ConsumerWidget {
   const ProgressScreen({super.key});
@@ -67,6 +68,19 @@ class _ProgressBody extends ConsumerWidget {
             isPremium: isPremium,
             onUnlock: () => context.go(AppRoutes.paywall),
           ),
+          const SizedBox(height: 20),
+          const Text(
+            'Ağrı Haritası',
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const PainBodyMap(),
+          const SizedBox(height: 20),
         ],
       ),
     );

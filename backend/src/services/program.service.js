@@ -9,7 +9,7 @@ const client = new OpenAI({
 });
 
 const MODEL = 'llama-3.3-70b-versatile';
-const MAX_TOKENS = 4000;
+const MAX_TOKENS = 3500; // kompakt format: 4w×5d×3ex gerçek ölçüm ~2800 token
 const TEMPERATURE = 0.3; // Low for structured JSON output
 
 // ─── Input sanitisation ───────────────────────────────────────────────────────
@@ -35,45 +35,11 @@ function _buildPrompt(targetAreas, avgPainScore, fitnessLevel) {
 
   const intensity = score <= 3 ? 'light' : score <= 6 ? 'moderate' : 'gentle (high pain score)';
 
-  return `You are a licensed physiotherapist. Generate a 4-week home rehabilitation exercise program.
-
-TARGET AREAS: ${areasStr}
-AVERAGE PAIN SCORE: ${score}/10 — use ${intensity} intensity
-FITNESS LEVEL: ${level}
-
-RULES:
-- 4 weeks, 5 days per week (Monday to Friday)
-- 3 to 5 exercises per day
-- Week 1: gentle mobilisation, Week 2: stability, Week 3: strength, Week 4: functional training
-- Each exercise: name (Turkish), sets (e.g. "3 set x 10 tekrar"), duration (e.g. "10 dakika"), description (max 2 Turkish sentences), videoQuery (English search term for YouTube)
-- All text in Turkish EXCEPT videoQuery which must be in English
-- Respond ONLY with valid JSON, no markdown, no explanation
-
-JSON structure:
-{
-  "weeks": [
-    {
-      "weekNumber": 1,
-      "title": "Hafta başlığı",
-      "focus": "Odak noktası",
-      "days": [
-        {
-          "dayNumber": 1,
-          "dayName": "Pazartesi",
-          "exercises": [
-            {
-              "name": "Egzersiz adı",
-              "sets": "3 set x 10 tekrar",
-              "duration": "10 dakika",
-              "description": "Açıklama.",
-              "videoQuery": "exercise name physiotherapy tutorial"
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}`;
+  return `Fizyoterapist. Bölge:${areasStr} Ağrı:${score}/10 Yoğunluk:${intensity} Seviye:${level}
+4 hafta, 5 gün/hafta (Pzt-Cum), 3 egzersiz/gün.
+H1:mobilizasyon H2:stabilite H3:güçlendirme H4:fonksiyonel
+SADECE JSON döndür:
+{"weeks":[{"weekNumber":1,"title":"Hafta adı","focus":"Odak","days":[{"dayNumber":1,"dayName":"Pazartesi","exercises":[{"name":"Türkçe ad","sets":"3x10","videoQuery":"english search term"}]}]}]}`;
 }
 
 // ─── JSON extraction ──────────────────────────────────────────────────────────
@@ -108,12 +74,20 @@ async function generateProgram(targetAreas, avgPainScore, fitnessLevel) {
         messages: [{ role: 'user', content: prompt }],
         max_tokens: MAX_TOKENS,
         temperature: TEMPERATURE,
+        response_format: { type: 'json_object' },
       },
       { signal: abort.signal },
     );
   } finally {
     clearTimeout(timeoutHandle);
   }
+
+  const usage = response.usage;
+  logger.info('[ProgramService] tokens', {
+    prompt: usage?.prompt_tokens,
+    completion: usage?.completion_tokens,
+    total: usage?.total_tokens,
+  });
 
   const content = response.choices[0]?.message?.content ?? '';
 

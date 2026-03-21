@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import '../../core/constants/firestore_paths.dart';
@@ -43,29 +42,12 @@ class ProgramService {
     final uid = _uid;
     if (uid == null) throw StateError('User not authenticated');
 
-    final idToken = await FirebaseAuth.instance.currentUser!.getIdToken();
-
-    final dio = Dio(BaseOptions(
-      baseUrl: ApiService.baseUrl,
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 90),
-      responseType: ResponseType.json,
-    ));
-
-    final response = await dio.post<Map<String, dynamic>>(
-      '/api/v1/program/generate',
-      data: {
-        'targetAreas': targetAreas,
-        'avgPainScore': avgPainScore,
-        'fitnessLevel': fitnessLevel,
-      },
-      options: Options(headers: {'Authorization': 'Bearer $idToken'}),
+    // ApiService.generateProgram — SSL-pinned Dio, shared auth headers
+    final programData = await ApiService.generateProgram(
+      targetAreas: targetAreas,
+      avgPainScore: avgPainScore,
+      fitnessLevel: fitnessLevel,
     );
-
-    final programData = response.data?['program'] as Map<String, dynamic>?;
-    if (programData == null) {
-      throw Exception('Backend did not return program data');
-    }
 
     final program = WeeklyProgramModel(
       generatedAt: DateTime.now(),

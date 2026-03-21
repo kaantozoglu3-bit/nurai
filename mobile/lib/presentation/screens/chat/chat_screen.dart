@@ -62,7 +62,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             title: const Text('Günlük Limitine Ulaştın',
                 style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w700)),
             content: const Text(
-              'Ücretsiz kullanıcılar günde 1 analiz yapabilir.\n\n'
+              'Ücretsiz kullanıcılar günde 3 analiz yapabilir. Bugünkü limitine ulaştın.\n\n'
               'Premium\'a geçerek sınırsız analiz, kişisel program ve daha fazlasına eriş.',
               style: TextStyle(fontFamily: 'Inter', fontSize: 14, height: 1.5),
             ),

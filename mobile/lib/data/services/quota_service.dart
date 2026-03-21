@@ -1,10 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-/// Tracks daily free analysis quota (1 per day for free users — freemium tier).
+/// Tracks daily free analysis quota (3 per day for free users — freemium tier).
+/// Must match backend FREE_DAILY_LIMIT env var (default 3).
 /// Uses flutter_secure_storage with encrypted Android shared preferences.
 class QuotaService {
-  static const int dailyLimit = 1;
+  static const int dailyLimit = 3;
 
   static const FlutterSecureStorage _storage = FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),

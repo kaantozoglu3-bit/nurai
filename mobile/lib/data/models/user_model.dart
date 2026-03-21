@@ -19,6 +19,8 @@ class UserModel {
     this.lastAnalysisDate,
   });
 
+  static const int _freeDailyLimit = 3;
+
   int get remainingAnalyses {
     if (isPremium) return 999;
     final today = DateTime.now();
@@ -26,9 +28,9 @@ class UserModel {
         lastAnalysisDate!.year == today.year &&
         lastAnalysisDate!.month == today.month &&
         lastAnalysisDate!.day == today.day) {
-      return (1 - dailyAnalysisCount).clamp(0, 1);
+      return (_freeDailyLimit - dailyAnalysisCount).clamp(0, _freeDailyLimit);
     }
-    return 1;
+    return _freeDailyLimit;
   }
 
   bool get canAnalyze => isPremium || remainingAnalyses > 0;

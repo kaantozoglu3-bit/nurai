@@ -360,6 +360,35 @@ class ApiService {
     yield* controller.stream;
   }
 
+  /// Calls the backend to generate a 4-week program.
+  /// Uses the shared SSL-pinned Dio instance and auth headers.
+  static Future<Map<String, dynamic>> generateProgram({
+    required List<String> targetAreas,
+    required double avgPainScore,
+    required String fitnessLevel,
+  }) async {
+    final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
+    if (idToken == null) throw Exception('Kullanıcı oturumu bulunamadı.');
+
+    final headers = await _buildHeaders(idToken);
+    final response = await _jsonDio.post<Map<String, dynamic>>(
+      '/api/v1/program/generate',
+      data: {
+        'targetAreas': targetAreas,
+        'avgPainScore': avgPainScore,
+        'fitnessLevel': fitnessLevel,
+      },
+      options: Options(
+        headers: headers,
+        receiveTimeout: const Duration(seconds: 90),
+      ),
+    );
+
+    final program = response.data?['program'] as Map<String, dynamic>?;
+    if (program == null) throw Exception('Backend program verisi döndürmedi.');
+    return program;
+  }
+
   // ─── Production URL / host accessors ────────────────────────────────────
   static String get baseUrl => _productionUrl;
   static String get productionHost => _productionHost;

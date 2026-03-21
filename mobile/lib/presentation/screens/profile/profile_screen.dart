@@ -8,7 +8,6 @@ import '../../../core/constants/app_dimensions.dart';
 import '../../../core/router/app_router.dart';
 import '../../providers/auth_provider.dart';
 
-const String _privacyUrl = 'https://nurai.app/privacy';
 const String _termsUrl = 'https://nurai.app/terms';
 const String _feedbackEmail = 'destek@nurai.app';
 
@@ -268,7 +267,7 @@ class ProfileScreen extends ConsumerWidget {
           _SettingsTile(
             icon: Icons.privacy_tip_outlined,
             title: 'Gizlilik Politikası',
-            onTap: () => _launchUrl(_privacyUrl),
+            onTap: () => context.go(AppRoutes.privacyPolicy),
           ),
           _SettingsTile(
             icon: Icons.description_outlined,

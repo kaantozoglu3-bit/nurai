@@ -7,7 +7,7 @@ const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
 
 // In-memory cache: key → { data, expiresAt }
 const _cache = new Map();
-const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours (6'dan uzatıldı)
 
 // Circuit breaker: block calls for 1 hour after quota exhaustion
 let _circuitOpenUntil = 0;

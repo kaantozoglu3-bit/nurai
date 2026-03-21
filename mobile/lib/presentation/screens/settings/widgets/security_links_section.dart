@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/router/app_router.dart';
 
 class SecurityLinksSection extends StatelessWidget {
   const SecurityLinksSection({
@@ -38,7 +40,7 @@ class SecurityLinksSection extends StatelessWidget {
         ListTile(
           leading: const Icon(Icons.privacy_tip),
           title: const Text('Gizlilik Politikası'),
-          onTap: () => launchUrl(Uri.parse('https://nurai.app/privacy')),
+          onTap: () => context.go(AppRoutes.privacyPolicy),
         ),
         ListTile(
           leading: const Icon(Icons.description),
