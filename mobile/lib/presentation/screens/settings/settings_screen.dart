@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/constants/app_colors.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../data/services/badge_service.dart';
 import '../../providers/locale_provider.dart';
@@ -375,6 +376,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 sectionHeader: _sectionHeader,
               ),
               const SizedBox(height: 40),
+              // ── Footer ───────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.only(top: 32, bottom: 16),
+                child: Text(
+                  'Made with ❤️ for N.A',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary.withValues(alpha: 0.35),
+                    fontStyle: FontStyle.italic,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
             ],
           ),
         );
