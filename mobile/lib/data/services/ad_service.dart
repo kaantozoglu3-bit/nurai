@@ -1,15 +1,11 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart' show debugPrint, kDebugMode, kIsWeb;
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import '../../core/constants/ad_constants.dart';
 
 /// Manages AdMob rewarded and banner ads.
 /// Premium users never see ads — check [shouldShowAds] before loading.
 class AdService {
-  static const String _rewardedAdUnitId =
-      'ca-app-pub-3940256099942544/5224354917';
-  static const String _bannerAdUnitId =
-      'ca-app-pub-3940256099942544/6300978111';
-
   RewardedAd? _rewardedAd;
   bool _isLoadingRewarded = false;
 
@@ -31,7 +27,7 @@ class AdService {
     if (kIsWeb || _isLoadingRewarded || _rewardedAd != null) return;
     _isLoadingRewarded = true;
     await RewardedAd.load(
-      adUnitId: _rewardedAdUnitId,
+      adUnitId: AdConstants.rewardedAdUnitId,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {
@@ -91,7 +87,7 @@ class AdService {
   /// Creates and loads a banner ad. Caller must dispose when done.
   BannerAd createBannerAd() {
     return BannerAd(
-      adUnitId: _bannerAdUnitId,
+      adUnitId: AdConstants.bannerAdUnitId,
       size: AdSize.banner,
       request: const AdRequest(),
       listener: BannerAdListener(

@@ -70,6 +70,12 @@ dependencies:
   # Analytics
   firebase_analytics: ^11.4.6
 
+  # Crash Reporting
+  firebase_crashlytics: ^4.0.0
+
+  # Performance Monitoring
+  firebase_performance: ^0.10.0
+
   # Ads
   google_mobile_ads: ^4.0.0
 

@@ -1,6 +1,8 @@
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/weekly_program_model.dart';
+import '../../data/services/analytics_service.dart';
 import '../../data/services/history_service.dart';
 import '../../data/services/pain_log_service.dart';
 import '../../data/services/profile_service.dart';
@@ -100,8 +102,10 @@ class ProgramNotifier extends AutoDisposeAsyncNotifier<ProgramState> {
         fitnessLevel: _toBackendFitnessLevel(fitnessLevel),
       );
 
+      await AnalyticsService.instance.logProgramGenerated();
       state = AsyncValue.data(ProgramState(program: program));
-    } catch (e) {
+    } catch (e, s) {
+      FirebaseCrashlytics.instance.recordError(e, s);
       if (kDebugMode) debugPrint('[ProgramProvider] generate error: $e');
       final msg = e.toString();
       final errMsg = msg.contains('SocketException') || msg.contains('connection')

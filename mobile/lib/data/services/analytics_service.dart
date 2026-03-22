@@ -65,4 +65,40 @@ class AnalyticsService {
   Future<void> logScreenView(String screenName) async {
     await _analytics.logScreenView(screenName: screenName);
   }
+
+  Future<void> logExerciseComplete(String exerciseName) async {
+    await _analytics.logEvent(
+      name: 'exercise_complete',
+      parameters: {'exercise_name': exerciseName},
+    );
+  }
+
+  Future<void> logProgramGenerated() async {
+    await _analytics.logEvent(name: 'program_generated');
+  }
+
+  Future<void> logPremiumUpgrade() async {
+    await _analytics.logPurchase(
+      currency: 'TRY',
+      value: 599.99,
+    );
+  }
+
+  Future<void> logAdWatched(String feature) async {
+    await _analytics.logEvent(
+      name: 'ad_watched',
+      parameters: {'feature': feature},
+    );
+  }
+
+  Future<void> logPainLogEntry(int score) async {
+    await _analytics.logEvent(
+      name: 'pain_log_entry',
+      parameters: {'score': score},
+    );
+  }
+
+  Future<void> logMarketplaceMessage() async {
+    await _analytics.logEvent(name: 'marketplace_message');
+  }
 }

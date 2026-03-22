@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { width: 1024px; height: 500px; overflow: hidden; }
+canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1024" height="500"></canvas>
+<script>
+const ctx = document.getElementById('c').getContext('2d');
+// Background gradient
+const grad = ctx.createLinearGradient(0, 0, 1024, 500);
+grad.addColorStop(0, '#1e40af');
+grad.addColorStop(1, '#3b82f6');
+ctx.fillStyle = grad;
+ctx.fillRect(0, 0, 1024, 500);
+// Circle decoration
+ctx.beginPath();
+ctx.arc(900, -50, 350, 0, Math.PI * 2);
+ctx.fillStyle = 'rgba(255,255,255,0.05)';
+ctx.fill();
+ctx.beginPath();
+ctx.arc(100, 550, 300, 0, Math.PI * 2);
+ctx.fillStyle = 'rgba(255,255,255,0.05)';
+ctx.fill();
+// Logo circle
+ctx.beginPath();
+ctx.arc(180, 250, 80, 0, Math.PI * 2);
+ctx.fillStyle = 'rgba(255,255,255,0.15)';
+ctx.fill();
+ctx.font = 'bold 72px Arial';
+ctx.fillStyle = '#ffffff';
+ctx.textAlign = 'center';
+ctx.fillText('N', 180, 275);
+// Title
+ctx.font = 'bold 72px Arial';
+ctx.fillStyle = '#ffffff';
+ctx.textAlign = 'left';
+ctx.fillText('Nurai', 300, 230);
+// Subtitle
+ctx.font = '32px Arial';
+ctx.fillStyle = 'rgba(255,255,255,0.85)';
+ctx.fillText('AI Destekli Fizyoterapi Asistanı', 300, 290);
+// Badge
+ctx.fillStyle = 'rgba(255,255,255,0.2)';
+ctx.roundRect(300, 320, 280, 50, 25);
+ctx.fill();
+ctx.font = 'bold 20px Arial';
+ctx.fillStyle = '#ffffff';
+ctx.textAlign = 'center';
+ctx.fillText('Ücretsiz • Premium • Güvenli', 440, 352);
+</script>
+</body>
+</html>

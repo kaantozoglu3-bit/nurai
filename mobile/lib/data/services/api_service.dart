@@ -6,6 +6,8 @@ import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_performance/firebase_performance.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, debugPrint, kDebugMode;
 // ssl_pinning_plugin: pending — requires iOS/Android native setup.
 // The plugin (v2.0.0) is incompatible with AGP 8+ (missing namespace in its
@@ -265,14 +267,26 @@ class ApiService {
     final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
     if (idToken == null) throw Exception('Kullanıcı oturumu bulunamadı.');
 
-    final headers = await _buildHeaders(idToken);
-    final response = await _jsonDio.post<Map<String, dynamic>>(
-      '/api/v1/analysis/chat-sync',
-      data: {'profile': profile, 'bodyArea': bodyArea, 'messages': messages, 'sessionId': sessionId},
-      options: Options(headers: headers),
+    final trace = FirebasePerformance.instance.newHttpMetric(
+      '$_productionUrl/api/v1/analysis/chat-sync',
+      HttpMethod.Post,
     );
+    await trace.start();
 
-    return response.data?['content'] as String? ?? '';
+    try {
+      final headers = await _buildHeaders(idToken);
+      final response = await _jsonDio.post<Map<String, dynamic>>(
+        '/api/v1/analysis/chat-sync',
+        data: {'profile': profile, 'bodyArea': bodyArea, 'messages': messages, 'sessionId': sessionId},
+        options: Options(headers: headers),
+      );
+      return response.data?['content'] as String? ?? '';
+    } catch (e, s) {
+      FirebaseCrashlytics.instance.recordError(e, s);
+      rethrow;
+    } finally {
+      await trace.stop();
+    }
   }
 
   /// Mobilde SSE streaming, web'de tek seferlik istek kullanır.
@@ -352,7 +366,8 @@ class ApiService {
       } finally {
         if (!controller.isClosed) controller.close();
       }
-    }).catchError((Object e) {
+    }).catchError((Object e, StackTrace s) {
+      FirebaseCrashlytics.instance.recordError(e, s);
       controller.addError(e);
       if (!controller.isClosed) controller.close();
     });

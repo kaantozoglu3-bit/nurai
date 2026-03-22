@@ -188,6 +188,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   AppButton(
                     label: '7 Gün Ücretsiz Dene',
                     onPressed: () {
+                      AnalyticsService.instance.logPaywallViewed('purchase_attempt');
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(

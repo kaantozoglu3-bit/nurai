@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -147,7 +148,8 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
           lastAnalysisDate: DateTime.now(),
         ),
       ));
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseAuthException catch (e, s) {
+      FirebaseCrashlytics.instance.recordError(e, s);
       state = AsyncValue.error(_authError(e.code), StackTrace.current);
     }
   }
@@ -176,7 +178,8 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
           isProfileComplete: false,
         ),
       ));
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseAuthException catch (e, s) {
+      FirebaseCrashlytics.instance.recordError(e, s);
       state = AsyncValue.error(_authError(e.code), StackTrace.current);
     }
   }
