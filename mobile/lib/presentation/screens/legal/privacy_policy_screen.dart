@@ -4,7 +4,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 /// URL for the hosted privacy policy (GitHub Pages).
 /// Update this constant after GitHub Pages is activated.
-const _kPrivacyUrl = 'https://kaantozoglu9.github.io/nurai-privacy';
+const _kPrivacyUrl = 'https://kaantozoglu3-bit.github.io/nurai/privacy-policy';
 
 class PrivacyPolicyScreen extends StatefulWidget {
   const PrivacyPolicyScreen({super.key});
