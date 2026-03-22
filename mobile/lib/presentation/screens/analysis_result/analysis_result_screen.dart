@@ -124,6 +124,26 @@ ${exercises.isNotEmpty ? exercises : 'Egzersiz önerisi yok'}
     }
   }
 
+  Color _headerBackgroundColor(int score) {
+    if (score >= 7) {
+      return AppColors.error.withValues(alpha: 0.06);
+    } else if (score >= 4) {
+      return AppColors.warning.withValues(alpha: 0.06);
+    } else {
+      return AppColors.success.withValues(alpha: 0.06);
+    }
+  }
+
+  Color _headerBorderColor(int score) {
+    if (score >= 7) {
+      return AppColors.error.withValues(alpha: 0.2);
+    } else if (score >= 4) {
+      return AppColors.warning.withValues(alpha: 0.2);
+    } else {
+      return AppColors.success.withValues(alpha: 0.2);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final analysis = _analysis;
@@ -157,10 +177,10 @@ ${exercises.isNotEmpty ? exercises : 'Egzersiz önerisi yok'}
             Container(
               padding: const EdgeInsets.all(AppDimensions.paddingXXL),
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.06),
+                color: _headerBackgroundColor(analysis.painScore),
                 borderRadius: BorderRadius.circular(AppDimensions.radiusL),
                 border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.2), width: 1),
+                    color: _headerBorderColor(analysis.painScore), width: 1),
               ),
               child: Row(
                 children: [
@@ -259,6 +279,12 @@ ${exercises.isNotEmpty ? exercises : 'Egzersiz önerisi yok'}
                   ),
                 ],
               ),
+            ),
+            const SizedBox(height: 24),
+            Divider(
+              color: AppColors.border.withValues(alpha: 0.5),
+              height: 1,
+              thickness: 1,
             ),
             const SizedBox(height: 24),
 

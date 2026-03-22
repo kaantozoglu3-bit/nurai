@@ -40,4 +40,12 @@ class AppColors {
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
+
+  // Dark mode
+  static const Color backgroundDark = Color(0xFF0F172A);
+  static const Color surfaceDark = Color(0xFF1E293B);
+  static const Color surfaceVariantDark = Color(0xFF334155);
+  static const Color textPrimaryDark = Color(0xFFF1F5F9);
+  static const Color textSecondaryDark = Color(0xFF94A3B8);
+  static const Color borderDark = Color(0xFF334155);
 }

@@ -9,9 +9,14 @@ async function appCheckMiddleware(req, res, next) {
 
   const appCheckToken = req.headers['x-firebase-appcheck'];
 
-  // Token yoksa geç — Play Integrity henüz yapılandırılmadı (MVP aşaması).
-  // TODO: token yoksa da reddet — Play Store yayınından sonra etkinleştir.
+  // APPCHECK_ENFORCE=true ile hard enforcement aktif olur.
+  // Play Store yayınından sonra Railway env'e APPCHECK_ENFORCE=true ekle.
+  const enforce = process.env.APPCHECK_ENFORCE === 'true';
   if (!appCheckToken) {
+    if (enforce) {
+      logger.warn('[AppCheck] Missing X-Firebase-AppCheck header — rejecting');
+      return res.status(401).json({ error: 'App Check token gerekli.' });
+    }
     logger.warn('[AppCheck] Missing X-Firebase-AppCheck header — passing (soft enforcement)');
     return next();
   }

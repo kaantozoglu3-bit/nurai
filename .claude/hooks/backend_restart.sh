@@ -4,5 +4,7 @@ FILE=$(node -e "try{console.log(JSON.parse(process.env.CLAUDE_TOOL_INPUT||'{}').
 echo "[hook] Backend dosyası değişti, yeniden başlatılıyor..."
 pkill -f 'node server.js' 2>/dev/null
 sleep 1
-cd "C:/Users/KULLANICI/Desktop/fizyoterapi/backend" && nohup node server.js > /tmp/backend.log 2>&1 &
+LOG_DIR="C:/Users/KULLANICI/Desktop/fizyoterapi/.claude/logs"
+mkdir -p "$LOG_DIR"
+cd "C:/Users/KULLANICI/Desktop/fizyoterapi/backend" && nohup node server.js > "$LOG_DIR/backend.log" 2>&1 &
 echo "[hook] Backend yeniden başlatıldı (PID: $!)"

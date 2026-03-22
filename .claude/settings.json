@@ -2,16 +2,38 @@
   "permissions": {
     "allow": [
       "Bash(node server.js)"
+    ],
+    "deny": [
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~/*)",
+      "Bash(git push --force*)",
+      "Bash(git reset --hard*)",
+      "Bash(sudo rm*)",
+      "Bash(chmod 777*)",
+      "Bash(curl * | bash)",
+      "Bash(wget * | bash)",
+      "Bash(ssh*)",
+      "Bash(> /dev/*)"
     ]
   },
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Write|Edit",
+        "matcher": "Write|Edit|MultiEdit|TodoWrite",
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"[hook] Dosya yazılıyor...\""
+            "command": "npx tdd-guard@latest"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx tdd-guard@latest"
           }
         ]
       }

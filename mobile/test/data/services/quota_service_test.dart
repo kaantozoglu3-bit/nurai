@@ -14,8 +14,8 @@ import 'package:painrelief_ai/data/services/quota_service.dart';
 
 void main() {
   group('QuotaService constants and pure logic', () {
-    test('dailyLimit is 1 (freemium tier allows 1 analysis per day)', () {
-      expect(QuotaService.dailyLimit, equals(1));
+    test('dailyLimit is 3 (freemium tier allows 3 analyses per day)', () {
+      expect(QuotaService.dailyLimit, equals(3));
     });
 
     test('dailyLimit is a positive integer', () {

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/router/app_router.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/chat_provider.dart';
 import '../../providers/navigation_provider.dart';
 
@@ -48,13 +49,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(chatProvider(widget.bodyArea));
+    final isPremium = ref.watch(currentUserProvider)?.isPremium ?? false;
     final replies = state.stepIndex < kQuickReplies.length
         ? kQuickReplies[state.stepIndex]
         : <String>[];
 
     // Side-effect listeners: navigation + auto-scroll
     ref.listen(chatProvider(widget.bodyArea), (prev, next) {
-      if (next.quotaExceeded && !(prev?.quotaExceeded ?? false)) {
+      if (next.quotaExceeded && !(prev?.quotaExceeded ?? false) && !isPremium) {
         showDialog<void>(
           context: context,
           barrierDismissible: false,

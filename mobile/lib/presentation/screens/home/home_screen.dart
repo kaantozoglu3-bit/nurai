@@ -46,6 +46,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (i) => setState(() => _selectedIndex = i),
+        selectedItemColor: AppColors.primary,
+        unselectedItemColor: AppColors.textHint,
+        backgroundColor: AppColors.surface,
+        type: BottomNavigationBarType.fixed,
+        selectedLabelStyle: const TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.w600),
+        unselectedLabelStyle: const TextStyle(fontFamily: 'Inter', fontSize: 11),
+        elevation: 8,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
@@ -122,16 +129,22 @@ class _HomeTab extends ConsumerWidget {
                     ),
                   ],
                 ),
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                  child: Text(
-                    firstName.isNotEmpty ? firstName[0].toUpperCase() : 'U',
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.2), width: 1.5),
+                  ),
+                  child: CircleAvatar(
+                    radius: 24,
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                    child: Text(
+                      firstName.isNotEmpty ? firstName[0].toUpperCase() : 'U',
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
                     ),
                   ),
                 ),

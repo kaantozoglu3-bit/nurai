@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(claude --dangerously-skip-permissions --version)"
+      "Bash(claude --version)"
+    ],
+    "deny": [
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~/*)",
+      "Bash(git push --force*)",
+      "Bash(git reset --hard*)",
+      "Bash(sudo*)",
+      "Bash(chmod 777*)",
+      "Bash(ssh*)",
+      "Bash(> /dev/*)"
     ]
   }
 }
