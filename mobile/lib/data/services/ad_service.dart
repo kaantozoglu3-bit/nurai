@@ -41,9 +41,7 @@ class AdService {
         },
         onAdFailedToLoad: (error) {
           _isLoadingRewarded = false;
-          if (kDebugMode) {
-            debugPrint('[AdService] Rewarded ad failed: ${error.message}');
-          }
+          if (kDebugMode) debugPrint('[AdService] Rewarded ad failed: ${error.message}');
         },
       ),
     );
@@ -71,9 +69,7 @@ class AdService {
       onAdFailedToShowFullScreenContent: (ad, error) {
         ad.dispose();
         _rewardedAd = null;
-        if (kDebugMode) {
-          debugPrint('[AdService] Show failed: ${error.message}');
-        }
+        if (kDebugMode) debugPrint('[AdService] Show failed: ${error.message}');
         if (!completer.isCompleted) completer.complete(false);
       },
     );
@@ -81,9 +77,7 @@ class AdService {
     await ad.show(
       onUserEarnedReward: (_, reward) {
         rewarded = true;
-        if (kDebugMode) {
-          debugPrint('[AdService] Reward earned: ${reward.amount}');
-        }
+        if (kDebugMode) debugPrint('[AdService] Reward earned: ${reward.amount}');
       },
     );
 
@@ -106,9 +100,7 @@ class AdService {
         },
         onAdFailedToLoad: (ad, error) {
           ad.dispose();
-          if (kDebugMode) {
-            debugPrint('[AdService] Banner failed: ${error.message}');
-          }
+          if (kDebugMode) debugPrint('[AdService] Banner failed: ${error.message}');
         },
       ),
     )..load();

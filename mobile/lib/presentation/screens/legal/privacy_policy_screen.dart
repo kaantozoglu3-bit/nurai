@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// URL for the hosted privacy policy (GitHub Pages).
 /// Update this constant after GitHub Pages is activated.
@@ -49,6 +50,24 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
                     useShouldOverrideUrlLoading: true,
                     mediaPlaybackRequiresUserGesture: false,
                   ),
+                  shouldOverrideUrlLoading: (controller, action) async {
+                    final uri = action.request.url;
+                    if (uri == null) return NavigationActionPolicy.CANCEL;
+                    final host = uri.host;
+                    // Only allow the trusted privacy policy host; open everything
+                    // else externally so the WebView cannot be used as a proxy.
+                    const allowedHost = 'kaantozoglu3-bit.github.io';
+                    if (host == allowedHost) {
+                      return NavigationActionPolicy.ALLOW;
+                    }
+                    final externalUri = Uri.tryParse(uri.toString());
+                    if (externalUri != null &&
+                        await canLaunchUrl(externalUri)) {
+                      await launchUrl(externalUri,
+                          mode: LaunchMode.externalApplication);
+                    }
+                    return NavigationActionPolicy.CANCEL;
+                  },
                   onLoadStop: (controller, url) {
                     if (mounted) setState(() => _isLoading = false);
                   },
