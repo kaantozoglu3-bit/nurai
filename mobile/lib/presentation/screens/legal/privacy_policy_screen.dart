@@ -1,16 +1,81 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
-class PrivacyPolicyScreen extends StatelessWidget {
+/// URL for the hosted privacy policy (GitHub Pages).
+/// Update this constant after GitHub Pages is activated.
+const _kPrivacyUrl = 'https://kaantozoglu9.github.io/nurai-privacy';
+
+class PrivacyPolicyScreen extends StatefulWidget {
   const PrivacyPolicyScreen({super.key});
+
+  @override
+  State<PrivacyPolicyScreen> createState() => _PrivacyPolicyScreenState();
+}
+
+class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
+  bool _loadFailed = false;
+  bool _isLoading = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Gizlilik Politikası')),
-      body: const SingleChildScrollView(
-        padding: EdgeInsets.all(20),
-        child: _PolicyContent(),
+      appBar: AppBar(
+        title: const Text('Gizlilik Politikası'),
+        actions: [
+          if (!_loadFailed && !kIsWeb)
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              tooltip: 'Yenile',
+              onPressed: () => setState(() {
+                _loadFailed = false;
+                _isLoading = true;
+              }),
+            ),
+        ],
       ),
+      body: _loadFailed || kIsWeb
+          ? const SingleChildScrollView(
+              padding: EdgeInsets.all(20),
+              child: _PolicyContent(),
+            )
+          : Stack(
+              children: [
+                InAppWebView(
+                  key: ValueKey(_loadFailed),
+                  initialUrlRequest: URLRequest(url: WebUri(_kPrivacyUrl)),
+                  initialSettings: InAppWebViewSettings(
+                    transparentBackground: true,
+                    useShouldOverrideUrlLoading: true,
+                    mediaPlaybackRequiresUserGesture: false,
+                  ),
+                  onLoadStop: (controller, url) {
+                    if (mounted) setState(() => _isLoading = false);
+                  },
+                  onReceivedError: (controller, request, error) {
+                    if (mounted) {
+                      setState(() {
+                        _loadFailed = true;
+                        _isLoading = false;
+                      });
+                    }
+                  },
+                  onReceivedHttpError: (controller, request, response) {
+                    if (response.statusCode != null &&
+                        response.statusCode! >= 400) {
+                      if (mounted) {
+                        setState(() {
+                          _loadFailed = true;
+                          _isLoading = false;
+                        });
+                      }
+                    }
+                  },
+                ),
+                if (_isLoading)
+                  const Center(child: CircularProgressIndicator()),
+              ],
+            ),
     );
   }
 }

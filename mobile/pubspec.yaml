@@ -73,6 +73,9 @@ dependencies:
   # Ads
   google_mobile_ads: ^4.0.0
 
+  # In-App WebView (privacy policy, legal pages)
+  flutter_inappwebview: ^6.1.5
+
   cupertino_icons: ^1.0.8
 
 dev_dependencies:

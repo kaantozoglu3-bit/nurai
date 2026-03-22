@@ -229,6 +229,21 @@ class _PaywallScreenState extends State<PaywallScreen> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  Center(
+                    child: GestureDetector(
+                      onTap: () => context.go(AppRoutes.privacyPolicy),
+                      child: const Text(
+                        'Gizlilik Politikası',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 11,
+                          color: AppColors.primary,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 32),
                 ],
               ),

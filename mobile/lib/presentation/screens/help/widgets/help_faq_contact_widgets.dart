@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/router/app_router.dart';
 
 // ─── FAQ Section ──────────────────────────────────────────────────────────────
 
@@ -118,6 +120,35 @@ class HelpContactSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        Card(
+          color: AppColors.surface,
+          elevation: 1,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: ListTile(
+            leading: const Icon(Icons.privacy_tip_outlined, color: AppColors.primary),
+            title: const Text(
+              'Gizlilik Politikası',
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            subtitle: const Text(
+              'Verilerinizin nasıl kullanıldığını öğrenin',
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            trailing: const Icon(Icons.arrow_forward_ios,
+                size: 14, color: AppColors.textHint),
+            onTap: () => context.go(AppRoutes.privacyPolicy),
+          ),
+        ),
+        const SizedBox(height: 12),
         Card(
           color: AppColors.surface,
           elevation: 1,
