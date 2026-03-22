@@ -6,7 +6,9 @@ import '../../../core/constants/app_dimensions.dart';
 import '../../../core/router/app_router.dart';
 import '../../../data/exercise_library_data.dart';
 import '../../../data/models/exercise_library_model.dart';
+import '../../providers/ad_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/unlocked_exercises_provider.dart';
 import 'widgets/exercise_card.dart';
 import 'widgets/filter_chip_widget.dart';
 
@@ -272,17 +274,17 @@ class _BodyAreaTile extends StatelessWidget {
 
 // ── Egzersiz Listesi ───────────────────────────────────────────────────────────
 
-class _ExerciseList extends StatefulWidget {
+class _ExerciseList extends ConsumerStatefulWidget {
   final BodyAreaLibrary area;
   final bool isPremium;
 
   const _ExerciseList({required this.area, required this.isPremium});
 
   @override
-  State<_ExerciseList> createState() => _ExerciseListState();
+  ConsumerState<_ExerciseList> createState() => _ExerciseListState();
 }
 
-class _ExerciseListState extends State<_ExerciseList> {
+class _ExerciseListState extends ConsumerState<_ExerciseList> {
   String _phase = 'Akut';
 
   static const int _freeLimit = 3;
@@ -290,12 +292,91 @@ class _ExerciseListState extends State<_ExerciseList> {
   List<ExerciseLibraryItem> get _filtered =>
       widget.area.exercises.where((e) => e.phase == _phase).toList();
 
+  void _onLockedBannerTap(BuildContext context, int lockedCount) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Kilitli Egzersizler',
+          style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          '$lockedCount egzersizi görmek için reklam izle veya Premium\'a geç.',
+          style: const TextStyle(fontFamily: 'Inter', fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              Navigator.of(ctx).pop();
+              final adService = ref.read(adServiceProvider);
+              if (!adService.isRewardedAdReady) {
+                await adService.loadRewardedAd();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Reklam yükleniyor, lütfen tekrar dene.'),
+                    ),
+                  );
+                }
+                return;
+              }
+              final rewarded = await adService.showRewardedAd();
+              if (rewarded && context.mounted) {
+                final areaKey = widget.area.key;
+                await ref
+                    .read(unlockedExercisesProvider.notifier)
+                    .unlock('${areaKey}_${_phase}_locked');
+                if (!context.mounted) return;
+                setState(() {});
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Egzersizler açıldı!'),
+                    backgroundColor: Color(0xFF10B981),
+                  ),
+                );
+              }
+            },
+            child: const Text(
+              'Reklam İzle (Ücretsiz)',
+              style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              context.go(AppRoutes.paywall);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text(
+              'Premium\'a Geç',
+              style: TextStyle(fontFamily: 'Inter', color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final filtered = _filtered;
-    final visibleCount =
-        widget.isPremium ? filtered.length : filtered.length.clamp(0, _freeLimit);
-    final lockedCount = widget.isPremium ? 0 : (filtered.length - visibleCount).clamp(0, filtered.length);
+    final areaKey = widget.area.key;
+    final lockedKey = '${areaKey}_${_phase}_locked';
+    final isUnlockedByAd =
+        ref.watch(unlockedExercisesProvider).contains(lockedKey);
+
+    final effectivelyPremium = widget.isPremium || isUnlockedByAd;
+    final visibleCount = effectivelyPremium
+        ? filtered.length
+        : filtered.length.clamp(0, _freeLimit);
+    final lockedCount = effectivelyPremium
+        ? 0
+        : (filtered.length - visibleCount).clamp(0, filtered.length);
 
     return Column(
       children: [
@@ -358,14 +439,15 @@ class _ExerciseListState extends State<_ExerciseList> {
                   itemBuilder: (context, i) {
                     if (i < visibleCount) {
                       return Padding(
-                        padding: const EdgeInsets.only(bottom: AppDimensions.paddingM),
+                        padding: const EdgeInsets.only(
+                            bottom: AppDimensions.paddingM),
                         child: ExerciseCard(exercise: filtered[i]),
                       );
                     }
-                    // Locked banner
+                    // Locked banner — reklam seçeneği ile
                     return _LockedBanner(
                       lockedCount: lockedCount,
-                      onUnlock: () => context.go(AppRoutes.paywall),
+                      onUnlock: () => _onLockedBannerTap(context, lockedCount),
                     );
                   },
                 ),

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
+import 'data/services/ad_service.dart';
 import 'data/services/notification_service.dart';
 import 'firebase_options.dart';
 
@@ -28,6 +29,9 @@ void main() async {
 
   // Bildirim servisi başlat
   await NotificationService.instance.initialize();
+
+  // AdMob başlat
+  await AdService.initialize();
 
   // Status bar style
   SystemChrome.setSystemUIOverlayStyle(

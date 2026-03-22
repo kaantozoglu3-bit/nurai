@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../data/services/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
@@ -9,6 +10,8 @@ import '../../../core/constants/app_dimensions.dart';
 import '../../../core/router/app_router.dart';
 import '../../../data/models/analysis_model.dart';
 import '../../../data/services/api_service.dart';
+import '../../providers/ad_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/navigation_provider.dart';
 import '../../widgets/app_button.dart';
 import 'widgets/exercise_card_widget.dart';
@@ -124,6 +127,7 @@ ${exercises.isNotEmpty ? exercises : 'Egzersiz önerisi yok'}
   @override
   Widget build(BuildContext context) {
     final analysis = _analysis;
+    final isPremium = ref.watch(currentUserProvider)?.isPremium ?? false;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -341,9 +345,48 @@ ${exercises.isNotEmpty ? exercises : 'Egzersiz önerisi yok'}
               variant: AppButtonVariant.ghost,
             ),
             const SizedBox(height: 32),
+            // Banner Ad — sadece ücretsiz kullanıcılara
+            if (!isPremium) const _BannerAdWidget(),
           ],
         ),
       ),
+    );
+  }
+}
+
+// ── Banner Ad Widget ───────────────────────────────────────────────────────────
+
+class _BannerAdWidget extends ConsumerStatefulWidget {
+  const _BannerAdWidget();
+
+  @override
+  ConsumerState<_BannerAdWidget> createState() => _BannerAdWidgetState();
+}
+
+class _BannerAdWidgetState extends ConsumerState<_BannerAdWidget> {
+  BannerAd? _bannerAd;
+
+  @override
+  void initState() {
+    super.initState();
+    _bannerAd = ref.read(adServiceProvider).createBannerAd();
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ad = _bannerAd;
+    if (ad == null) return const SizedBox.shrink();
+    return Container(
+      alignment: Alignment.center,
+      width: ad.size.width.toDouble(),
+      height: ad.size.height.toDouble(),
+      child: AdWidget(ad: ad),
     );
   }
 }
