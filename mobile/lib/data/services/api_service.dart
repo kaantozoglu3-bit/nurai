@@ -263,6 +263,7 @@ class ApiService {
     required String bodyArea,
     required List<Map<String, String>> messages,
     required String sessionId,
+    bool isFinalTurn = false,
   }) async {
     final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
     if (idToken == null) throw Exception('Kullanıcı oturumu bulunamadı.');
@@ -277,7 +278,7 @@ class ApiService {
       final headers = await _buildHeaders(idToken);
       final response = await _jsonDio.post<Map<String, dynamic>>(
         '/api/v1/analysis/chat-sync',
-        data: {'profile': profile, 'bodyArea': bodyArea, 'messages': messages, 'sessionId': sessionId},
+        data: {'profile': profile, 'bodyArea': bodyArea, 'messages': messages, 'sessionId': sessionId, 'isFinalTurn': isFinalTurn},
         options: Options(headers: headers),
       );
       return response.data?['content'] as String? ?? '';
@@ -295,6 +296,7 @@ class ApiService {
     required String bodyArea,
     required List<Map<String, String>> messages,
     required String sessionId,
+    bool isFinalTurn = false,
   }) async* {
     // Web: streaming desteklenmiyor, sync endpoint kullan
     if (kIsWeb) {
@@ -303,6 +305,7 @@ class ApiService {
         bodyArea: bodyArea,
         messages: messages,
         sessionId: sessionId,
+        isFinalTurn: isFinalTurn,
       );
       final words = content.split(' ');
       for (final word in words) {
@@ -326,6 +329,7 @@ class ApiService {
         'bodyArea': bodyArea,
         'messages': messages,
         'sessionId': sessionId,
+        'isFinalTurn': isFinalTurn,
       },
       options: Options(
         headers: headers,

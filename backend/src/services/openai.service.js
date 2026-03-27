@@ -175,9 +175,12 @@ function buildSystemPrompt(profile, bodyArea, isFirstMessage) {
 
 // ─── Streaming Chat ───────────────────────────────────────────────────────────
 
-async function streamChatResponse({ profile, bodyArea, messages, res }) {
+async function streamChatResponse({ profile, bodyArea, messages, isFinalTurn = false, res }) {
   const isFirstMessage = messages.length <= 1;
-  const systemPrompt = buildSystemPrompt(profile, bodyArea, isFirstMessage);
+  let systemPrompt = buildSystemPrompt(profile, bodyArea, isFirstMessage);
+  if (isFinalTurn) {
+    systemPrompt += '\n\nÖNEMLİ: Kullanıcı tüm sorulara yanıt verdi. Şimdi MUTLAKA ANALİZ ÇIKTISI formatını uygula. Yeni soru sorma, egzersiz listesini EXACT formatta yaz.';
+  }
   const recentMessages = messages.slice(-MAX_HISTORY);
   const maxTokens = isFirstMessage ? MAX_TOKENS_SHORT : MAX_TOKENS_CHAT;
 
@@ -223,9 +226,12 @@ async function streamChatResponse({ profile, bodyArea, messages, res }) {
 
 // ─── Non-Streaming Chat (for web clients) ────────────────────────────────────
 
-async function getChatResponse({ profile, bodyArea, messages }) {
+async function getChatResponse({ profile, bodyArea, messages, isFinalTurn = false }) {
   const isFirstMessage = messages.length <= 1;
-  const systemPrompt = buildSystemPrompt(profile, bodyArea, isFirstMessage);
+  let systemPrompt = buildSystemPrompt(profile, bodyArea, isFirstMessage);
+  if (isFinalTurn) {
+    systemPrompt += '\n\nÖNEMLİ: Kullanıcı tüm sorulara yanıt verdi. Şimdi MUTLAKA ANALİZ ÇIKTISI formatını uygula. Yeni soru sorma, egzersiz listesini EXACT formatta yaz.';
+  }
   const recentMessages = messages.slice(-MAX_HISTORY);
   const maxTokens = isFirstMessage ? MAX_TOKENS_SHORT : MAX_TOKENS_CHAT;
 

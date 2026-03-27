@@ -202,7 +202,7 @@ class ChatNotifier extends AutoDisposeFamilyNotifier<ChatState, String> {
 
   // ── Streaming ───────────────────────────────────────────────────────────────
 
-  Future<void> _streamFromAPI() async {
+  Future<void> _streamFromAPI({bool isFinalTurn = false}) async {
     final aiMsg = ChatMessage(role: 'assistant', content: '', isStreaming: true);
     _messages.add(aiMsg);
     state = state.copyWith(isLoading: true, messages: List.unmodifiable(_messages));
@@ -213,6 +213,7 @@ class ChatNotifier extends AutoDisposeFamilyNotifier<ChatState, String> {
         bodyArea: _bodyArea,
         messages: _history,
         sessionId: _sessionId,
+        isFinalTurn: isFinalTurn,
       );
 
       await for (final chunk in stream) {
@@ -273,7 +274,7 @@ class ChatNotifier extends AutoDisposeFamilyNotifier<ChatState, String> {
 
     if (userTurns >= _kMaxUserTurns) {
       state = state.copyWith(analysisComplete: true);
-      await _streamFromAPI();
+      await _streamFromAPI(isFinalTurn: true);
 
       state = state.copyWith(isNavigating: true);
       await Future.delayed(const Duration(milliseconds: 1200));

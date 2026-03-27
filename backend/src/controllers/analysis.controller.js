@@ -32,6 +32,7 @@ const chatSchema = Joi.object({
   messages: Joi.array().items(messageSchema).min(1).max(50).required(),
   profile: profileSchema,
   sessionId: Joi.string().uuid({ version: 'uuidv4' }).required(),
+  isFinalTurn: Joi.boolean().optional(),
 });
 
 /**
@@ -43,10 +44,10 @@ async function chat(req, res) {
   if (error) {
     return res.status(400).json({ error: error.details[0].message });
   }
-  const { profile, bodyArea, messages, sessionId } = value;
+  const { profile, bodyArea, messages, sessionId, isFinalTurn } = value;
   try {
     res.set('Cache-Control', 'no-store');
-    await streamChatResponse({ profile: profile ?? {}, bodyArea, messages, sessionId, res });
+    await streamChatResponse({ profile: profile ?? {}, bodyArea, messages, sessionId, isFinalTurn: isFinalTurn ?? false, res });
   } catch (err) {
     logger.error('[chat] Streaming error', { message: err.message });
     if (!res.headersSent) {
@@ -65,9 +66,9 @@ async function chatSync(req, res) {
   if (error) {
     return res.status(400).json({ error: error.details[0].message });
   }
-  const { profile, bodyArea, messages, sessionId } = value;
+  const { profile, bodyArea, messages, sessionId, isFinalTurn } = value;
   try {
-    const content = await getChatResponse({ profile: profile ?? {}, bodyArea, messages, sessionId });
+    const content = await getChatResponse({ profile: profile ?? {}, bodyArea, messages, sessionId, isFinalTurn: isFinalTurn ?? false });
     res.set('Cache-Control', 'no-store');
     res.json({ content });
   } catch (err) {
