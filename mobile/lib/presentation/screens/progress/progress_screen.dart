@@ -72,7 +72,7 @@ class _ProgressBody extends ConsumerWidget {
           const Text(
             'Ağrı Haritası',
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: 'Manrope',
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,

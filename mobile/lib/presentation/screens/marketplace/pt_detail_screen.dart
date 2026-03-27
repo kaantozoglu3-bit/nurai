@@ -100,7 +100,7 @@ class _PtDetailScreenState extends ConsumerState<PtDetailScreen> {
                           ? pt.name[0].toUpperCase()
                           : 'F',
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Manrope',
                         fontSize: 36,
                         fontWeight: FontWeight.w700,
                         color: AppColors.primary,
@@ -111,7 +111,7 @@ class _PtDetailScreenState extends ConsumerState<PtDetailScreen> {
                   Text(
                     pt.name,
                     style: const TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: 'Manrope',
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
@@ -193,9 +193,8 @@ class _PtDetailScreenState extends ConsumerState<PtDetailScreen> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primary
-                                      .withValues(alpha: 0.08),
-                                  borderRadius: BorderRadius.circular(20),
+                                  color: AppColors.primaryContainer,
+                                  borderRadius: BorderRadius.circular(AppDimensions.radiusChip),
                                 ),
                                 child: Text(
                                   s,
@@ -293,7 +292,7 @@ class _Section extends StatelessWidget {
         Text(
           title,
           style: const TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: 'Manrope',
             fontSize: 16,
             fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,

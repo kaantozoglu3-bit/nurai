@@ -38,11 +38,12 @@ class PainScoreWidget extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         const Text(
-          'Ağrı',
+          'Ağrı Skoru',
           style: TextStyle(
             fontFamily: 'Inter',
-            fontSize: 11,
-            color: AppColors.textSecondary,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: AppColors.onSurfaceVariant,
           ),
         ),
       ],

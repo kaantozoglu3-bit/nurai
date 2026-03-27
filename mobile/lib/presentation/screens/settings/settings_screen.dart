@@ -1,20 +1,14 @@
-import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
-import 'package:share_plus/share_plus.dart';
-import '../../../data/services/badge_service.dart';
+import '../../../core/constants/app_dimensions.dart';
 import '../../providers/locale_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../../core/router/app_router.dart';
-import 'widgets/badges_section.dart';
-import 'widgets/goals_section.dart';
-import 'widgets/notification_section.dart';
 import 'widgets/profile_section.dart';
-import 'widgets/security_links_section.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -24,11 +18,9 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  // UI-specific controllers — stay in the widget
   final _ageCtrl = TextEditingController();
   final _heightCtrl = TextEditingController();
   final _weightCtrl = TextEditingController();
-
   bool _controllersPopulated = false;
 
   @override
@@ -39,7 +31,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     super.dispose();
   }
 
-  /// Populate text controllers once when data first loads.
   void _populateControllers(SettingsState s) {
     if (_controllersPopulated) return;
     _ageCtrl.text = s.age;
@@ -63,47 +54,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  Future<void> _saveGoal(SettingsState s) async {
-    await ref.read(settingsProvider.notifier).saveGoal(s.weeklyGoal);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Hedef kaydedildi')),
-      );
-    }
-  }
-
-  Future<void> _saveNotifSettings(SettingsState s) async {
-    await ref.read(settingsProvider.notifier).saveNotifSettings(
-          exerciseEnabled: s.exerciseNotifEnabled,
-          exerciseTime: s.exerciseTime,
-          painLogEnabled: s.painLogNotifEnabled,
-        );
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bildirim ayarları kaydedildi')),
-      );
-    }
-  }
-
-  Future<void> _exportData() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
-    final snap = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .collection('analyses')
-        .orderBy('createdAt', descending: true)
-        .get();
-
-    final data = snap.docs.map((d) => d.data()).toList();
-    final jsonStr = const JsonEncoder.withIndent('  ').convert({
-      'exportDate': DateTime.now().toIso8601String(),
-      'userId': uid,
-      'analyses': data,
-    });
-
-    await Share.share(jsonStr, subject: 'Nurai Verilerim');
-  }
 
   Future<void> _deleteAccount() async {
     final confirm = await showDialog<bool>(
@@ -123,7 +73,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              style: TextButton.styleFrom(foregroundColor: AppColors.error),
               child: const Text('Sil'),
             ),
           ],
@@ -160,32 +110,77 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (mounted) context.go(AppRoutes.login);
   }
 
-  void _shareAchievement(SettingsState s) {
-    final earnedNames = BadgeService.allBadges
-        .where((b) => s.earnedBadges.contains(b.id))
-        .map((b) => '${b.icon} ${b.name}')
-        .join('\n');
 
-    Share.share(
-      'Nurai ile ${s.totalExercises} egzersiz tamamladım! 🏆\n'
-      'En uzun seri: ${s.longestStreak} gün\n\n'
-      'Rozetlerim:\n$earnedNames\n\n'
-      'Sen de dene: nurai.app',
-      subject: 'Nurai Başarılarım',
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+      child: Text(
+        title.toUpperCase(),
+        style: const TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.2,
+          color: AppColors.onSurfaceVariant,
+        ),
+      ),
     );
   }
 
-  Widget _sectionHeader(String title) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-        child: Text(
-          title,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
-              ),
+  Widget _buildSettingsTile({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    Widget? trailing,
+    VoidCallback? onTap,
+    Color? iconColor,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusItem),
+      ),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: (iconColor ?? AppColors.primary).withValues(alpha: 0.12),
+            borderRadius:
+                BorderRadius.circular(AppDimensions.radiusIcon),
+          ),
+          child: Icon(
+            icon,
+            color: iconColor ?? AppColors.primary,
+            size: 20,
+          ),
         ),
-      );
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.onSurface,
+          ),
+        ),
+        subtitle: subtitle != null
+            ? Text(
+                subtitle,
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 12,
+                  color: AppColors.onSurfaceVariant,
+                ),
+              )
+            : null,
+        trailing: trailing ?? const Icon(Icons.chevron_right, size: 20),
+        onTap: onTap,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -196,14 +191,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         body: Center(child: CircularProgressIndicator()),
       ),
       error: (e, st) => Scaffold(
-        appBar: AppBar(title: const Text('Ayarlar')),
+        appBar: _buildAppBar(),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                const Icon(Icons.error_outline, size: 48, color: AppColors.error),
                 const SizedBox(height: 16),
                 const Text('Ayarlar yüklenemedi.'),
                 const SizedBox(height: 8),
@@ -222,169 +217,102 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         final notifier = ref.read(settingsProvider.notifier);
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Ayarlar')),
+          appBar: _buildAppBar(),
           body: ListView(
             children: [
-              // ── BÖLÜM 1: Profil Düzenleme ────────────────────────────
-              _sectionHeader('Profil Düzenleme'),
-              ProfileSection(
-                ageCtrl: _ageCtrl,
-                heightCtrl: _heightCtrl,
-                weightCtrl: _weightCtrl,
-                fitnessLevel: s.fitnessLevel,
-                injuries: s.injuries,
-                onFitnessLevelChanged: notifier.setFitnessLevel,
-                onInjuryAdded: notifier.addInjury,
-                onInjuryRemoved: notifier.removeInjury,
-                onSave: () => _saveProfile(s),
-              ),
+              const SizedBox(height: 8),
 
-              // ── BÖLÜM 2: Bildirimler ─────────────────────────────────
-              _sectionHeader('Bildirimler'),
-              NotificationSection(
-                exerciseNotifEnabled: s.exerciseNotifEnabled,
-                exerciseTime: s.exerciseTime,
-                painLogNotifEnabled: s.painLogNotifEnabled,
-                painLogTime: s.painLogTime,
-                onExerciseNotifChanged: notifier.setExerciseNotifEnabled,
-                onExerciseTimeChanged: notifier.setExerciseTime,
-                onPainLogNotifChanged: notifier.setPainLogNotifEnabled,
-                onPainLogTimeChanged: notifier.setPainLogTime,
-                onSave: () => _saveNotifSettings(s),
-              ),
+              // ── Profil Kartı ────────────────────────────────────────────
+              _buildProfileCard(s),
 
-              // Dedicated notification settings screen link
-              ListTile(
-                leading: const Icon(Icons.notifications_outlined),
-                title: const Text(
-                  'Bildirim Ayarları',
-                  style: TextStyle(fontFamily: 'Inter', fontSize: 14),
-                ),
-                subtitle: const Text(
-                  'Egzersiz ve ağrı günlüğü hatırlatıcıları',
-                  style: TextStyle(fontFamily: 'Inter', fontSize: 12),
-                ),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 14),
-                onTap: () => context.go(AppRoutes.notifications),
+              // ── HESAP Grubu ─────────────────────────────────────────────
+              _buildSectionHeader('Hesap'),
+              _buildSettingsTile(
+                icon: Icons.person,
+                title: 'Profil Bilgileri',
+                subtitle: 'Yaş, boy, kilo, fitness seviyesi',
+                onTap: () => _showProfileEditDialog(s, notifier),
               ),
-
-              // ── BÖLÜM 3: Hedefler ────────────────────────────────────
-              _sectionHeader('Hedefler'),
-              GoalsSection(
-                weeklyGoal: s.weeklyGoal,
-                onChanged: notifier.setWeeklyGoal,
-                onSave: () => _saveGoal(s),
-              ),
-
-              // ── BÖLÜM 4: İlerleme Özeti ──────────────────────────────
-              _sectionHeader('İlerleme Özeti'),
-              ListTile(
-                leading: const Icon(Icons.fitness_center),
-                title: const Text('Toplam Egzersiz'),
-                trailing: Text('${s.totalExercises}'),
-              ),
-              ListTile(
-                leading: const Icon(Icons.local_fire_department),
-                title: const Text('En Uzun Seri'),
-                trailing: Text('${s.longestStreak} gün'),
-              ),
-              ListTile(
-                leading: const Icon(Icons.person_pin),
-                title: const Text('En Çok Çalışılan Bölge'),
-                trailing: Text(s.topBodyArea),
-              ),
-
-              // ── BÖLÜM 5: Rozetler ────────────────────────────────────
-              _sectionHeader('Rozetler'),
-              BadgesSection(earnedBadges: s.earnedBadges),
-
-              // ── BÖLÜM 6: Paylaşım ────────────────────────────────────
-              _sectionHeader('Paylaşım'),
-              ListTile(
-                leading: const Icon(Icons.ios_share),
-                title: const Text('Başarımı Paylaş'),
-                subtitle: const Text(
-                  'Streak ve rozetlerini arkadaşlarınla paylaş',
-                ),
-                onTap: () => _shareAchievement(s),
-              ),
-
-              // ── BÖLÜM 7: Veri Dışa Aktarım ───────────────────────────
-              _sectionHeader('Veri Dışa Aktarım'),
-              ListTile(
-                leading: const Icon(Icons.download),
-                title: const Text('Verilerimi İndir'),
-                subtitle:
-                    const Text('Ağrı günlüğü ve egzersiz geçmişi (JSON)'),
-                onTap: _exportData,
-              ),
-
-              // ── BÖLÜM 8: Fizyoterapist ───────────────────────────────
-              _sectionHeader('Fizyoterapistim'),
-              ListTile(
-                leading: const Icon(Icons.medical_services),
-                title: const Text('Fizyoterapiste Git'),
-                subtitle: const Text('Fizyoterapist bağlantısını yönet'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => context.go(AppRoutes.marketplace),
-              ),
-
-              // ── BÖLÜM 9: Premium & Hesap ─────────────────────────────
-              _sectionHeader('Premium & Abonelik'),
-              ListTile(
-                leading: const Icon(Icons.star, color: Colors.amber),
-                title: const Text('Abonelik Durumu'),
-                subtitle: const Text('Ücretsiz Plan'),
-                trailing: const Icon(Icons.chevron_right),
+              _buildSettingsTile(
+                icon: Icons.star,
+                title: 'Abonelik',
+                subtitle: 'Premium plan\'a yükselt',
                 onTap: () => context.go(AppRoutes.paywall),
               ),
-              ListTile(
-                leading: const Icon(Icons.restore),
-                title: const Text('Satın Almaları Geri Yükle'),
-                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Satın alma geri yükleme yakında eklenecek.',
-                    ),
-                  ),
-                ),
+              _buildSettingsTile(
+                icon: Icons.notifications,
+                title: 'Bildirim Ayarları',
+                subtitle: 'Egzersiz ve ağrı günlüğü hatırlatıcıları',
+                onTap: () => context.go(AppRoutes.notifications),
               ),
+              const SizedBox(height: 4),
 
-              // ── BÖLÜM 10: Dil & Görünüm ──────────────────────────────
-              _sectionHeader('Dil & Görünüm'),
-              ListTile(
-                leading: const Icon(Icons.language),
-                title: const Text('Dil'),
-                trailing: DropdownButton<String>(
-                  value: ref.watch(localeProvider).languageCode,
-                  underline: const SizedBox(),
-                  items: const [
-                    DropdownMenuItem(value: 'tr', child: Text('Türkçe')),
-                    DropdownMenuItem(value: 'en', child: Text('English')),
-                  ],
-                  onChanged: (v) {
-                    if (v != null) {
-                      ref.read(localeProvider.notifier).setLocale(v);
-                    }
+              // ── UYGULAMA Grubu ──────────────────────────────────────────
+              _buildSectionHeader('Uygulama'),
+              _buildSettingsTile(
+                icon: Icons.language,
+                title: 'Dil',
+                subtitle: ref.watch(localeProvider).languageCode == 'tr'
+                    ? 'Türkçe'
+                    : 'English',
+                trailing: PopupMenuButton<String>(
+                  initialValue: ref.watch(localeProvider).languageCode,
+                  onSelected: (v) {
+                    ref.read(localeProvider.notifier).setLocale(v);
                   },
+                  itemBuilder: (ctx) => [
+                    const PopupMenuItem(value: 'tr', child: Text('Türkçe')),
+                    const PopupMenuItem(value: 'en', child: Text('English')),
+                  ],
+                  child: const Icon(Icons.chevron_right, size: 20),
                 ),
+                onTap: null,
               ),
+              _buildSettingsTile(
+                icon: Icons.brightness_7,
+                title: 'Tema',
+                subtitle: 'Açık',
+                onTap: () {},
+              ),
+              _buildSettingsTile(
+                icon: Icons.privacy_tip,
+                title: 'Gizlilik Politikası',
+                onTap: () => context.go(AppRoutes.privacyPolicy),
+              ),
+              _buildSettingsTile(
+                icon: Icons.help,
+                title: 'Yardım ve Destek',
+                onTap: () => _sendSupportEmail(),
+              ),
+              const SizedBox(height: 4),
 
-              // ── BÖLÜM 11-12: Güvenlik & Hesap ───────────────────────
-              SecurityLinksSection(
-                onDeleteAccount: _deleteAccount,
-                sectionHeader: _sectionHeader,
+              // ── GÜVENLİK Grubu ──────────────────────────────────────────
+              _buildSectionHeader('Güvenlik'),
+              _buildSettingsTile(
+                icon: Icons.lock,
+                title: 'Şifre Değiştir',
+                onTap: () => _sendPasswordReset(),
+              ),
+              _buildSettingsTile(
+                icon: Icons.delete_forever,
+                title: 'Hesabı Sil',
+                subtitle: 'Tüm verileriniz kalıcı olarak silinir',
+                iconColor: AppColors.error,
+                onTap: _deleteAccount,
               ),
               const SizedBox(height: 40),
-              // ── Footer ───────────────────────────────────────────────
+
+              // ── Footer ──────────────────────────────────────────────────
               Padding(
-                padding: const EdgeInsets.only(top: 32, bottom: 16),
+                padding: const EdgeInsets.only(top: 24, bottom: 24),
                 child: Text(
-                  'Made with ❤️ for N.A',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textSecondary.withValues(alpha: 0.35),
-                    fontStyle: FontStyle.italic,
+                  'MADE WITH ❤️ FOR N.A'.toUpperCase(),
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.0,
+                    color: AppColors.onSurfaceVariant,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -393,6 +321,185 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         );
       },
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      backgroundColor: AppColors.surface,
+      elevation: 0,
+      centerTitle: false,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_ios, size: 20),
+        onPressed: () => Navigator.pop(context),
+      ),
+      title: const Text(
+        'Ayarlar',
+        style: TextStyle(
+          fontFamily: 'Manrope',
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: AppColors.primary,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileCard(SettingsState s) {
+    final user = FirebaseAuth.instance.currentUser;
+    final displayName = user?.displayName ?? 'Kullanıcı';
+    final email = user?.email ?? '';
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+          boxShadow: const [AppDimensions.cardShadow],
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                Container(
+                  width: 96,
+                  height: 96,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(50),
+                    border: Border.all(
+                      color: AppColors.secondaryContainer,
+                      width: 4,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.person,
+                    size: 48,
+                    color: AppColors.surface,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  displayName,
+                  style: const TextStyle(
+                    fontFamily: 'Manrope',
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.onSurface,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  email,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 14,
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      // Edit profile
+                    },
+                    icon: const Icon(Icons.edit, size: 18),
+                    label: const Text('Profili Düzenle'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.radiusChip),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: FloatingActionButton.small(
+                onPressed: () => _showProfileEditDialog(
+                  s,
+                  ref.read(settingsProvider.notifier),
+                ),
+                backgroundColor: AppColors.primary,
+                child: const Icon(Icons.edit, size: 18),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showProfileEditDialog(
+    SettingsState s,
+    dynamic notifier,
+  ) async {
+    return showDialog(
+      context: context,
+      builder: (ctx) => Material(
+        type: MaterialType.transparency,
+        child: Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: ProfileSection(
+              ageCtrl: _ageCtrl,
+              heightCtrl: _heightCtrl,
+              weightCtrl: _weightCtrl,
+              fitnessLevel: s.fitnessLevel,
+              injuries: s.injuries,
+              onFitnessLevelChanged: notifier.setFitnessLevel,
+              onInjuryAdded: notifier.addInjury,
+              onInjuryRemoved: notifier.removeInjury,
+              onSave: () {
+                _saveProfile(s);
+                Navigator.pop(ctx);
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _sendPasswordReset() async {
+    final email = FirebaseAuth.instance.currentUser?.email;
+    if (email == null) return;
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text('Şifre sıfırlama e-postası $email adresine gönderildi.'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Hata: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
+  Future<void> _sendSupportEmail() async {
+    // Implementation for sending support email
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Destek e-postası yakında')),
     );
   }
 }

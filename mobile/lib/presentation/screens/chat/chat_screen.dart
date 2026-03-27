@@ -121,10 +121,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   Text(
                     'Nurai',
                     style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      fontFamily: 'Manrope',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
                     ),
                   ),
                   Text(
@@ -237,12 +237,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 color: AppColors.textHint,
                               ),
                               filled: true,
-                              fillColor: AppColors.surfaceVariant,
+                              fillColor: AppColors.surfaceContainerLow,
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 16, vertical: 10),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(
-                                    AppDimensions.radiusFull),
+                                    AppDimensions.radiusItem),
                                 borderSide: BorderSide.none,
                               ),
                             ),
@@ -328,8 +328,8 @@ class _AvatarIcon extends StatelessWidget {
     return Container(
       width: 36,
       height: 36,
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.1),
+      decoration: const BoxDecoration(
+        color: AppColors.primaryContainer,
         shape: BoxShape.circle,
       ),
       child: const Icon(Icons.self_improvement,
@@ -356,14 +356,14 @@ class _ChatBubble extends StatelessWidget {
         children: [
           if (!isUser) ...[
             Container(
-              width: 28,
-              height: 28,
+              width: 32,
+              height: 32,
               decoration: const BoxDecoration(
-                color: AppColors.primary,
+                color: AppColors.primaryContainer,
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.self_improvement,
-                  color: Colors.white, size: 16),
+                  color: AppColors.primary, size: 16),
             ),
             const SizedBox(width: 8),
           ],
@@ -375,16 +375,9 @@ class _ChatBubble extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 color: isUser
-                    ? AppColors.chatUserBubble
-                    : AppColors.chatAIBubble,
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(AppDimensions.radiusM),
-                  topRight: const Radius.circular(AppDimensions.radiusM),
-                  bottomLeft:
-                      Radius.circular(isUser ? AppDimensions.radiusM : 4),
-                  bottomRight:
-                      Radius.circular(isUser ? 4 : AppDimensions.radiusM),
-                ),
+                    ? AppColors.primary
+                    : AppColors.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(AppDimensions.radiusChip),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,

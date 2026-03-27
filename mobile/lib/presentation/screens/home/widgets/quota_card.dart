@@ -19,8 +19,8 @@ class QuotaCard extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusItem),
+        boxShadow: const [AppDimensions.cardShadow],
       ),
       child: Row(
         children: [
@@ -31,7 +31,7 @@ class QuotaCard extends StatelessWidget {
               color: remaining > 0
                   ? AppColors.secondary.withValues(alpha: 0.1)
                   : AppColors.error.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusIcon),
             ),
             child: Icon(
               Icons.analytics_outlined,
@@ -53,7 +53,7 @@ class QuotaCard extends StatelessWidget {
                     fontFamily: 'Inter',
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: AppColors.onSurface,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -61,13 +61,13 @@ class QuotaCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     value: ratio.clamp(0.0, 1.0),
-                    backgroundColor: AppColors.border,
+                    backgroundColor: AppColors.surfaceContainerLow,
                     valueColor: AlwaysStoppedAnimation<Color>(
                       remaining > 0
                           ? AppColors.secondary
                           : AppColors.error,
                     ),
-                    minHeight: 4,
+                    minHeight: 6,
                   ),
                 ),
               ],

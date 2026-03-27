@@ -14,15 +14,15 @@ class EmptyAnalysisState extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusItem),
+        boxShadow: const [AppDimensions.cardShadow],
       ),
       child: Column(
         children: [
           Icon(
             Icons.healing_outlined,
             size: 48,
-            color: AppColors.textSecondary.withValues(alpha: 0.4),
+            color: AppColors.onSurfaceVariant.withValues(alpha: 0.4),
           ),
           const SizedBox(height: 12),
           const Text(
@@ -31,7 +31,7 @@ class EmptyAnalysisState extends StatelessWidget {
               fontFamily: 'Inter',
               fontSize: 15,
               fontWeight: FontWeight.w600,
-              color: AppColors.textSecondary,
+              color: AppColors.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 8),
@@ -41,7 +41,7 @@ class EmptyAnalysisState extends StatelessWidget {
             style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 13,
-              color: AppColors.textSecondary,
+              color: AppColors.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 16),

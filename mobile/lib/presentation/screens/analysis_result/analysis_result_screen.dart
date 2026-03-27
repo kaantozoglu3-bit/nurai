@@ -139,7 +139,15 @@ ${exercises.isNotEmpty ? exercises : 'Egzersiz önerisi yok'}
               color: AppColors.textPrimary, size: 20),
           onPressed: () => context.go(AppRoutes.home),
         ),
-        title: const Text('Analiz Sonucu'),
+        title: const Text(
+          'Analiz Sonucu',
+          style: TextStyle(
+            fontFamily: 'Manrope',
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: AppColors.primary,
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.share_outlined,
@@ -159,9 +167,10 @@ ${exercises.isNotEmpty ? exercises : 'Egzersiz önerisi yok'}
               padding: const EdgeInsets.all(AppDimensions.paddingXXL),
               decoration: BoxDecoration(
                 color: _headerBackgroundColor(analysis.painScore),
-                borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
                 border: Border.all(
                     color: _headerBorderColor(analysis.painScore), width: 1),
+                boxShadow: const [AppDimensions.cardShadow],
               ),
               child: Row(
                 children: [
@@ -172,10 +181,10 @@ ${exercises.isNotEmpty ? exercises : 'Egzersiz önerisi yok'}
                         Text(
                           analysis.bodyAreaLabel,
                           style: const TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 20,
+                            fontFamily: 'Manrope',
+                            fontSize: 22,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                            color: AppColors.onSurface,
                           ),
                         ),
                         const SizedBox(height: 6),
@@ -277,8 +286,8 @@ ${exercises.isNotEmpty ? exercises : 'Egzersiz önerisi yok'}
               Container(
                 padding: const EdgeInsets.all(AppDimensions.paddingL),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceVariant,
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                  color: AppColors.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusItem),
                 ),
                 child: const Row(
                   children: [

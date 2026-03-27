@@ -20,16 +20,17 @@ class VideoRowWidget extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(AppDimensions.paddingL, 0,
           AppDimensions.paddingL, AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-        border: Border.all(color: AppColors.border),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusItem),
+        border: Border.all(color: AppColors.outlineVariant),
+        boxShadow: const [AppDimensions.cardShadow],
       ),
       child: Row(
         children: [
           // Thumbnail with duration badge
           ClipRRect(
             borderRadius: const BorderRadius.horizontal(
-                left: Radius.circular(AppDimensions.radiusS)),
+                left: Radius.circular(AppDimensions.radiusItem)),
             child: Stack(
               children: [
                 CachedNetworkImage(
@@ -99,9 +100,10 @@ class VideoRowWidget extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontFamily: 'Inter',
-                  fontSize: 11,
-                  color: AppColors.textPrimary,
+                  fontSize: 12,
+                  color: AppColors.onSurface,
                   height: 1.35,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),

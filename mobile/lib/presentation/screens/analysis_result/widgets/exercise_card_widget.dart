@@ -35,8 +35,9 @@ class ExerciseCardWidget extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusItem),
+        border: Border.all(color: AppColors.outlineVariant),
+        boxShadow: const [AppDimensions.cardShadow],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,15 +51,17 @@ class ExerciseCardWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
+                      width: 40,
+                      height: 40,
+                      decoration: const BoxDecoration(
+                        color: AppColors.secondaryContainer,
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(AppDimensions.radiusIcon),
+                        ),
                       ),
                       child: const Icon(
                         Icons.fitness_center,
-                        color: AppColors.secondary,
+                        color: AppColors.primary,
                         size: 20,
                       ),
                     ),
@@ -67,10 +70,10 @@ class ExerciseCardWidget extends StatelessWidget {
                       child: Text(
                         exercise.name,
                         style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                          fontFamily: 'Manrope',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.onSurface,
                           height: 1.3,
                         ),
                       ),
@@ -78,7 +81,7 @@ class ExerciseCardWidget extends StatelessWidget {
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: _difficultyColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6),
@@ -87,7 +90,7 @@ class ExerciseCardWidget extends StatelessWidget {
                         exercise.difficulty,
                         style: TextStyle(
                           fontFamily: 'Inter',
-                          fontSize: 11,
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: _difficultyColor,
                         ),
@@ -105,9 +108,9 @@ class ExerciseCardWidget extends StatelessWidget {
                       exercise.duration,
                       style: const TextStyle(
                         fontFamily: 'Inter',
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary,
+                        color: AppColors.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -118,8 +121,8 @@ class ExerciseCardWidget extends StatelessWidget {
                     exercise.description,
                     style: const TextStyle(
                       fontFamily: 'Inter',
-                      fontSize: 12,
-                      color: AppColors.textHint,
+                      fontSize: 13,
+                      color: AppColors.onSurfaceVariant,
                       height: 1.4,
                     ),
                   ),

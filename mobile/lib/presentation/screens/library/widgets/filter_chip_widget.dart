@@ -24,8 +24,8 @@ class FilterChipWidget extends StatelessWidget {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary : AppColors.surfaceVariant,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusFull),
+          color: selected ? AppColors.primary : AppColors.secondaryContainer,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusChip),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

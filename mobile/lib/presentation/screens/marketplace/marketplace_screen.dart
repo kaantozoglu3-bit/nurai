@@ -240,8 +240,9 @@ class _PtCard extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           border: Border.all(color: AppColors.border),
+          boxShadow: [AppDimensions.cardShadow],
         ),
         child: Row(
           children: [
@@ -252,7 +253,7 @@ class _PtCard extends StatelessWidget {
               child: Text(
                 pt.name.isNotEmpty ? pt.name[0].toUpperCase() : 'F',
                 style: const TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Manrope',
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
                   color: AppColors.primary,
@@ -267,7 +268,7 @@ class _PtCard extends StatelessWidget {
                   Text(
                     pt.name,
                     style: const TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: 'Manrope',
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
@@ -310,9 +311,8 @@ class _PtCard extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
-                              color: AppColors.primary
-                                  .withValues(alpha: 0.07),
-                              borderRadius: BorderRadius.circular(20),
+                              color: AppColors.primaryContainer,
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusChip),
                             ),
                             child: Text(
                               s,

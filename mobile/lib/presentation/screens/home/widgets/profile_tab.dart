@@ -44,7 +44,7 @@ class ProfileTab extends ConsumerWidget {
                 fontFamily: 'Inter',
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: AppColors.onSurface,
               ),
             ),
             Text(
@@ -63,7 +63,7 @@ class ProfileTab extends ConsumerWidget {
           borderRadius: BorderRadius.circular(4),
           child: LinearProgressIndicator(
             value: pct,
-            backgroundColor: AppColors.border,
+            backgroundColor: AppColors.surfaceContainerLow,
             valueColor:
                 const AlwaysStoppedAnimation<Color>(AppColors.primary),
             minHeight: 8,
@@ -75,7 +75,7 @@ class ProfileTab extends ConsumerWidget {
           style: TextStyle(
             fontFamily: 'Inter',
             fontSize: 11,
-            color: AppColors.textSecondary,
+            color: AppColors.onSurfaceVariant,
           ),
         ),
         const SizedBox(height: 16),
@@ -126,7 +126,7 @@ class ProfileTab extends ConsumerWidget {
                     fontFamily: 'Inter',
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: AppColors.onSurface,
                   ),
                 ),
                 Text(
@@ -134,7 +134,7 @@ class ProfileTab extends ConsumerWidget {
                   style: const TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 13,
-                    color: AppColors.textSecondary,
+                    color: AppColors.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -237,11 +237,11 @@ class ProfileTile extends StatelessWidget {
               style: const TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 12,
-                color: AppColors.textSecondary,
+                color: AppColors.onSurfaceVariant,
               ),
             )
           : null,
-      trailing: Icon(Icons.chevron_right, color: AppColors.textHint, size: 18),
+      trailing: Icon(Icons.chevron_right, color: AppColors.outline, size: 18),
       onTap: onTap,
     );
   }

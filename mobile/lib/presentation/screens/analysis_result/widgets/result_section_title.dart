@@ -16,10 +16,10 @@ class ResultSectionTitle extends StatelessWidget {
         Text(
           title,
           style: const TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: 'Manrope',
             fontSize: 18,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: AppColors.onSurface,
           ),
         ),
       ],

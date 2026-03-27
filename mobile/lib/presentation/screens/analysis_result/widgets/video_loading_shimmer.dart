@@ -12,13 +12,13 @@ class VideoLoadingShimmer extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(AppDimensions.paddingL, 0,
           AppDimensions.paddingL, AppDimensions.paddingL),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusItem),
         child: Shimmer.fromColors(
-          baseColor: AppColors.border,
-          highlightColor: AppColors.surface,
+          baseColor: AppColors.outlineVariant,
+          highlightColor: AppColors.surfaceContainerLow,
           child: Container(
             height: 56,
-            color: AppColors.border,
+            color: AppColors.outlineVariant,
           ),
         ),
       ),

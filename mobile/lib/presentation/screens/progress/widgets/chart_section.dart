@@ -51,8 +51,9 @@ class WeeklyChartCard extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.paddingXXL),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         border: Border.all(color: AppColors.border),
+        boxShadow: [AppDimensions.cardShadow],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,7 +61,7 @@ class WeeklyChartCard extends StatelessWidget {
           const Text(
             'Son 7 Gün',
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: 'Manrope',
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
@@ -191,7 +192,7 @@ class WeeklyChartCard extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 color: AppColors.surface.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -202,7 +203,7 @@ class WeeklyChartCard extends StatelessWidget {
                   const Text(
                     'Premium özellik',
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: 'Manrope',
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,

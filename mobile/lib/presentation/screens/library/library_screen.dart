@@ -148,7 +148,7 @@ class _BodyMap extends StatelessWidget {
           Text(
             searchQuery.isEmpty ? 'Bölge Seç' : '${areas.length} sonuç',
             style: const TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: 'Manrope',
               fontSize: 20,
               fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
@@ -230,8 +230,9 @@ class _BodyAreaTile extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           border: Border.all(color: AppColors.border),
+          boxShadow: [AppDimensions.cardShadow],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -241,7 +242,7 @@ class _BodyAreaTile extends StatelessWidget {
               height: 52,
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.08),
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(AppDimensions.radiusIcon),
               ),
               child: Icon(icon, color: AppColors.primary, size: 26),
             ),
@@ -250,7 +251,7 @@ class _BodyAreaTile extends StatelessWidget {
               area.label,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: 'Manrope',
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
@@ -413,8 +414,8 @@ class _ExerciseListState extends ConsumerState<_ExerciseList> {
                 '${filtered.length} egzersiz',
                 style: const TextStyle(
                   fontFamily: 'Inter',
-                  fontSize: 12,
-                  color: AppColors.textHint,
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
                 ),
               ),
             ],
@@ -475,9 +476,10 @@ class _LockedBanner extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         decoration: BoxDecoration(
           color: AppColors.primary.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
           border: Border.all(
               color: AppColors.primary.withValues(alpha: 0.2)),
+          boxShadow: [AppDimensions.cardShadow],
         ),
         child: Row(
           children: [
@@ -486,7 +488,7 @@ class _LockedBanner extends StatelessWidget {
               height: 44,
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(AppDimensions.radiusIcon),
               ),
               child: const Icon(Icons.lock_outline,
                   color: AppColors.primary, size: 22),

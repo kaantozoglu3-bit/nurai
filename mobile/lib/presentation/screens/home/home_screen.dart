@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:ui';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/router/app_router.dart';
@@ -43,43 +44,68 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const ProfileTab(),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (i) => setState(() => _selectedIndex = i),
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textHint,
-        backgroundColor: AppColors.surface,
-        type: BottomNavigationBarType.fixed,
-        selectedLabelStyle: const TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.w600),
-        unselectedLabelStyle: const TextStyle(fontFamily: 'Inter', fontSize: 11),
-        elevation: 8,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home_rounded),
-            label: 'Anasayfa',
+      bottomNavigationBar: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.surface.withValues(alpha: 0.95),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
+              boxShadow: const [AppDimensions.navShadow],
+            ),
+            child: BottomNavigationBar(
+              currentIndex: _selectedIndex,
+              onTap: (i) => setState(() => _selectedIndex = i),
+              selectedItemColor: AppColors.primary,
+              unselectedItemColor: AppColors.onSurfaceVariant,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              type: BottomNavigationBarType.fixed,
+              selectedLabelStyle: const TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primary,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 11,
+                fontWeight: FontWeight.w400,
+                color: AppColors.onSurfaceVariant,
+              ),
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home_outlined),
+                  activeIcon: Icon(Icons.home_rounded),
+                  label: 'Anasayfa',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.calendar_today_outlined),
+                  activeIcon: Icon(Icons.calendar_today),
+                  label: 'Program',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.bar_chart_outlined),
+                  activeIcon: Icon(Icons.bar_chart),
+                  label: 'İlerleme',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.menu_book_outlined),
+                  activeIcon: Icon(Icons.menu_book),
+                  label: 'Kütüphane',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.person_outline),
+                  activeIcon: Icon(Icons.person),
+                  label: 'Profil',
+                ),
+              ],
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today_outlined),
-            activeIcon: Icon(Icons.calendar_today),
-            label: 'Program',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart_outlined),
-            activeIcon: Icon(Icons.bar_chart),
-            label: 'İlerleme',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book_outlined),
-            activeIcon: Icon(Icons.menu_book),
-            label: 'Kütüphane',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profil',
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -113,9 +139,9 @@ class _HomeTab extends ConsumerWidget {
                       'Merhaba, $firstName!',
                       style: const TextStyle(
                         fontFamily: 'Inter',
-                        fontSize: 24,
+                        fontSize: 28,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: AppColors.onSurface,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -124,7 +150,7 @@ class _HomeTab extends ConsumerWidget {
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 14,
-                        color: AppColors.textSecondary,
+                        color: AppColors.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -178,7 +204,7 @@ class _HomeTab extends ConsumerWidget {
                     fontFamily: 'Inter',
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: AppColors.onSurface,
                   ),
                 ),
                 TextButton(
@@ -214,7 +240,8 @@ class _AnalysisCta extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.paddingXXL),
       decoration: BoxDecoration(
         gradient: AppColors.primaryGradient,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+        boxShadow: const [AppDimensions.cardShadow],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -293,10 +320,8 @@ class _WeeklyProgressCard extends ConsumerWidget {
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.2),
-            ),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusItem),
+            boxShadow: const [AppDimensions.cardShadow],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -310,7 +335,7 @@ class _WeeklyProgressCard extends ConsumerWidget {
                       fontFamily: 'Inter',
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: AppColors.onSurface,
                     ),
                   ),
                   Text(
@@ -362,15 +387,12 @@ class _QuickExerciseCard extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         decoration: BoxDecoration(
-          color: isDone
-              ? AppColors.success.withValues(alpha: 0.08)
-              : AppColors.secondary.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-          border: Border.all(
-            color: isDone
-                ? AppColors.success.withValues(alpha: 0.3)
-                : AppColors.secondary.withValues(alpha: 0.3),
-          ),
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusItem),
+          boxShadow: const [AppDimensions.cardShadow],
+          border: isDone
+              ? Border.all(color: AppColors.success.withValues(alpha: 0.3))
+              : null,
         ),
         child: Row(
           children: [
@@ -381,7 +403,7 @@ class _QuickExerciseCard extends ConsumerWidget {
                 color: isDone
                     ? AppColors.success.withValues(alpha: 0.15)
                     : AppColors.secondary.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusIcon),
               ),
               child: Icon(
                 isDone ? Icons.check_circle : Icons.fitness_center,
@@ -402,7 +424,7 @@ class _QuickExerciseCard extends ConsumerWidget {
                       fontFamily: 'Inter',
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: isDone ? AppColors.success : AppColors.textPrimary,
+                      color: isDone ? AppColors.success : AppColors.onSurface,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -413,7 +435,7 @@ class _QuickExerciseCard extends ConsumerWidget {
                     style: const TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 12,
-                      color: AppColors.textSecondary,
+                      color: AppColors.onSurfaceVariant,
                     ),
                   ),
                 ],

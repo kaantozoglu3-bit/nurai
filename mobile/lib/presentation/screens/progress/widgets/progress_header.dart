@@ -83,8 +83,9 @@ class StatCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         border: Border.all(color: AppColors.border),
+        boxShadow: [AppDimensions.cardShadow],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,7 +95,7 @@ class StatCard extends StatelessWidget {
           Text(
             value,
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: 'Manrope',
               fontSize: 20,
               fontWeight: FontWeight.w800,
               color: valueColor ?? AppColors.textPrimary,
@@ -127,7 +128,7 @@ class StatCard extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 color: AppColors.surface.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               ),
               child: const Center(
                 child: Icon(Icons.lock, color: AppColors.primary, size: 22),
@@ -174,15 +175,9 @@ class TodayEntryCard extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.paddingXXL),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textSecondary.withValues(alpha: 0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: [AppDimensions.cardShadow],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,7 +188,7 @@ class TodayEntryCard extends StatelessWidget {
               const Text(
                 'Bugünün Ağrı Skoru',
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Manrope',
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
@@ -205,7 +200,7 @@ class TodayEntryCard extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.success.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusChip),
                   ),
                   child: const Text(
                     'Kaydedildi ✓',
@@ -311,7 +306,7 @@ class TodayEntryCard extends StatelessWidget {
                   : Text(
                       isSaved ? 'Güncelle' : 'Kaydet',
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Manrope',
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,

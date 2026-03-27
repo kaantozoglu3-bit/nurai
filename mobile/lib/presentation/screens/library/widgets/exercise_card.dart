@@ -36,8 +36,9 @@ class ExerciseCard extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
         border: Border.all(color: AppColors.border),
+        boxShadow: [AppDimensions.cardShadow],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,7 +48,7 @@ class ExerciseCard extends StatelessWidget {
             height: 52,
             decoration: BoxDecoration(
               color: _difficultyColor.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusIcon),
             ),
             child: Icon(_difficultyIcon, color: _difficultyColor, size: 26),
           ),
@@ -62,7 +63,7 @@ class ExerciseCard extends StatelessWidget {
                       child: Text(
                         exercise.name,
                         style: const TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: 'Manrope',
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
