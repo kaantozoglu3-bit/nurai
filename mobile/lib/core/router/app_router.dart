@@ -24,6 +24,8 @@ import '../../presentation/screens/help/help_support_screen.dart';
 import '../../presentation/screens/legal/privacy_policy_screen.dart';
 import '../../presentation/screens/notifications/notification_settings_screen.dart';
 import '../../presentation/screens/sports_injury/sports_injury_screen.dart';
+import '../../presentation/screens/sports_injury/rehab_phase_screen.dart';
+import '../../presentation/screens/sports_injury/sports_exercises_screen.dart';
 import '../../presentation/providers/auth_provider.dart';
 import '../../presentation/providers/navigation_provider.dart';
 // navigation_provider.dart is set by callers before pushing analysisResult /
@@ -53,6 +55,8 @@ class AppRoutes {
   static const String notifications = '/notifications';
   static const String privacyPolicy = '/privacy-policy';
   static const String sportsInjury = '/sports-injury';
+  static const String rehabPhase = '/rehab-phase/:injuryId';
+  static const String sportsExercises = '/sports-exercises/:injuryId/:phase';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -214,6 +218,25 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.sportsInjury,
         builder: (context, state) => const SportsInjuryScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.rehabPhase,
+        builder: (context, state) {
+          final injuryId = state.pathParameters['injuryId'] ?? '';
+          return RehabPhaseScreen(injuryId: injuryId);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.sportsExercises,
+        builder: (context, state) {
+          final injuryId = state.pathParameters['injuryId'] ?? '';
+          final phase =
+              int.tryParse(state.pathParameters['phase'] ?? '1') ?? 1;
+          return SportsExercisesScreen(
+            injuryId: injuryId,
+            phaseNumber: phase,
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.messaging,

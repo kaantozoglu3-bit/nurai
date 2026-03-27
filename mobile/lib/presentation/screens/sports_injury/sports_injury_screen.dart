@@ -5,91 +5,91 @@ import '../../../core/constants/app_dimensions.dart';
 import '../../../core/router/app_router.dart';
 
 class _InjuryCard {
+  final String injuryId;
   final String title;
   final String subtitle;
   final IconData icon;
   final Color color;
-  final String bodyArea;
 
   const _InjuryCard({
+    required this.injuryId,
     required this.title,
     required this.subtitle,
     required this.icon,
     required this.color,
-    required this.bodyArea,
   });
 }
 
 const _kInjuryCards = [
   _InjuryCard(
+    injuryId: 'acl',
     title: 'ACL — Ön Çapraz Bağ',
-    subtitle: 'Diz bağ hasarı, 5 fazlı protokol',
+    subtitle: 'Diz bağ hasarı • 5 fazlı protokol • 9–12 ay',
     icon: Icons.directions_run,
     color: Color(0xFFEF4444),
-    bodyArea: 'left_knee',
   ),
   _InjuryCard(
+    injuryId: 'meniscus',
     title: 'Menisküs Yırtığı',
-    subtitle: 'Konservatif veya cerrahi sonrası',
+    subtitle: 'Konservatif veya cerrahi sonrası • 3–6 ay',
     icon: Icons.sports_soccer,
     color: Color(0xFFF97316),
-    bodyArea: 'left_knee',
   ),
   _InjuryCard(
+    injuryId: 'patellar_tendinopathy',
     title: 'Patellar Tendinopati',
-    subtitle: 'Jumper\'s knee — Eksantrik protokol',
+    subtitle: "Jumper's knee — Eksantrik protokol • 12+ hafta",
     icon: Icons.sports_basketball,
     color: Color(0xFFF59E0B),
-    bodyArea: 'left_knee',
   ),
   _InjuryCard(
+    injuryId: 'ankle_sprain',
     title: 'Ayak Bileği Burkulması',
-    subtitle: 'Lateral sprain rehabilitasyonu',
+    subtitle: 'Lateral sprain rehabilitasyonu • 3–6 hafta',
     icon: Icons.directions_walk,
     color: Color(0xFF22C55E),
-    bodyArea: 'left_ankle',
   ),
   _InjuryCard(
+    injuryId: 'achilles_tendinopathy',
     title: 'Aşil Tendinopati',
-    subtitle: 'Alfredson HSR protokolü',
+    subtitle: 'Alfredson HSR protokolü • 12 hafta',
     icon: Icons.sports_handball,
     color: Color(0xFF10B981),
-    bodyArea: 'left_ankle',
   ),
   _InjuryCard(
+    injuryId: 'rotator_cuff',
     title: 'Rotator Cuff Hasarı',
-    subtitle: 'Omuz rotator cuff yırtığı',
+    subtitle: 'Omuz rotator cuff yırtığı • 3–6 ay',
     icon: Icons.sports_volleyball,
     color: Color(0xFF3B82F6),
-    bodyArea: 'left_shoulder',
   ),
   _InjuryCard(
+    injuryId: 'bankart_slap',
     title: 'Omuz — Bankart / SLAP',
-    subtitle: 'Glenohumeral instabilite rehab',
+    subtitle: 'Glenohumeral instabilite rehab • 6–9 ay',
     icon: Icons.sports_tennis,
     color: Color(0xFF6366F1),
-    bodyArea: 'left_shoulder',
   ),
   _InjuryCard(
+    injuryId: 'tennis_elbow',
     title: 'Tenis / Golfçü Dirseği',
-    subtitle: 'Tyler Twist protokolü',
+    subtitle: 'Tyler Twist protokolü • 6–12 hafta',
     icon: Icons.sports_cricket,
     color: Color(0xFF8B5CF6),
-    bodyArea: 'left_elbow',
   ),
   _InjuryCard(
+    injuryId: 'lumbar_disc',
     title: 'Bel / Disk Hasarı',
     subtitle: 'McGill Big 3 + Dead Bug protokolü',
     icon: Icons.airline_seat_recline_extra,
     color: Color(0xFFEC4899),
-    bodyArea: 'lower_back',
   ),
   _InjuryCard(
-    title: 'Kas Streni',
-    subtitle: 'Grade 1-2-3 kas yırtığı rehab',
+    injuryId: 'muscle_strain',
+    title: 'Hamstring / Adduktör Strain',
+    subtitle: 'Nordic + Copenhagen protokolü • 1–8 hafta',
     icon: Icons.fitness_center,
     color: Color(0xFF64748B),
-    bodyArea: 'lower_back',
   ),
 ];
 
@@ -133,9 +133,9 @@ class SportsInjuryScreen extends StatelessWidget {
               AppDimensions.paddingL,
               AppDimensions.paddingS,
             ),
-            child: Text(
-              'Yaralanma tipini seç — AI seni kanıta dayalı protokolle yönlendirsin.',
-              style: const TextStyle(
+            child: const Text(
+              'Yaralanma tipini seç → faz seç → egzersiz listesi veya AI rehberliği.',
+              style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 13,
                 color: AppColors.textSecondary,
@@ -173,7 +173,7 @@ class _InjuryCardWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppDimensions.radiusM),
         child: InkWell(
           borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-          onTap: () => context.go('/chat/${card.bodyArea}'),
+          onTap: () => context.go('/rehab-phase/${card.injuryId}'),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(

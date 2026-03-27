@@ -27,6 +27,12 @@ class FirestorePaths {
   /// users/{uid}/program/current (single document)
   static String program(String uid) => 'users/$uid/program/current';
 
+  // ─── Athlete Rehab ──────────────────────────────────────────────────────────
+
+  /// users/{uid}/athleteProgress/{YYYY-MM-DD}
+  static String athleteProgress(String uid, String date) =>
+      'users/$uid/athleteProgress/$date';
+
   // ─── Marketplace ────────────────────────────────────────────────────────────
 
   /// physiotherapists/{uid}

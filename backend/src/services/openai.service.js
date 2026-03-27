@@ -108,6 +108,13 @@ const PROFILE_LINE = `\nPROFİL: yaş={age} cinsiyet={gender} boy={height}cm kil
 
 const ATHLETE_PROFILE_LINE = `\nSPORCU PROFİLİ: yaş={age} cinsiyet={gender} branş={sport} seviye={fitnessLevel} yaralanma={injuryType} ameliyat={surgeryDate} faz={currentPhase} hedef={goal}`;
 
+// Phase-specific context appended when user selects a rehab phase in the app
+const PHASE_CONTEXT = `\n\nKULLANICI BAĞLAMI:
+Sakatlık: {injuryType}
+Rehabilitasyon fazı: {currentPhase}
+Kanıta dayalı protokollere göre, bu spesifik faza uygun egzersizler öner.
+Güvenlik kuralları: Ağrı 4/10 üzerinde ise egzersizi durdur. Şişlik veya uyuşma varsa profesyonel değerlendirme öner.`;
+
 // ─── Prompt Builder ───────────────────────────────────────────────────────────
 
 const BODY_AREA_LABELS = {
@@ -139,6 +146,13 @@ function buildSystemPrompt(profile, bodyArea, isFirstMessage) {
   const isAthlete = profile.userType === 'athlete';
 
   let prompt = (isAthlete ? ATHLETE_PROMPT : BASE_PROMPT).replaceAll('{bodyArea}', areaLabel);
+
+  // If injury + phase are set (athlete rehab mode), append phase context
+  if (isAthlete && profile.injuryType && profile.currentPhase) {
+    prompt += PHASE_CONTEXT
+      .replace('{injuryType}', _sanitize(profile.injuryType))
+      .replace('{currentPhase}', _sanitize(profile.currentPhase));
+  }
 
   // Profili sadece ilk mesajda ekle (~20 token tasarruf/mesaj)
   if (isFirstMessage) {

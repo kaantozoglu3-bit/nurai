@@ -17,6 +17,14 @@ class BodySelectorScreen extends ConsumerStatefulWidget {
 
 class _BodySelectorScreenState extends ConsumerState<BodySelectorScreen> {
   final Set<String> _selectedAreas = {};
+  bool _isAthleteMode = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isAthleteMode =
+        ref.read(currentUserProvider)?.userType == 'athlete';
+  }
 
   static const _bodyAreas = [
     {'key': 'neck', 'label': 'Boyun', 'icon': Icons.accessibility_new},
@@ -51,9 +59,6 @@ class _BodySelectorScreenState extends ConsumerState<BodySelectorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userType = ref.watch(currentUserProvider)?.userType ?? 'general';
-    final isAthlete = userType == 'athlete';
-
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -67,8 +72,50 @@ class _BodySelectorScreenState extends ConsumerState<BodySelectorScreen> {
       ),
       body: Column(
         children: [
-          // Athlete mode banner
-          if (isAthlete)
+          // Athlete / General mode toggle
+          Container(
+            color: AppColors.surface,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Genel',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: !_isAthleteMode
+                        ? AppColors.textPrimary
+                        : AppColors.textHint,
+                  ),
+                ),
+                Switch(
+                  value: _isAthleteMode,
+                  activeThumbColor: AppColors.primary,
+                  activeTrackColor: AppColors.primary.withValues(alpha: 0.3),
+                  onChanged: (val) {
+                    setState(() => _isAthleteMode = val);
+                    if (val) context.go(AppRoutes.sportsInjury);
+                  },
+                ),
+                Text(
+                  'Sporcu',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: _isAthleteMode
+                        ? AppColors.primary
+                        : AppColors.textHint,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Athlete mode banner (quick shortcut)
+          if (_isAthleteMode)
             GestureDetector(
               onTap: () => context.go(AppRoutes.sportsInjury),
               child: Container(
