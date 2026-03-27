@@ -197,6 +197,14 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     }
   }
 
+  Future<void> resetPassword(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email.trim());
+    } on FirebaseAuthException catch (e) {
+      throw _authError(e.code);
+    }
+  }
+
   Future<void> logout() async {
     await QuotaService.clearForCurrentUser();
     await _auth.signOut();

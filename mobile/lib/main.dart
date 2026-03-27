@@ -2,7 +2,7 @@ import 'dart:ui' show PlatformDispatcher;
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flutter/foundation.dart' show kReleaseMode;
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode, kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,14 +20,18 @@ void main() async {
   );
 
   // App Check — release'de Play Integrity, debug'da debug provider kullan
-  await FirebaseAppCheck.instance.activate(
-    androidProvider: kReleaseMode
-        ? AndroidProvider.playIntegrity
-        : AndroidProvider.debug,
-    appleProvider: kReleaseMode
-        ? AppleProvider.deviceCheck
-        : AppleProvider.debug,
-  );
+  try {
+    await FirebaseAppCheck.instance.activate(
+      androidProvider: kReleaseMode
+          ? AndroidProvider.playIntegrity
+          : AndroidProvider.debug,
+      appleProvider: kReleaseMode
+          ? AppleProvider.deviceCheck
+          : AppleProvider.debug,
+    );
+  } catch (e) {
+    if (kDebugMode) debugPrint('[AppCheck] Aktivasyon başarısız: $e');
+  }
 
   // Crashlytics — catch Flutter + platform errors
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
