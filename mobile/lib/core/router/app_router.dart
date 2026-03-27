@@ -23,6 +23,7 @@ import '../../presentation/screens/settings/settings_screen.dart';
 import '../../presentation/screens/help/help_support_screen.dart';
 import '../../presentation/screens/legal/privacy_policy_screen.dart';
 import '../../presentation/screens/notifications/notification_settings_screen.dart';
+import '../../presentation/screens/sports_injury/sports_injury_screen.dart';
 import '../../presentation/providers/auth_provider.dart';
 import '../../presentation/providers/navigation_provider.dart';
 // navigation_provider.dart is set by callers before pushing analysisResult /
@@ -51,6 +52,7 @@ class AppRoutes {
   static const String helpSupport = '/help-support';
   static const String notifications = '/notifications';
   static const String privacyPolicy = '/privacy-policy';
+  static const String sportsInjury = '/sports-injury';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -208,6 +210,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.privacyPolicy,
         builder: (context, state) => const PrivacyPolicyScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.sportsInjury,
+        builder: (context, state) => const SportsInjuryScreen(),
       ),
       GoRoute(
         path: AppRoutes.messaging,

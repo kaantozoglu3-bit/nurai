@@ -7,6 +7,7 @@ class UserModel {
   final bool isPremium;
   final int dailyAnalysisCount;
   final DateTime? lastAnalysisDate;
+  final String userType;
 
   const UserModel({
     required this.id,
@@ -17,6 +18,7 @@ class UserModel {
     this.isPremium = false,
     this.dailyAnalysisCount = 0,
     this.lastAnalysisDate,
+    this.userType = 'general',
   });
 
   static const int _freeDailyLimit = 3;
@@ -44,6 +46,7 @@ class UserModel {
     bool? isPremium,
     int? dailyAnalysisCount,
     DateTime? lastAnalysisDate,
+    String? userType,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -54,6 +57,7 @@ class UserModel {
       isPremium: isPremium ?? this.isPremium,
       dailyAnalysisCount: dailyAnalysisCount ?? this.dailyAnalysisCount,
       lastAnalysisDate: lastAnalysisDate ?? this.lastAnalysisDate,
+      userType: userType ?? this.userType,
     );
   }
 
@@ -61,5 +65,6 @@ class UserModel {
     id: '',
     email: '',
     displayName: '',
+    userType: 'general',
   );
 }

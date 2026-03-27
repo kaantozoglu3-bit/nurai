@@ -24,6 +24,7 @@ const profileSchema = Joi.object({
   pastInjuries: Joi.array().items(Joi.string().max(100)).max(20).optional(),
   goal: Joi.string().max(200).optional(),
   displayName: Joi.string().max(100).optional(),
+  userType: Joi.string().valid('general', 'athlete').optional(),
 }).optional();
 
 const chatSchema = Joi.object({

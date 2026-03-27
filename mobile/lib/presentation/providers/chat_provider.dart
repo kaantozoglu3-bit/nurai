@@ -176,6 +176,7 @@ class ChatNotifier extends AutoDisposeFamilyNotifier<ChatState, String> {
       'fitnessLevel': saved['fitnessLevel']?.toString() ?? 'Unknown',
       'pastInjuries': (saved['injuries'] as List?)?.cast<String>() ?? <String>[],
       'goal': saved['goal']?.toString() ?? 'Pain relief and recovery',
+      'userType': saved['userType']?.toString() ?? 'general',
     };
   }
 

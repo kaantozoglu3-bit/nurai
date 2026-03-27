@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,7 +8,6 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/router/app_router.dart';
 import '../../../data/models/analysis_model.dart';
-import '../../../data/services/api_service.dart';
 import '../../providers/ad_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/navigation_provider.dart';
@@ -29,8 +27,6 @@ class AnalysisResultScreen extends ConsumerStatefulWidget {
 }
 
 class _AnalysisResultScreenState extends ConsumerState<AnalysisResultScreen> {
-  // exerciseName (lowercase) → video data
-  Map<String, Map<String, dynamic>> _exerciseVideoMap = {};
   bool _videosLoading = true;
 
   /// Returns the effective analysis data: widget field first (passed via
@@ -105,23 +101,8 @@ ${exercises.isNotEmpty ? exercises : 'Egzersiz önerisi yok'}
   }
 
   Future<void> _loadVideos() async {
-    if (mounted) setState(() { _videosLoading = true; });
-    try {
-      final exerciseNames = _analysis.exercises.map((e) => e.name).toList();
-      final videos = await ApiService.fetchYoutubeVideos(
-        bodyArea: _bodyArea,
-        exercises: exerciseNames.isNotEmpty ? exerciseNames : null,
-      );
-      final map = <String, Map<String, dynamic>>{};
-      for (final v in videos) {
-        final key = (v['exerciseName'] as String? ?? '').toLowerCase().trim();
-        if (key.isNotEmpty && !map.containsKey(key)) map[key] = v;
-      }
-      if (mounted) setState(() { _exerciseVideoMap = map; _videosLoading = false; });
-    } catch (e) {
-      if (kDebugMode) debugPrint('[AnalysisResult] Video yükleme başarısız: $e');
-      if (mounted) setState(() { _videosLoading = false; });
-    }
+    // Local videos are immediately available from the AI model
+    if (mounted) setState(() => _videosLoading = false);
   }
 
   Color _headerBackgroundColor(int score) {
@@ -319,8 +300,13 @@ ${exercises.isNotEmpty ? exercises : 'Egzersiz önerisi yok'}
               )
             else
               ...analysis.exercises.map((exercise) {
-                final video =
-                    _exerciseVideoMap[exercise.name.toLowerCase().trim()];
+                final video = exercise.videoId != null && exercise.videoId!.isNotEmpty
+                    ? {
+                        'videoId': exercise.videoId,
+                        'title': exercise.name,
+                        'channelTitle': 'Nurai Egzersiz',
+                      }
+                    : null;
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: ExerciseCardWidget(
@@ -331,7 +317,7 @@ ${exercises.isNotEmpty ? exercises : 'Egzersiz önerisi yok'}
                         ? () {
                             AnalyticsService.instance.logExerciseVideoWatched(
                               exerciseName: exercise.name,
-                              videoId: video['videoId'] as String? ?? '',
+                              videoId: video['videoId']?.toString() ?? '',
                             );
                             // Store video data in provider before navigating
                             // so VideoPlayerScreen can read it without relying

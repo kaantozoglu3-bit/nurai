@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/router/app_router.dart';
 import '../../../data/services/analytics_service.dart';
+import '../../providers/auth_provider.dart';
 import '../../widgets/app_button.dart';
-class BodySelectorScreen extends StatefulWidget {
+
+class BodySelectorScreen extends ConsumerStatefulWidget {
   const BodySelectorScreen({super.key});
 
   @override
-  State<BodySelectorScreen> createState() => _BodySelectorScreenState();
+  ConsumerState<BodySelectorScreen> createState() => _BodySelectorScreenState();
 }
 
-class _BodySelectorScreenState extends State<BodySelectorScreen> {
+class _BodySelectorScreenState extends ConsumerState<BodySelectorScreen> {
   final Set<String> _selectedAreas = {};
 
   static const _bodyAreas = [
@@ -48,6 +51,9 @@ class _BodySelectorScreenState extends State<BodySelectorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userType = ref.watch(currentUserProvider)?.userType ?? 'general';
+    final isAthlete = userType == 'athlete';
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -61,6 +67,56 @@ class _BodySelectorScreenState extends State<BodySelectorScreen> {
       ),
       body: Column(
         children: [
+          // Athlete mode banner
+          if (isAthlete)
+            GestureDetector(
+              onTap: () => context.go(AppRoutes.sportsInjury),
+              child: Container(
+                width: double.infinity,
+                margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.sports, color: Colors.white, size: 22),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Sporcu Rehabilitasyon Programı',
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            'ACL, menisküs, aşil ve daha fazlası →',
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 11,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, color: Colors.white, size: 20),
+                  ],
+                ),
+              ),
+            ),
+
           // Body map visual
           _BodyMapWidget(
             selectedAreas: _selectedAreas,

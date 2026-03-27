@@ -13,6 +13,7 @@ import 'steps/step1_basic_info.dart';
 import 'steps/step2_fitness_level.dart';
 import 'steps/step3_injury_history.dart';
 import 'steps/step4_goals.dart';
+import 'steps/step5_user_type.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
   const ProfileSetupScreen({super.key});
@@ -35,6 +36,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     'injuries': <String>[],
     'otherInjury': '',
     'goal': null,
+    'userType': 'general',
   };
 
   static const _stepTitles = [
@@ -42,10 +44,11 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     'Aktivite Seviyesi',
     'Sakatlık Geçmişi',
     'Hedefiniz',
+    'Kullanıcı Tipi',
   ];
 
   Future<void> _nextStep() async {
-    if (_currentStep < 3) {
+    if (_currentStep < 4) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -71,6 +74,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
         'past_injuries': List<String>.from(_profileData['injuries'] as List? ?? []),
         'other_injury': _profileData['otherInjury'],
         'goal': _profileData['goal'],
+        'user_type': _profileData['userType'],
       });
     } catch (e) {
       if (kDebugMode) debugPrint('[ProfileSetup] Backend kayıt hatası (yerel kayıt geçerli): $e');
@@ -111,7 +115,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
               )
             : null,
         title: Text(
-          'Adım ${_currentStep + 1}/4',
+          'Adım ${_currentStep + 1}/5',
           style: const TextStyle(
             fontFamily: 'Inter',
             fontSize: 14,
@@ -133,7 +137,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
-                      value: (_currentStep + 1) / 4,
+                      value: (_currentStep + 1) / 5,
                       backgroundColor: AppColors.border,
                       valueColor: const AlwaysStoppedAnimation<Color>(
                           AppColors.primary),
@@ -181,6 +185,11 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                     onChanged: (key, value) =>
                         setState(() => _profileData[key] = value),
                   ),
+                  Step5UserType(
+                    data: _profileData,
+                    onChanged: (key, value) =>
+                        setState(() => _profileData[key] = value),
+                  ),
                 ],
               ),
             ),
@@ -189,7 +198,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             Padding(
               padding: const EdgeInsets.all(AppDimensions.paddingXXL),
               child: AppButton(
-                label: _currentStep == 3 ? 'Başla!' : 'Devam Et',
+                label: _currentStep == 4 ? 'Başla!' : 'Devam Et',
                 onPressed: _nextStep,
               ),
             ),

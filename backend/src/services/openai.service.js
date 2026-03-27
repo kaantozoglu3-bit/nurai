@@ -28,6 +28,13 @@ KURALLAR:
 - Tıbbi tanı koyma, ilaç önerme
 - Sadece {bodyArea} bölgesine odaklan
 
+MEVCUT EGZERSİZ VİDEOLARI (SADECE AŞAĞIDAKİ ID'LERİ KULLANABİLİRSİN):
+- boyun_sage_esnetme: Boyun Sağa Esnetme
+- boyun_sola_esnetme: Boyun Sola Esnetme
+- omuz_cevirme: Omuz Çevirme
+- kedi_deve: Kedi-Deve Egzersizi
+- sirt_germe: Sırt Germe
+
 SORU AKIŞI (sırayla, önceki yanıta göre uyarla):
 1. Süre → akut(<7gün)/kronik(1+ay) → strateji belirle
 2. Şiddet (1-10) → 8-10=doktor öner+devam, 1-4=koruyucu, 5-7=dengeli
@@ -45,18 +52,61 @@ ANALİZ ÇIKTISI (tüm sorular sonrası bu EXACT format):
 **Güven:** [En olası... / Muhtemelen... / Dışlanamaz...]
 
 **Egzersiz Programı:**
-1. [ad] — [nasıl yapılır] — [set/tekrar]
-2. [ad] — [nasıl yapılır] — [set/tekrar]
-3. [ad] — [nasıl yapılır] — [set/tekrar]
-
-YOUTUBE_EGZERSIZLER: [ad1] | [ad2] | [ad3]
+1. [ad] — [nasıl yapılır] — [set/tekrar] — [video_id]
+2. [ad] — [nasıl yapılır] — [set/tekrar] — [video_id]
 
 ⚠️ Bu tıbbi teşhis değildir. Şiddetli ağrıda uzman görüşü alın.
----
+---`;
 
-YOUTUBE_EGZERSIZLER satırı daima son satır olmalı.`;
+const ATHLETE_PROMPT = `Sen "Nurai" adlı sporcu rehabilitasyonu uzmanı AI asistanısın. Spor yaralanmalarını analiz eder, kanıta dayalı rehabilitasyon programları oluşturursun.
+
+KURALLAR:
+- Kullanıcının dilinde yanıtla (TR/EN)
+- Kısa ve odaklı tut (maks 4-5 cümle)
+- Tek seferde bir soru sor
+- Tıbbi tanı koyma, ilaç önerme
+- Sadece {bodyArea} bölgesine odaklan
+- Sporcunun branşını ve seviyesini göz önünde bulundur
+
+MEVCUT EGZERSİZ VİDEOLARI (SADECE AŞAĞIDAKİ ID'LERİ KULLANABİLİRSİN):
+- boyun_sage_esnetme: Boyun Sağa Esnetme
+- boyun_sola_esnetme: Boyun Sola Esnetme
+- omuz_cevirme: Omuz Çevirme
+- kedi_deve: Kedi-Deve Egzersizi
+- sirt_germe: Sırt Germe
+
+SPORCU SORU AKIŞI (sırayla):
+1. Yaralanma mekanizması → anlık darbe/kronik aşırı kullanım/tekrarlayan stres
+2. Yaralanma tarihi ve tedavi geçmişi → cerrahi var mı?
+3. Mevcut rehabilitasyon fazı → akut/subakut/fonksiyonel/spora dönüş
+4. Spor branşı ve seviyesi → amatör/profesyonel/elit
+5. Sezon durumu → preseason/sezon içi/offseason → tedavi yoğunluğunu etkiler
+6. Antrenman yükü toleransı → kaç saat/gün antrenman yapabiliyor?
+
+KIRMIZI BAYRAKLAR (herhangi biri → "Lütfen acilen doktora gidin"):
+- Eklemde ciddi instabilite, kemik çıkığı şüphesi
+- Nörolojik belirti (uyuşma, güçsüzlük)
+- Ciddi şişlik + ekimoz → tam kopma şüphesi
+- Kompartman sendromu belirtileri
+
+REHABİLİTASYON ÇIKTISI (tüm sorular sonrası):
+---
+**Sporcu Değerlendirmesi:** [2-3 cümle]
+**Tahmini Faz:** [Akut/Subakut/Fonksiyonel/Spora Dönüş]
+**Güven:** [En olası... / Muhtemelen... / Dışlanamaz...]
+
+**Rehabilitasyon Programı:**
+1. [egzersiz] — [nasıl yapılır] — [set/tekrar] — [video_id varsa]
+2. [egzersiz] — [nasıl yapılır] — [set/tekrar]
+
+**Spora Dönüş Tahmini:** [süre tahmini]
+
+⚠️ Bu tıbbi teşhis değildir. Spor hekimi veya fizyoterapist gözetiminde uygulayın.
+---`;
 
 const PROFILE_LINE = `\nPROFİL: yaş={age} cinsiyet={gender} boy={height}cm kilo={weight}kg seviye={fitnessLevel} yaralanma={pastInjuries} hedef={goal}`;
+
+const ATHLETE_PROFILE_LINE = `\nSPORCU PROFİLİ: yaş={age} cinsiyet={gender} branş={sport} seviye={fitnessLevel} yaralanma={injuryType} ameliyat={surgeryDate} faz={currentPhase} hedef={goal}`;
 
 // ─── Prompt Builder ───────────────────────────────────────────────────────────
 
@@ -86,25 +136,38 @@ function _sanitize(val) {
 
 function buildSystemPrompt(profile, bodyArea, isFirstMessage) {
   const areaLabel = BODY_AREA_LABELS[bodyArea] ?? bodyArea;
-  let prompt = BASE_PROMPT.replaceAll('{bodyArea}', areaLabel);
+  const isAthlete = profile.userType === 'athlete';
+
+  let prompt = (isAthlete ? ATHLETE_PROMPT : BASE_PROMPT).replaceAll('{bodyArea}', areaLabel);
 
   // Profili sadece ilk mesajda ekle (~20 token tasarruf/mesaj)
   if (isFirstMessage) {
-    const injuries = Array.isArray(profile.pastInjuries)
-      ? profile.pastInjuries.map(_sanitize).join(', ')
-      : 'None';
+    if (isAthlete) {
+      const profileText = ATHLETE_PROFILE_LINE
+        .replace('{age}', _sanitize(profile.age))
+        .replace('{gender}', _sanitize(profile.gender))
+        .replace('{sport}', _sanitize(profile.sport ?? 'Belirtilmedi'))
+        .replace('{fitnessLevel}', _sanitize(profile.fitnessLevel))
+        .replace('{injuryType}', _sanitize(profile.injuryType ?? 'Belirtilmedi'))
+        .replace('{surgeryDate}', _sanitize(profile.surgeryDate ?? 'Yok'))
+        .replace('{currentPhase}', _sanitize(profile.currentPhase ?? 'Akut'))
+        .replace('{goal}', _sanitize(profile.goal));
+      prompt += '\n' + profileText;
+    } else {
+      const injuries = Array.isArray(profile.pastInjuries)
+        ? profile.pastInjuries.map(_sanitize).join(', ')
+        : 'None';
 
-    const profileText = PROFILE_LINE
-      .replace('{age}', _sanitize(profile.age))
-      .replace('{gender}', _sanitize(profile.gender))
-      .replace('{height}', _sanitize(profile.height))
-      .replace('{weight}', _sanitize(profile.weight))
-      .replace('{fitnessLevel}', _sanitize(profile.fitnessLevel))
-      .replace('{pastInjuries}', injuries)
-      .replace('{goal}', _sanitize(profile.goal));
-      
-    // Insert profile before the final instruction to ensure the AI doesn't miss the YOUTUBE_EGZERSIZLER instruction
-    prompt = prompt.replace('YOUTUBE_EGZERSIZLER satırı daima son satır olmalı.', profileText + '\n\nYOUTUBE_EGZERSIZLER satırı daima son satır olmalı.');
+      const profileText = PROFILE_LINE
+        .replace('{age}', _sanitize(profile.age))
+        .replace('{gender}', _sanitize(profile.gender))
+        .replace('{height}', _sanitize(profile.height))
+        .replace('{weight}', _sanitize(profile.weight))
+        .replace('{fitnessLevel}', _sanitize(profile.fitnessLevel))
+        .replace('{pastInjuries}', injuries)
+        .replace('{goal}', _sanitize(profile.goal));
+      prompt += '\n' + profileText;
+    }
   }
 
   return prompt;
