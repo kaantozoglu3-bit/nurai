@@ -4,12 +4,12 @@ import '../models/analysis_model.dart';
 /// Parses raw AI message text into structured data.
 class AnalysisParserService {
   static const int _maxCauses = 5;
-  /// Parses "YOUTUBE_EGZERSIZLER: egz1 | egz2 | egz3" (or comma-separated) from AI message.
+  /// Parses "VIDEO_IDS: egz1 | egz2 | egz3" (or comma-separated) from AI message.
   static List<String> parseExercises(String aiMessage) {
-    final regex = RegExp(r'YOUTUBE_EGZERSIZLER:\s*(.+)', caseSensitive: false);
+    final regex = RegExp(r'VIDEO_IDS:\s*(.+)', caseSensitive: false);
     final match = regex.firstMatch(aiMessage);
     if (match == null) {
-      if (kDebugMode) debugPrint('[AnalysisParser] YOUTUBE_EGZERSIZLER etiketi bulunamadı — YouTube videosu gösterilmeyecek');
+      if (kDebugMode) debugPrint('[AnalysisParser] VIDEO_IDS etiketi bulunamadı — Lokal video gösterilmeyecek');
       return [];
     }
     final raw = match.group(1)!;
@@ -24,10 +24,10 @@ class AnalysisParserService {
         .toList();
   }
 
-  /// Extracts the first 2–3 sentences as summary (strips YOUTUBE_EGZERSIZLER line).
+  /// Extracts the first 2–3 sentences as summary (strips VIDEO_IDS line).
   static String parseAiSummary(String aiMessage) {
     final cleaned = aiMessage
-        .replaceAll(RegExp(r'YOUTUBE_EGZERSIZLER:.*', caseSensitive: false), '')
+        .replaceAll(RegExp(r'VIDEO_IDS:.*', caseSensitive: false), '')
         .replaceAll(RegExp(r'\*\*|__'), '')
         .trim();
     final sentences = cleaned.split(RegExp(r'(?<=[.!?])\s+'));
@@ -68,23 +68,26 @@ class AnalysisParserService {
   }
 
   /// Parses numbered exercise lines from AI message.
-  /// Expected format: "1. [name] — [description] — [sets/reps]"
+  /// Expected format: "1. [name] — [description] — [sets/reps]" or "1. [name] — [description] — [sets/reps] — [video_id]"
   static List<_ParsedExercise> _parseExerciseLines(String aiMessage) {
     final results = <_ParsedExercise>[];
     final lines = aiMessage.split('\n');
     final lineRe = RegExp(r'^\d+\.\s+(.+)');
-    final youtubeRe = RegExp(r'YOUTUBE_EGZERSIZLER', caseSensitive: false);
+    final youtubeRe = RegExp(r'VIDEO_IDS|Rehabilitasyon Programı|Egzersiz Programı', caseSensitive: false);
 
     for (final line in lines) {
-      if (youtubeRe.hasMatch(line)) continue; // bu satırı egzersiz olarak parse etme
+      if (youtubeRe.hasMatch(line)) continue; // skip header lines
       final m = lineRe.firstMatch(line.trim());
       if (m == null) continue;
-      final parts = m.group(1)!.split(RegExp(r'\s*—\s*|\s*-{2,}\s*'));
-      if (parts.isEmpty) continue;
+      
+      final fullContent = m.group(1)!;
+      final parts = fullContent.split(RegExp(r'\s*—\s*|\s*-{2,}\s*'));
+      if (parts.isEmpty || parts[0].trim().isEmpty) continue;
 
       final name = parts[0].trim();
       final description = parts.length > 1 ? parts[1].trim() : '';
       final durationRaw = parts.length > 2 ? parts[2].trim() : '';
+      final videoIdRaw = parts.length > 3 ? parts[3].trim() : '';
 
       // Infer difficulty from keywords in description + name
       final combined = '$name $description'.toLowerCase();
@@ -110,9 +113,19 @@ class AnalysisParserService {
           description: description,
           difficulty: difficulty,
           duration: durationRaw.isNotEmpty ? durationRaw : '3 set x 10 tekrar',
+          videoId: videoIdRaw.isNotEmpty ? videoIdRaw : '',
         ),
       );
+
+      if (kDebugMode) {
+        debugPrint('[AnalysisParser] Egzersiz parsed: name="$name", parts=${parts.length}, duration="$durationRaw"');
+      }
     }
+
+    if (kDebugMode) {
+      debugPrint('[AnalysisParser] Total exercises found: ${results.length}');
+    }
+
     return results;
   }
 
@@ -129,22 +142,20 @@ class AnalysisParserService {
     final painScore = parsePainScore(history);
     final parsedLines = _parseExerciseLines(lastAiMsg);
 
-    // Match parsed lines to exerciseNames; fall back to name-only if not found
-    final exercises = exerciseNames.map((name) {
-      final found = parsedLines
-          .where(
-            (p) =>
-                p.name.toLowerCase().contains(name.toLowerCase()) ||
-                name.toLowerCase().contains(p.name.toLowerCase()),
-          )
-          .firstOrNull;
+    // Simply convert parsed lines to ExerciseModels
+    final exercises = parsedLines.map((p) {
       return ExerciseModel(
-        name: name,
-        description: found?.description ?? '',
-        difficulty: found?.difficulty ?? 'Orta',
-        duration: found?.duration ?? '3 set x 10 tekrar',
+        name: p.name,
+        description: p.description,
+        difficulty: p.difficulty,
+        duration: p.duration,
+        videoId: p.videoId.isNotEmpty ? p.videoId : null,
       );
     }).toList();
+
+    if (kDebugMode) {
+      debugPrint('[AnalysisParser] buildAnalysisModel: exercises.length=${exercises.length}, causes.length=${causes.length}');
+    }
 
     return AnalysisModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -173,11 +184,13 @@ class _ParsedExercise {
   final String description;
   final String difficulty;
   final String duration;
+  final String videoId;
 
   const _ParsedExercise({
     required this.name,
     required this.description,
     required this.difficulty,
     required this.duration,
+    required this.videoId,
   });
 }
