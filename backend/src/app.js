@@ -75,7 +75,7 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use('/api/v1/analysis', analysisRoutes);
-app.use('/api/v1/youtube', youtubeRoutes);
+// app.use('/api/v1/youtube', youtubeRoutes); // devre dışı
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/program', programRoutes);
 
