@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 
 /// Manages athlete profile and exercise-completion tracking in Firestore.
@@ -113,24 +112,19 @@ class AthleteService {
 
   // ── Exercise Videos ──────────────────────────────────────────────────────
 
-  /// Firebase Storage'dan egzersiz video URL'sini çeker.
-  /// Video henüz yüklenmemişse null döner.
+  static const String _r2BaseUrl =
+      'https://pub-b09e691371c94a10b46d7a37380c3f67.r2.dev';
+
+  /// Cloudflare R2'den egzersiz video URL'sini döner.
   /// Path: exercise-videos/{injuryId}_phase{N}_{slug}.mp4
-  static Future<String?> getExerciseVideoUrl({
+  static String getExerciseVideoUrl({
     required String injuryId,
     required int phaseNumber,
     required String exerciseName,
-  }) async {
-    try {
-      final videoId =
-          '${injuryId}_phase${phaseNumber}_${_slugifyName(exerciseName)}';
-      final ref = FirebaseStorage.instance
-          .ref()
-          .child('exercise-videos/$videoId.mp4');
-      return await ref.getDownloadURL();
-    } catch (_) {
-      return null;
-    }
+  }) {
+    final videoId =
+        '${injuryId}_phase${phaseNumber}_${_slugifyName(exerciseName)}';
+    return '$_r2BaseUrl/exercise-videos/$videoId.mp4';
   }
 
   /// Egzersiz adını video ID slug'ına çevirir.

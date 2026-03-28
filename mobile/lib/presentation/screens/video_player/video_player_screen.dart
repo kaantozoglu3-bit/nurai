@@ -1,4 +1,3 @@
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -39,19 +38,12 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
     // 1. Direct URL provided (sports exercises screen passes pre-resolved URL)
     String? videoUrl = data['videoUrl'] as String?;
 
-    // 2. videoId provided (analysis result screen) — resolve via Firebase Storage
+    // 2. videoId provided (analysis result screen) — R2 URL'i direkt oluştur
     if (videoUrl == null || videoUrl.isEmpty) {
       final videoId = data['videoId'] as String? ?? '';
       if (videoId.isEmpty) return;
-      try {
-        videoUrl = await FirebaseStorage.instance
-            .ref()
-            .child('exercise-videos/$videoId.mp4')
-            .getDownloadURL();
-      } catch (_) {
-        if (mounted) setState(() {});
-        return;
-      }
+      videoUrl =
+          'https://pub-b09e691371c94a10b46d7a37380c3f67.r2.dev/exercise-videos/$videoId.mp4';
     }
 
     _videoPlayerController = VideoPlayerController.networkUrl(Uri.parse(videoUrl));

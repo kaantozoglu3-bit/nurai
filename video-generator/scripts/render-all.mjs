@@ -18,7 +18,7 @@ import path from 'path';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const OUTPUT_DIR = path.join(__dirname, '..', 'rendered-videos');
-const ENTRY_POINT = path.join(__dirname, '..', 'src', 'index.ts');
+const ENTRY_POINT = path.join(__dirname, '..', 'src', 'index.tsx');
 
 // Opsiyonel filtre (CLI arg)
 const filter = process.argv[2] || '';

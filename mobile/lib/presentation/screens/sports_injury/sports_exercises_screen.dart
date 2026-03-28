@@ -28,7 +28,6 @@ class SportsExercisesScreen extends ConsumerStatefulWidget {
 class _SportsExercisesScreenState
     extends ConsumerState<SportsExercisesScreen> {
   final Set<int> _completed = {};
-  final Set<int> _videoLoading = {};
   bool _loading = true;
   late SportsInjury _injury;
   late RehabPhase _phase;
@@ -82,25 +81,12 @@ class _SportsExercisesScreenState
     }
   }
 
-  Future<void> _openVideo(int index, RehabExercise exercise) async {
-    setState(() => _videoLoading.add(index));
-
-    final url = await AthleteService.getExerciseVideoUrl(
+  void _openVideo(int index, RehabExercise exercise) {
+    final url = AthleteService.getExerciseVideoUrl(
       injuryId: widget.injuryId,
       phaseNumber: widget.phaseNumber,
       exerciseName: exercise.name,
     );
-
-    if (!mounted) return;
-    setState(() => _videoLoading.remove(index));
-
-    if (url == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Video yakında eklenecek')),
-      );
-      return;
-    }
-
     ref.read(videoPlayerDataProvider.notifier).state = {
       'videoUrl': url,
       'title': exercise.name,
@@ -211,7 +197,7 @@ class _SportsExercisesScreenState
                         exercise: exercise,
                         isDone: isDone,
                         color: color,
-                        isVideoLoading: _videoLoading.contains(index),
+                        isVideoLoading: false,
                         onToggle: () => _toggleComplete(index),
                         onVideo: () => _openVideo(index, exercise),
                       );

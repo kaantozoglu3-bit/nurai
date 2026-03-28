@@ -1,6 +1,7 @@
 node_modules/
 rendered-videos/
 service-account.json
+.env
 dist/
 .remotion/
 *.mp4
