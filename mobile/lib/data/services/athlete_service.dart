@@ -115,6 +115,10 @@ class AthleteService {
   static const String _r2BaseUrl =
       'https://pub-b09e691371c94a10b46d7a37380c3f67.r2.dev';
 
+  /// Video ID'den direkt R2 URL'i döner (analysis result screen için).
+  static String getVideoUrlFromId(String videoId) =>
+      '$_r2BaseUrl/exercise-videos/$videoId.mp4';
+
   /// Cloudflare R2'den egzersiz video URL'sini döner.
   /// Path: exercise-videos/{injuryId}_phase{N}_{slug}.mp4
   static String getExerciseVideoUrl({

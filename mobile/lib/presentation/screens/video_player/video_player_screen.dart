@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +6,7 @@ import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
+import '../../../data/services/athlete_service.dart';
 import '../../providers/navigation_provider.dart';
 
 class VideoPlayerScreen extends ConsumerStatefulWidget {
@@ -20,6 +22,7 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
   VideoPlayerController? _videoPlayerController;
   ChewieController? _chewieController;
   bool _isCompleted = false;
+  String? _loadError;
 
   Map<String, dynamic> _effectiveData() {
     if (widget.videoData.isNotEmpty) return widget.videoData;
@@ -38,16 +41,23 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
     // 1. Direct URL provided (sports exercises screen passes pre-resolved URL)
     String? videoUrl = data['videoUrl'] as String?;
 
-    // 2. videoId provided (analysis result screen) — R2 URL'i direkt oluştur
+    // 2. videoId provided (analysis result screen) — AthleteService üzerinden çöz
     if (videoUrl == null || videoUrl.isEmpty) {
       final videoId = data['videoId'] as String? ?? '';
       if (videoId.isEmpty) return;
-      videoUrl =
-          'https://pub-b09e691371c94a10b46d7a37380c3f67.r2.dev/exercise-videos/$videoId.mp4';
+      videoUrl = AthleteService.getVideoUrlFromId(videoId);
     }
 
-    _videoPlayerController = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
-    await _videoPlayerController!.initialize();
+    try {
+      _videoPlayerController = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
+      await _videoPlayerController!.initialize().timeout(
+        const Duration(seconds: 15),
+      );
+    } catch (e) {
+      if (kDebugMode) debugPrint('[VideoPlayer] Hata: $e');
+      if (mounted) setState(() => _loadError = 'Video yüklenemedi. Bağlantınızı kontrol edin.');
+      return;
+    }
 
     _chewieController = ChewieController(
       videoPlayerController: _videoPlayerController!,
@@ -118,12 +128,25 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
             // Video player
             AspectRatio(
               aspectRatio: 1080 / 1920,
-              child: _chewieController != null &&
-                      _chewieController!.videoPlayerController.value.isInitialized
-                  ? Chewie(controller: _chewieController!)
-                  : const Center(
-                      child: CircularProgressIndicator(color: AppColors.primary),
-                    ),
+              child: _loadError != null
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          _loadError!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: AppColors.textSecondary),
+                        ),
+                      ),
+                    )
+                  : _chewieController != null &&
+                          _chewieController!
+                              .videoPlayerController.value.isInitialized
+                      ? Chewie(controller: _chewieController!)
+                      : const Center(
+                          child:
+                              CircularProgressIndicator(color: AppColors.primary),
+                        ),
             ),
 
             // Info

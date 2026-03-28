@@ -11,8 +11,7 @@ const rateLimit = require('express-rate-limit');
 const logger = require('./config/logger');
 const appCheckMiddleware = require('./middleware/appcheck.middleware');
 const analysisRoutes = require('./routes/analysis.routes');
-// YouTube routes devre dışı — Remotion Firebase Storage sistemiyle değiştirildi
-// const youtubeRoutes = require('./routes/youtube.routes');
+// YouTube routes kaldırıldı — Remotion + Cloudflare R2 sistemiyle değiştirildi
 const userRoutes = require('./routes/user.routes');
 const programRoutes = require('./routes/program.routes');
 
