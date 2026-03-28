@@ -1,0 +1,6 @@
+node_modules/
+rendered-videos/
+service-account.json
+dist/
+.remotion/
+*.mp4

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 
 /// Manages athlete profile and exercise-completion tracking in Firestore.
@@ -108,6 +109,50 @@ class AthleteService {
       if (kDebugMode) debugPrint('[AthleteService] fetchTodayCompletions error: $e');
       return {};
     }
+  }
+
+  // ── Exercise Videos ──────────────────────────────────────────────────────
+
+  /// Firebase Storage'dan egzersiz video URL'sini çeker.
+  /// Video henüz yüklenmemişse null döner.
+  /// Path: exercise-videos/{injuryId}_phase{N}_{slug}.mp4
+  static Future<String?> getExerciseVideoUrl({
+    required String injuryId,
+    required int phaseNumber,
+    required String exerciseName,
+  }) async {
+    try {
+      final videoId =
+          '${injuryId}_phase${phaseNumber}_${_slugifyName(exerciseName)}';
+      final ref = FirebaseStorage.instance
+          .ref()
+          .child('exercise-videos/$videoId.mp4');
+      return await ref.getDownloadURL();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Egzersiz adını video ID slug'ına çevirir.
+  /// exercise-data.mjs slug() fonksiyonuyla birebir uyumlu.
+  static String _slugifyName(String name) {
+    return name
+        .toLowerCase()
+        .replaceAll('ğ', 'g')
+        .replaceAll('ş', 's')
+        .replaceAll('ı', 'i')
+        .replaceAll('ö', 'o')
+        .replaceAll('ü', 'u')
+        .replaceAll('ç', 'c')
+        .replaceAll('İ', 'i')
+        .replaceAll('Ğ', 'g')
+        .replaceAll('Ş', 's')
+        .replaceAll('Ö', 'o')
+        .replaceAll('Ü', 'u')
+        .replaceAll('Ç', 'c')
+        .replaceAll(RegExp(r'[^a-z0-9]'), '_')
+        .replaceAll(RegExp(r'_+'), '_')
+        .replaceAll(RegExp(r'^_|_$'), '');
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────

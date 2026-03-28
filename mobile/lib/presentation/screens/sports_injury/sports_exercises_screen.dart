@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
+import '../../../core/router/app_router.dart';
 import '../../../data/services/athlete_service.dart';
 import '../../../data/sports_injury_library/sports_injury_data.dart';
 import '../../../data/sports_injury_library/sports_injury_model.dart';
+import '../../providers/navigation_provider.dart';
 
-class SportsExercisesScreen extends StatefulWidget {
+class SportsExercisesScreen extends ConsumerStatefulWidget {
   final String injuryId;
   final int phaseNumber;
 
@@ -18,11 +21,14 @@ class SportsExercisesScreen extends StatefulWidget {
   });
 
   @override
-  State<SportsExercisesScreen> createState() => _SportsExercisesScreenState();
+  ConsumerState<SportsExercisesScreen> createState() =>
+      _SportsExercisesScreenState();
 }
 
-class _SportsExercisesScreenState extends State<SportsExercisesScreen> {
+class _SportsExercisesScreenState
+    extends ConsumerState<SportsExercisesScreen> {
   final Set<int> _completed = {};
+  final Set<int> _videoLoading = {};
   bool _loading = true;
   late SportsInjury _injury;
   late RehabPhase _phase;
@@ -76,17 +82,31 @@ class _SportsExercisesScreenState extends State<SportsExercisesScreen> {
     }
   }
 
-  Future<void> _openYouTube(String searchTerm) async {
-    final uri = Uri.parse(
-      'https://www.youtube.com/results?search_query=${Uri.encodeComponent(searchTerm)}',
+  Future<void> _openVideo(int index, RehabExercise exercise) async {
+    setState(() => _videoLoading.add(index));
+
+    final url = await AthleteService.getExerciseVideoUrl(
+      injuryId: widget.injuryId,
+      phaseNumber: widget.phaseNumber,
+      exerciseName: exercise.name,
     );
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('YouTube açılamadı')),
-        );
-      }
+
+    if (!mounted) return;
+    setState(() => _videoLoading.remove(index));
+
+    if (url == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Video yakında eklenecek')),
+      );
+      return;
     }
+
+    ref.read(videoPlayerDataProvider.notifier).state = {
+      'videoUrl': url,
+      'title': exercise.name,
+      'description': exercise.description,
+    };
+    context.go(AppRoutes.videoPlayer);
   }
 
   @override
@@ -191,8 +211,9 @@ class _SportsExercisesScreenState extends State<SportsExercisesScreen> {
                         exercise: exercise,
                         isDone: isDone,
                         color: color,
+                        isVideoLoading: _videoLoading.contains(index),
                         onToggle: () => _toggleComplete(index),
-                        onYouTube: () => _openYouTube(exercise.youtubeSearchTerm),
+                        onVideo: () => _openVideo(index, exercise),
                       );
                     },
                   ),
@@ -239,15 +260,17 @@ class _ExerciseCard extends StatefulWidget {
   final RehabExercise exercise;
   final bool isDone;
   final Color color;
+  final bool isVideoLoading;
   final VoidCallback onToggle;
-  final VoidCallback onYouTube;
+  final VoidCallback onVideo;
 
   const _ExerciseCard({
     required this.exercise,
     required this.isDone,
     required this.color,
+    required this.isVideoLoading,
     required this.onToggle,
-    required this.onYouTube,
+    required this.onVideo,
   });
 
   @override
@@ -380,18 +403,30 @@ class _ExerciseCardState extends State<_ExerciseCard> {
                       ),
                     ),
 
-                    // YouTube button
-                    IconButton(
-                      onPressed: widget.onYouTube,
-                      icon: const Icon(Icons.play_circle_outline,
-                          color: Color(0xFFFF0000), size: 24),
-                      tooltip: 'YouTube\'da ara',
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(
-                        minWidth: 32,
-                        minHeight: 32,
-                      ),
-                    ),
+                    // Video oynat butonu
+                    widget.isVideoLoading
+                        ? const SizedBox(
+                            width: 32,
+                            height: 32,
+                            child: Padding(
+                              padding: EdgeInsets.all(6),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          )
+                        : IconButton(
+                            onPressed: widget.onVideo,
+                            icon: const Icon(Icons.play_circle_outline,
+                                color: AppColors.primary, size: 24),
+                            tooltip: 'Videoyu izle',
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 32,
+                              minHeight: 32,
+                            ),
+                          ),
 
                     Icon(
                       _expanded ? Icons.expand_less : Icons.expand_more,

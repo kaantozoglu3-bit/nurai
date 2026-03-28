@@ -202,47 +202,7 @@ class ApiService {
     return <String, String>{'Authorization': 'Bearer $idToken'};
   }
 
-  // ─── YouTube cache ───────────────────────────────────────────────────────
-  static final Map<String, _CacheEntry<List<Map<String, dynamic>>>> _youtubeCache = {};
-  static const Duration _youtubeCacheTtl = Duration(hours: 6);
-
   // ─── Public API ──────────────────────────────────────────────────────────
-
-  /// Fetches YouTube exercise videos for the given body area.
-  /// Results are cached client-side for 6 hours to avoid redundant API calls.
-  static Future<List<Map<String, dynamic>>> fetchYoutubeVideos({
-    required String bodyArea,
-    List<String>? exercises,
-    String? customQuery,
-  }) async {
-    final cacheKey = [bodyArea, exercises?.join('|') ?? '', customQuery ?? ''].join(':');
-
-    final cached = _youtubeCache[cacheKey];
-    if (cached != null && !cached.isExpired) return cached.data;
-
-    final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
-    if (idToken == null) throw Exception('Kullanıcı oturumu bulunamadı.');
-
-    final Map<String, dynamic> queryParams = {'bodyArea': bodyArea};
-    if (exercises != null && exercises.isNotEmpty) {
-      queryParams['exercises'] = exercises.join('|');
-    } else if (customQuery != null) {
-      queryParams['q'] = customQuery;
-    }
-
-    final headers = await _buildHeaders(idToken);
-    final response = await _jsonDio.get<Map<String, dynamic>>(
-      '/api/v1/youtube/search',
-      queryParameters: queryParams,
-      options: Options(headers: headers),
-    );
-
-    final videos = (response.data?['videos'] as List<dynamic>? ?? [])
-        .cast<Map<String, dynamic>>();
-
-    _youtubeCache[cacheKey] = _CacheEntry(videos, _youtubeCacheTtl);
-    return videos;
-  }
 
   /// Saves user profile to the backend (Firestore).
   static Future<void> saveUserProfile(Map<String, dynamic> profile) async {
@@ -411,13 +371,4 @@ class ApiService {
   // ─── Production URL / host accessors ────────────────────────────────────
   static String get baseUrl => _productionUrl;
   static String get productionHost => _productionHost;
-}
-
-class _CacheEntry<T> {
-  final T data;
-  final DateTime expiresAt;
-
-  _CacheEntry(this.data, Duration ttl) : expiresAt = DateTime.now().add(ttl);
-
-  bool get isExpired => DateTime.now().isAfter(expiresAt);
 }
